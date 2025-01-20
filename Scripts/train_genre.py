@@ -37,7 +37,7 @@ from sklearn.metrics import (
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 columns = ["Spectral Centroid", "Spectral Bandwidth", "Spectral Roll-off"]
 data_path = "/content/TFG/data/espectrogramas_salida1/dataset_genero_completo.csv"
-base_path = "data/"
+base_path = "/content/TFG/data/"
 hidden_size = 256
 additional_features_dim = 12
 num_classes = 6
@@ -48,6 +48,8 @@ epochs = 50
 def main():
     # Preprocesado
     data = load_data(data_path)
+    data["R0uta"] = data["R0uta"].str.replace("\\", "/")
+    data["R0uta"] = base_path + data["R0uta"]
     normalize_columns(data, columns)
     normalize_images(data, base_path)
     mean, std = mean_std_image(data)
