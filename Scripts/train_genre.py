@@ -1,7 +1,10 @@
+import os
+import sys
+
 src_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"))
 sys.path.append(src_path)
 
-import sys
+
 from src.models.genre_model import CNN_LSTM_genre
 from src.preprocessing import (
     CustomDataset,
@@ -21,7 +24,6 @@ from torch.utils.data import DataLoader
 from sklearn.metrics import accuracy_score, f1_score
 from src.preprocessing.data_loader import load_data, split_dataset
 from src.preprocessing.custom_dataset import CustomDataset
-import os
 from src.training.trainer_genre import train, validate
 from sklearn.metrics import (
     accuracy_score,
@@ -30,16 +32,6 @@ from sklearn.metrics import (
     recall_score,
     roc_auc_score,
 )
-
-
-from src.preprocessing import (
-    CustomDataset,
-    c_transform,
-    load_data,
-    mean_std_image,
-    split_dataset,
-)
-
 # Parametros
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 columns = ["Spectral Centroid", "Spectral Bandwidth", "Spectral Roll-off"]
