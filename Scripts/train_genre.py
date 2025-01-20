@@ -85,7 +85,7 @@ def main():
                 f"Val Recall: {val_recall:.4f} | Val AUC: {val_auc:.4f}\n")
     
     # Guardar el modelo
-    model_save_path = os.path.join(dir_out, "cnn_lstm_genre.pth")
+    model_save_path = '/content/TFG/src/models/cnn_lstm_genre.pth'
     torch.save(model.state_dict(), model_save_path)
     print(f"Modelo guardado en {model_save_path}")
 
