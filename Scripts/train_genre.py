@@ -1,3 +1,6 @@
+src_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"))
+sys.path.append(src_path)
+
 import sys
 from src.models.genre_model import CNN_LSTM_genre
 from src.preprocessing import (
@@ -27,9 +30,6 @@ from sklearn.metrics import (
     recall_score,
     roc_auc_score,
 )
-
-src_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"))
-sys.path.append(src_path)
 
 
 from src.preprocessing import (
