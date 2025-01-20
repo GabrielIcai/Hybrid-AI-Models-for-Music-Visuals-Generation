@@ -1,0 +1,22 @@
+import pandas as pd
+import matplotlib as plt
+import cv2
+from PIL import Image
+import os
+
+def mostrar_imagen(ruta_csv, numero_fila, carpeta_imagenes="data/espectrogramas_salida1"):
+    df = pd.read_csv(ruta_csv)
+    ruta_relativa_imagen = df['Ruta'][numero_fila]
+    ruta_completa_imagen = os.path.join("data/", ruta_relativa_imagen)
+    try:
+        with Image.open(ruta_completa_imagen) as img:
+            plt.imshow(img)
+            plt.title(f"Imagen: {ruta_relativa_imagen}")
+            plt.axis('off')
+            plt.show()
+    except FileNotFoundError:
+        print(f"Error: No se encontró la imagen en {ruta_completa_imagen}")
+    except OSError as e:
+        print(f"Error al abrir la imagen {ruta_completa_imagen}: {e}. ¿Es un formato de imagen válido?")
+    except Exception as e:
+        print(f"Error al mostrar la imagen: {e}")

@@ -4,3 +4,17 @@ ruff==0.8.4
 pylint==3.3.2
 flake8==7.1.1
 mypy==1.13.0
+torch
+pandas
+matplotlib
+librosa
+pysoundfile
+scikit-learn
+Pillow
+seaborn
+opencv-python
+soundfile
+numpy
+torchvision
+torchaudio
+colabcode

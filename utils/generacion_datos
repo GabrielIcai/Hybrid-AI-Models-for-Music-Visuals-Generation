@@ -1,0 +1,201 @@
+import os
+import librosa
+import numpy as np
+import matplotlib.pyplot as plt
+import librosa.display
+import csv
+import cv2
+import gc
+import soundfile as sf
+
+##################################################### CSV GÉNERO #########################################################
+
+# Definición de rutas (Canciones en local)
+carpeta_canciones = "C:\\Users\\administradorlocal\\OneDrive - Universidad Pontificia Comillas\\TFG\\Musica\\Generos\\Afro House"
+carpeta_salida = "espectrogramas_salida1"
+os.makedirs(carpeta_salida, exist_ok=True)
+
+# Generos disponibles
+generos_disponibles = ["Afro House", "Ambient", "Deep House", "Pop/Dance", "Techno", "Trance", "Progressive House"]
+genero_actual = "Afro House"
+duracion_fragmento = 5
+
+# Archivo CSV
+csv_file = os.path.join(carpeta_salida, "dataset_genero_completo.csv")
+
+def generar_espectrograma_caracteristicas(archivo_audio, nombre_archivo):
+    try:
+        y, sr = librosa.load(archivo_audio, sr=None)
+    except Exception as e:
+        print(f"Error al cargar {archivo_audio}: {e}")
+        return
+
+    duracion_muestras = duracion_fragmento * sr
+    num_fragmentos = len(y) // duracion_muestras
+
+    #Características   
+    for i in range(num_fragmentos):
+        inicio = i * duracion_muestras
+        fin = inicio + duracion_muestras
+        fragmento = y[inicio:fin]
+        rms = np.mean(librosa.feature.rms(y=fragmento).flatten())
+        zcr = librosa.feature.zero_crossing_rate(y=fragmento)[0, 0]
+        mean_abs_amplitude = np.mean(np.abs(fragmento))
+        crest_factor = np.max(np.abs(fragmento)) / rms if rms != 0 else 0
+        std_amplitude = np.std(fragmento)
+        spectral_centroid = np.mean(librosa.feature.spectral_centroid(y=fragmento, sr=sr))
+        spectral_bandwidth = np.mean(librosa.feature.spectral_bandwidth(y=fragmento, sr=sr))
+        spectral_rolloff = np.mean(librosa.feature.spectral_rolloff(y=fragmento, sr=sr))
+        spectral_flux = librosa.onset.onset_strength(y=fragmento, sr=sr).mean()
+
+        try:
+            vad = librosa.effects.split(y=fragmento, top_db=30)
+            vad_result = 1 if len(vad) > 0 else 0
+        except Exception as e:
+            print(f"Error en VAD para {archivo_audio} fragmento {i}: {e}")
+            vad_result = None
+
+        try:
+            spectrogram = np.abs(librosa.stft(fragmento))
+            spectral_variation = np.std(spectrogram, axis=1).mean()
+        except Exception as e:
+            print(f"Error en variacion espectral para {archivo_audio} fragmento {i}: {e}")
+            spectral_variation = None
+
+        # Tempo
+        try:
+            tempo = librosa.beat.tempo(y=fragmento, sr=sr)[0]
+        except Exception as e:
+            print(f"Error en la estimación de tempo para {archivo_audio} fragmento {i}: {e}")
+            tempo = None
+
+        espectrograma = librosa.feature.melspectrogram(y=fragmento, sr=sr, n_mels=128, fmax=8000)
+        espectrograma_db1 = librosa.power_to_db(espectrograma, ref=np.max)
+        if np.max(espectrograma_db1) == np.min(espectrograma_db1):
+            print("El espectrograma contiene valores constantes.")
+            continue
+        normalized_spectrogram = (espectrograma_db1 - np.min(espectrograma_db1)) / (np.max(espectrograma_db1) - np.min(espectrograma_db1))
+        normalized_spectogram = cv2.resize(normalized_spectrogram, (512, 512))
+        espectrograma_db = normalized_spectrogram
+
+        plt.figure(figsize=(2, 2))
+        librosa.display.specshow(espectrograma_db, sr=sr, hop_length=512, x_axis='time', y_axis='mel')
+        plt.axis('off')
+        nombre_salida = f"{nombre_archivo}_fragmento_{i}.png"
+        ruta_salida = os.path.join(carpeta_salida, nombre_salida)
+        plt.savefig(ruta_salida, bbox_inches='tight', pad_inches=0)
+        plt.close()
+
+        del fragmento, espectrograma, espectrograma_db1, normalized_spectrogram
+        gc.collect()
+
+        tiempo_inicio = librosa.samples_to_time(inicio, sr=sr)
+        tiempo_fin = librosa.samples_to_time(fin, sr=sr)
+
+        min_seg_inicio = f"{int(tiempo_inicio // 60)}:{int(tiempo_inicio % 60):02d}"
+        min_seg_fin = f"{int(tiempo_fin // 60)}:{int(tiempo_fin % 60):02d}"
+
+        generar_fila_csv(ruta_salida, genero_actual, rms, min_seg_inicio, min_seg_fin, zcr, mean_abs_amplitude, crest_factor, std_amplitude, spectral_centroid, spectral_bandwidth, spectral_rolloff, spectral_flux, vad_result, spectral_variation, tempo)
+        print(f"Fragmento {i} guardado en el CSV con género: {genero_actual}")
+
+def generar_fila_csv(ruta_salida, genero, rms, min_seg_inicio, min_seg_fin, zcr, mean_abs_amplitude, crest_factor, std_amplitude, spectral_centroid, spectral_bandwidth, spectral_rolloff, spectral_flux, vad_result, spectral_variation, tempo):
+    file_exists = os.path.isfile(csv_file)
+    fila = [ruta_salida] + [1 if g == genero else 0 for g in generos_disponibles] + [rms, min_seg_inicio, min_seg_fin, zcr, mean_abs_amplitude, crest_factor, std_amplitude, spectral_centroid, spectral_bandwidth, spectral_rolloff, spectral_flux, vad_result, spectral_variation, tempo]
+
+    with open(csv_file, mode="a", newline='', encoding="utf-8") as f:
+        writer = csv.writer(f)
+        if not file_exists:
+            headers = ["Ruta", *generos_disponibles, "RMS", "Tiempo Inicio", "Tiempo Fin", "ZCR", "Mean Absolute Amplitude", "Crest Factor", "Standard Deviation of Amplitude", "Spectral Centroid", "Spectral Bandwidth", "Spectral Roll-off", "Spectral Flux", "VAD", "Spectral Variation", "Tempo"]
+            writer.writerow(headers)
+        writer.writerow(fila)
+
+if __name__ == "__main__":
+    # Generar espectrogramas y registrar en el CSV
+    for archivo in os.listdir(carpeta_canciones):
+        if archivo.endswith(".mp3") or archivo.endswith(".wav"):
+            ruta_audio = os.path.join(carpeta_canciones, archivo)
+            nombre_archivo, _ = os.path.splitext(archivo)
+
+            generar_espectrograma_caracteristicas(ruta_audio, nombre_archivo)
+            print(f"Espectrogramas generados para {nombre_archivo}")
+
+############################################### CSV ESTRUCTURA Y EMOCIONES #########################################################
+
+# Definición de rutas
+carpeta_canciones = "C:\\Users\\administradorlocal\\OneDrive - Universidad Pontificia Comillas\\TFG\\Musica\\Generos\\estructura"
+carpeta_salida = "espectrogramas_salida_secciones_2"
+os.makedirs(carpeta_salida, exist_ok=True)
+
+# Generos disponibles
+secciones = ["Break", "Pre-Drop", "Drop"]
+seccion_actual = "Break"
+duracion_fragmento = 5  
+
+# Archivo CSV
+csv_file = os.path.join(carpeta_salida, "dataset_estructura 3.csv")
+
+def generar_espectrograma(archivo_audio, nombre_archivo):
+    y, sr = librosa.load(archivo_audio, sr=None)
+    duracion_muestras = duracion_fragmento * sr
+    num_fragmentos = len(y) // duracion_muestras
+    
+    for i in range(num_fragmentos):
+        inicio = i * duracion_muestras
+        fin = inicio + duracion_muestras
+        fragmento = y[inicio:fin]
+        
+        # Calcular RMS para el fragmento actual
+        rms = np.mean(librosa.feature.rms(y=fragmento).flatten())
+
+        # Mel Spectrogram
+        espectrograma = librosa.feature.melspectrogram(y=fragmento, sr=sr, n_mels=128, fmax=8000)
+        espectrograma_db1 = librosa.power_to_db(espectrograma, ref=np.max)
+        if np.max(espectrograma_db1) == np.min(espectrograma_db1):
+            print("El espectrograma contiene valores constantes.")
+            continue
+        normalized_spectrogram = (espectrograma_db1 - np.min(espectrograma_db1)) / (np.max(espectrograma_db1) - np.min(espectrograma_db1))
+        normalized_spectogram= cv2.resize(normalized_spectrogram, (512, 512))
+        espectrograma_db = normalized_spectrogram
+        # Crear imagen del espectrograma
+        plt.figure(figsize=(2, 2))
+        librosa.display.specshow(espectrograma_db, sr=sr, hop_length=512, x_axis='time', y_axis='mel')
+        plt.axis('off')
+        nombre_salida = f"{nombre_archivo}_fragmento_{i}.png"
+        ruta_salida = os.path.join(carpeta_salida, nombre_salida)
+        plt.savefig(ruta_salida, bbox_inches='tight', pad_inches=0)
+        plt.close()
+
+        # Calcular tiempo
+        tiempo_inicio = librosa.samples_to_time(inicio, sr=sr)
+        tiempo_fin = librosa.samples_to_time(fin, sr=sr)
+
+        # Convertir a formato minuto:segundo
+        min_seg_inicio = f"{int(tiempo_inicio // 60)}:{int(tiempo_inicio % 60):02d}"
+        min_seg_fin = f"{int(tiempo_fin // 60)}:{int(tiempo_fin % 60):02d}"
+
+        # Guardar en CSV
+        generar_fila_csv(ruta_salida, seccion_actual, rms, min_seg_inicio, min_seg_fin)
+        print(f"Fragmento {i} guardado en el CSV con la sección: {seccion_actual}")
+        
+        del fragmento, espectrograma, espectrograma_db1, normalized_spectrogram
+        gc.collect()
+        
+def generar_fila_csv(ruta_salida, seccion_actual, rms, min_seg_inicio, min_seg_fin):
+    file_exists = os.path.isfile(csv_file)
+    fila = [ruta_salida] + [1 if s == seccion_actual else 0 for s in secciones] + [min_seg_inicio, min_seg_fin]
+    
+    with open(csv_file, mode="a", newline='') as f:
+        writer = csv.writer(f)
+        if file_exists==0:
+            headers = ["Ruta", *secciones, "RMS", "Tiempo Inicio", "Tiempo Fin"]
+            writer.writerow(headers)
+        writer.writerow(fila)
+
+# Generar espectrogramas y registrar en el CSV
+for archivo in os.listdir(carpeta_canciones):
+    if archivo.endswith(".mp3") or archivo.endswith(".wav"): 
+        ruta_audio = os.path.join(carpeta_canciones, archivo)
+        nombre_archivo, _ = os.path.splitext(archivo)
+        
+        generar_espectrograma(ruta_audio, nombre_archivo)
+        print(f"Espectrogramas generados para {nombre_archivo}")
