@@ -50,6 +50,13 @@ def main():
     data = load_data(data_path)
     data["R0uta"] = data["R0uta"].str.replace("\\", "/")
     data["R0uta"] = base_path + data["R0uta"]
+    
+    def remove_data_prefix(path):
+        if path.startswith("/content/TFG/data/"):
+            return path.replace("/content/TFG/data/", "")
+        return path
+    data["R0uta"] = data["R0uta"].apply(remove_data_prefix)
+
     normalize_columns(data, columns)
     normalize_images(data, base_path)
     mean, std = mean_std_image(data)
