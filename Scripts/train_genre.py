@@ -1,8 +1,9 @@
 import os
 import sys
 
-src_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"))
-sys.path.append(src_path)
+repo_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../"))
+if repo_path not in sys.path:
+    sys.path.append(repo_path)
 
 
 from src.models.genre_model import CNN_LSTM_genre
@@ -37,7 +38,6 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 columns = ["Spectral Centroid", "Spectral Bandwidth", "Spectral Roll-off"]
 data_path = "data\espectrogramas_salida1\dataset_genero_completo.csv"
 base_path = "data\\"
-dir_out = "drive/MyDrive"
 hidden_size = 256
 additional_features_dim = 12
 num_classes = 6
@@ -65,13 +65,11 @@ def main():
 
     # DataLoader
     train_loader = DataLoader(
-        train_dataset, batch_size=16, collate_fn=collate_fn, shuffle=False
+        train_dataset, batch_size=8, collate_fn=collate_fn, shuffle=False
     )
     val_loader = DataLoader(
-        test_dataset, batch_size=16, collate_fn=collate_fn, shuffle=False
+        test_dataset, batch_size=8, collate_fn=collate_fn, shuffle=False
     )
-
-    os.makedirs(dir_out, exist_ok=True)
 
     # Modelo
     model = CNN_LSTM_genre(num_classes, additional_features_dim, hidden_size).to(device)

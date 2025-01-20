@@ -9,7 +9,7 @@ from PIL import Image
 def c_transform(mean, std):
     return transforms.Compose(
         [
-            transforms.Resize((155, 155)),
+            transforms.Resize((128, 128)),
             transforms.ToTensor(),
             transforms.Normalize(mean=mean, std=std),
         ]
@@ -34,7 +34,7 @@ class CustomDataset(torch.utils.data.Dataset):
 
     def __getitem__(self, idx):
         row = self.data.iloc[idx]
-        img_path = os.path.join(self.base_path, row["Ruta"])
+        img_path = os.path.join(self.base_path, row["R0uta"])
 
         try:
             image = Image.open(img_path).convert("RGB")

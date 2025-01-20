@@ -13,7 +13,7 @@ def normalize_columns(data, columns):
 
 def normalize_images(data, base_path):
     normalized_images = []
-    for img_path in data["Ruta"]:
+    for img_path in data["R0uta"]:
         try:
             img = cv2.imread(os.path.join(base_path, img_path))
             img = img / 255.0
@@ -31,7 +31,7 @@ def mean_std_image(data):
     transform = transforms.ToTensor()
 
     for idx, row in data.iterrows():
-        img_path = "data\\" + row["Ruta"]
+        img_path = "data\\" + row["R0uta"]
         try:
             image = Image.open(img_path).convert("RGB")
             batch_s = 1

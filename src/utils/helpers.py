@@ -24,7 +24,7 @@ from src.preprocessing import (
 def load_image_from_csv(csv_path, base_path, index):
 
     data = pd.read_csv(csv_path)
-    img_path = os.path.join(base_path, data.iloc[index]["Ruta"])
+    img_path = os.path.join(base_path, data.iloc[index]["R0uta"])
 
     if os.path.exists(img_path):
         try:
