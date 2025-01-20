@@ -18,3 +18,5 @@ numpy
 torchvision
 torchaudio
 colabcode
+pytest-cov
+SciPy
