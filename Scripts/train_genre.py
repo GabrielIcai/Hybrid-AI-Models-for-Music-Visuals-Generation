@@ -36,8 +36,8 @@ from sklearn.metrics import (
 # Parametros
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 columns = ["Spectral Centroid", "Spectral Bandwidth", "Spectral Roll-off"]
-data_path = "/content/TFG/data/espectrogramas_salida1/dataset_genero_completo.csv"
-base_path = "/content/TFG/data/"
+data_path = "/content/drive/MyDrive/TFG/data/espectrogramas_salida1/dataset_genero_completo.csv"
+base_path = "/content/drive/MyDrive/TFG/data/"
 hidden_size = 256
 additional_features_dim = 12
 num_classes = 6
