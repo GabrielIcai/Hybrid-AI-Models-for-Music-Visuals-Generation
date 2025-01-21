@@ -1,18 +1,17 @@
 import os
 import sys
-
+import pandas as pd
 repo_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../"))
 if repo_path not in sys.path:
     sys.path.append(repo_path)
 
 
-from src.models.genre_model import CNN_LSTM_genre
+from src.models.genre_model import CNN_LSTM_genre, forward
 from src.preprocessing import (
     CustomDataset,
     load_data,
     mean_std_image,
     normalize_columns,
-    normalize_images,
     split_dataset,
     c_transform,
 )
@@ -80,6 +79,10 @@ def main():
     train_data, test_data = split_dataset(data)
     print(f"Tamaño de train_data después de preprocesamiento: {len(train_data)}")
     print(f"Tamaño de test_data después de preprocesamiento: {len(test_data)}")
+    pd.set_option('display.max_rows', None)  # Mostrar todas las filas
+    pd.set_option('display.max_columns', None)  # Mostrar todas las columnas
+    # Mostrar el DataFrame completo
+    print(train_data)   
     train_data = train_data.reset_index(drop=True)
     test_data = test_data.reset_index(drop=True)
 
