@@ -13,6 +13,7 @@ def train(model, train_loader, optimizer, criterion, device):
 
         optimizer.zero_grad()
         outputs = model(images, additional_features)
+        print(f"Forma de labels: {labels.size()}")
         loss = criterion(outputs, labels)
         loss.backward()
         optimizer.step()
