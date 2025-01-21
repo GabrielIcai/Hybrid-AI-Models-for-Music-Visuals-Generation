@@ -11,11 +11,11 @@ def normalize_columns(data, columns):
     data[columns] = scaler.fit_transform(data[columns])
 
 
-def normalize_images(data, base_path):
+def normalize_images(data):
     normalized_images = []
     for img_path in data["Ruta"]:
         try:
-            img = cv2.imread(os.path.join(base_path, img_path))
+            img = cv2.imread(img_path)
             img = img / 255.0
             normalized_images.append(img)
         except Exception as e:

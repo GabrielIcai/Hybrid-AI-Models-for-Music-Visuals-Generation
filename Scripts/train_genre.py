@@ -36,6 +36,7 @@ from sklearn.metrics import (
 # Parametros
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 columns = ["Spectral Centroid", "Spectral Bandwidth", "Spectral Roll-off"]
+#Cargo las imagenes desde drive
 data_path = "/content/drive/MyDrive/TFG/data/espectrogramas_salida1/dataset_genero_completo.csv"
 base_path = "/content/drive/MyDrive/TFG/data/"
 hidden_size = 256
@@ -54,12 +55,19 @@ def main():
     print(data.head(10))
 
     normalize_columns(data, columns)
-    normalize_images(data, base_path)
+
+    print(data.head(4))
+
+    normalize_images(data)
     mean, std = mean_std_image(data)
+    
+    print(mean,std)
 
     # Defino las Transformaciones
     train_transform = c_transform(mean, std)
     test_transform = c_transform(mean, std)
+
+    print("Transformaciones definidas")
 
     # Train y Test
     train_data, test_data = split_dataset(data)
@@ -67,6 +75,8 @@ def main():
     # Transformo los datos a tensores
     train_dataset = CustomDataset(train_data, base_path, transform=train_transform)
     test_dataset = CustomDataset(test_data, base_path, transform=test_transform)
+    print("Datos transformados a tensores")
+    print(train_dataset[12], test_dataset[12])
 
     # DataLoader
     train_loader = DataLoader(
@@ -75,7 +85,8 @@ def main():
     val_loader = DataLoader(
         test_dataset, batch_size=8, collate_fn=collate_fn, shuffle=False
     )
-
+    print("DataLoaders creados")
+    
     # Modelo
     model = CNN_LSTM_genre(num_classes, additional_features_dim, hidden_size).to(device)
     criterion = nn.CrossEntropyLoss()
