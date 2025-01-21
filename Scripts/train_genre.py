@@ -52,6 +52,7 @@ def main():
     data = load_data(data_path)
     data["Ruta"] = data["Ruta"].str.replace("\\", "/")
     data["Ruta"] = base_path + data["Ruta"]
+    data["Ruta"] = data["Ruta"].str.replace("espectrogramas_salida1", "espectrogramas_normalizados")
 
     print(data.head(10))
     data = data.head(20)
