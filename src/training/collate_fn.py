@@ -59,7 +59,6 @@ def collate_fn(batch):
             # Convertir las listas de fragmentos en tensores
             images.append(torch.stack(song_images, dim=0))
             additional_features.append(torch.stack(song_additional_features, dim=0))
-            labels.append(torch.stack(song_labels, dim=0))
 
     # Convertir las listas en un solo tensor
     images = torch.stack(images, dim=0)  # (batch_size, 3, canales, altura, anchura)
