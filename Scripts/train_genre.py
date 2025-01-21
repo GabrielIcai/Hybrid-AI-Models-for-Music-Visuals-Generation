@@ -78,7 +78,8 @@ def main():
 
     # Train y Test
     train_data, test_data = split_dataset(data)
-    print(len(train_data), len(test_data))
+    print(f"Tamaño de train_data después de preprocesamiento: {len(train_data)}")
+    print(f"Tamaño de test_data después de preprocesamiento: {len(test_data)}")
     train_data = train_data.reset_index(drop=True)
     test_data = test_data.reset_index(drop=True)
 
