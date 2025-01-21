@@ -23,7 +23,8 @@ def train(model, train_loader, optimizer, criterion, device):
         running_loss += loss.item()
 
         _, predicted = torch.max(outputs.data, 1)
-        correct += (predicted == labels).sum().item()
+        _, labels_max = torch.max(labels, 1)
+        correct += (predicted == labels_max).sum().item()
         total += labels.size(0)
         accuracy = 100 * correct / total
 
@@ -35,6 +36,7 @@ def validate(model, test_loader, criterion, device):
     val_loss = 0.0
     val_preds = []
     val_labels = []
+
     with torch.no_grad():  # No se calculan los gradientes, es decir no se actualizan los pesos.
         for batch in test_loader:
             images, additional_features, labels = batch
@@ -45,8 +47,11 @@ def validate(model, test_loader, criterion, device):
             outputs = model(images, additional_features)
             loss = criterion(outputs, labels)
             val_loss += loss.item()
+
+            # Predicciones
             preds = torch.argmax(outputs, dim=1)
-            preds = torch.argmax(outputs, dim=1)
+
             val_preds.extend(preds.cpu().numpy())
             val_labels.extend(labels.cpu().numpy())
+
     return val_loss / len(test_loader), val_preds, val_labels
