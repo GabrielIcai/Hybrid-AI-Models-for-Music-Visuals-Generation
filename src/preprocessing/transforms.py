@@ -14,7 +14,7 @@ def normalize_columns(data, columns):
 def normalize_images(data,normalized_folder):
     os.makedirs(normalized_folder, exist_ok=True)
     normalized_images = []
-    for i, img_path in data["Ruta"]:
+    for i, img_path in enumerate(data["Ruta"]):
         try:
             img = cv2.imread(img_path)
             if img is None:
