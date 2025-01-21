@@ -31,7 +31,7 @@ def mean_std_image(data):
     transform = transforms.ToTensor()
 
     for idx, row in data.iterrows():
-        img_path = "data\\" + row["R0uta"]
+        img_path = + row["R0uta"]
         try:
             image = Image.open(img_path).convert("RGB")
             batch_s = 1
