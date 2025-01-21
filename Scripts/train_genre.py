@@ -51,6 +51,7 @@ def main():
     data["Ruta"] = data["Ruta"].str.replace("\\", "/")
     data["Ruta"] = base_path + data["Ruta"]
 
+    print(data.head(10))
 
     normalize_columns(data, columns)
     normalize_images(data, base_path)
