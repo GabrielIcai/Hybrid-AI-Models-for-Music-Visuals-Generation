@@ -1,1 +1,1 @@
-from .genre_model import CNN_LSTM_genre
+from .genre_model import CNN_LSTM_genre, forward
