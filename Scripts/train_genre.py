@@ -6,7 +6,7 @@ if repo_path not in sys.path:
     sys.path.append(repo_path)
 
 
-from src.models.genre_model import CNN_LSTM_genre, forward
+from src.models.genre_model import CNN_LSTM_genre
 from src.preprocessing import (
     CustomDataset,
     load_data,
