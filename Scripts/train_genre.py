@@ -38,7 +38,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Usando dispositivo: {device}")
 columns = ["Spectral Centroid", "Spectral Bandwidth", "Spectral Roll-off"]
 #Cargo las imagenes desde drive
-data_path = "/content/drive/MyDrive/TFG/images/espectrogrmas_normalizados/dataset_genero_completo.csv"
+data_path = "/content/drive/MyDrive/TFG/images/espectrogramas_normalizados/dataset_genero_completo.csv"
 base_path = "/content/drive/MyDrive/TFG/images/"
 hidden_size = 256
 additional_features_dim = 12
