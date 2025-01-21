@@ -34,7 +34,7 @@ class CustomDataset(torch.utils.data.Dataset):
 
     def __getitem__(self, idx):
         row = self.data.iloc[idx]
-        img_path = os.path.join(self.base_path, row["R0uta"])
+        img_path = os.path.join(self.base_path, row["Ruta"])
 
         try:
             image = Image.open(img_path).convert("RGB")

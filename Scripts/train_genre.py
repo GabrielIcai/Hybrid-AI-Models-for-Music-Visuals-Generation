@@ -48,8 +48,8 @@ epochs = 50
 def main():
     # Preprocesado
     data = load_data(data_path)
-    data["R0uta"] = data["R0uta"].str.replace("\\", "/")
-    data["R0uta"] = base_path + data["R0uta"]
+    data["Ruta"] = data["Ruta"].str.replace("\\", "/")
+    data["Ruta"] = base_path + data["Ruta"]
 
 
     normalize_columns(data, columns)
