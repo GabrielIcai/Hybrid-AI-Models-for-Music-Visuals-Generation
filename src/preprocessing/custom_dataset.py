@@ -71,7 +71,7 @@ class CustomDataset(torch.utils.data.Dataset):
                 row.iloc[list(range(1, 5)) + list(range(6, 8))].values.astype(float),
                 dtype=torch.float32,
             )
-            return image, additional_features, labels
+            return image, additional_features, labels, img_path
 
         except Exception as e:
             raise RuntimeError(

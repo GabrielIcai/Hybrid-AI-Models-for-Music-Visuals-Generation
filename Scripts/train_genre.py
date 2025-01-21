@@ -87,7 +87,7 @@ def main():
     train_dataset = CustomDataset(train_data, base_path, transform=train_transform)
     test_dataset = CustomDataset(test_data, base_path, transform=test_transform)
     print("Datos transformados a tensores")
-    print(train_dataset, test_dataset)
+    print(train_dataset.head(), test_dataset.head())
 
     # DataLoader
     train_loader = DataLoader(
