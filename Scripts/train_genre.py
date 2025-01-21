@@ -38,8 +38,8 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Usando dispositivo: {device}")
 columns = ["Spectral Centroid", "Spectral Bandwidth", "Spectral Roll-off"]
 #Cargo las imagenes desde drive
-data_path = "/content/drive/MyDrive/TFG/data/espectrogramas_salida1/dataset_genero_completo.csv"
-base_path = "/content/drive/MyDrive/TFG/data/"
+data_path = "/content/drive/MyDrive/TFG/images/espectrogrmas_normalizados/dataset_genero_completo.csv"
+base_path = "/content/drive/MyDrive/TFG/images/"
 hidden_size = 256
 additional_features_dim = 12
 num_classes = 6
@@ -48,7 +48,23 @@ epochs = 50
 
 
 def main():
-    data=load_data(data_path)
+     # Preprocesado
+    data = load_data(data_path)
+    data["Ruta"] = data["Ruta"].str.replace("\\", "/")
+    data["Ruta"] = base_path + data["Ruta"]
+
+    print(data.head(10))
+    data = data.head(20)
+
+    normalize_columns(data, columns)
+
+    print(data.head(4))
+
+    for img_path in data["Ruta"]:
+        if not os.path.exists(img_path):
+            print(f"Ruta no encontrada: {img_path}")
+    print("Rutas comprobadas")
+
     mean, std = mean_std_image(data)
     
     print(mean,std)
