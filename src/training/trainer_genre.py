@@ -36,6 +36,8 @@ def validate(model, test_loader, criterion, device):
     val_loss = 0.0
     val_preds = []
     val_labels = []
+    correct = 0
+    total = 0
 
     with torch.no_grad():  # No se calculan los gradientes, es decir no se actualizan los pesos.
         for batch in test_loader:
@@ -53,5 +55,8 @@ def validate(model, test_loader, criterion, device):
 
             val_preds.extend(preds.cpu().numpy())
             val_labels.extend(labels.cpu().numpy())
+            correct += (preds == labels).sum().item()
+            total += labels.size(0)
+            val_accuracy = 100 * correct / total if total > 0 else 0
 
-    return val_loss / len(test_loader), val_preds, val_labels
+    return val_loss / len(test_loader), val_accuracy, val_preds, val_labels
