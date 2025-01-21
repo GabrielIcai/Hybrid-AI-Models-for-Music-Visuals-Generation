@@ -35,6 +35,7 @@ from sklearn.metrics import (
 )
 # Parametros
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print(f"Usando dispositivo: {device}")
 columns = ["Spectral Centroid", "Spectral Bandwidth", "Spectral Roll-off"]
 #Cargo las imagenes desde drive
 data_path = "/content/drive/MyDrive/TFG/data/espectrogramas_salida1/dataset_genero_completo.csv"
@@ -57,6 +58,10 @@ def main():
     normalize_columns(data, columns)
 
     print(data.head(4))
+
+    for img_path in data["Ruta"]:
+        if not os.path.exists(img_path):
+            print(f"Ruta no encontrada: {img_path}")
 
     normalize_images(data)
     mean, std = mean_std_image(data)
@@ -86,7 +91,7 @@ def main():
         test_dataset, batch_size=8, collate_fn=collate_fn, shuffle=False
     )
     print("DataLoaders creados")
-    
+
     # Modelo
     model = CNN_LSTM_genre(num_classes, additional_features_dim, hidden_size).to(device)
     criterion = nn.CrossEntropyLoss()
