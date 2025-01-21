@@ -34,6 +34,8 @@ class CustomDataset(torch.utils.data.Dataset):
         return len(self.data)
 
     def __getitem__(self, idx):
+        if idx < 0 or idx >= len(self.data):
+            raise IndexError(f"Índice {idx} fuera de rango")
         row = self.data.iloc[idx]
         ruta=row["Ruta"]
         img_path = os.path.join(self.base_path, ruta)
