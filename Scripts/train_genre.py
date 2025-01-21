@@ -79,6 +79,8 @@ def main():
     # Train y Test
     train_data, test_data = split_dataset(data)
     print(len(train_data), len(test_data))
+    train_data = train_data.reset_index(drop=True)
+    test_data = test_data.reset_index(drop=True)
 
     # Transformo los datos a tensores
     train_dataset = CustomDataset(train_data, base_path, transform=train_transform)
