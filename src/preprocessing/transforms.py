@@ -11,17 +11,31 @@ def normalize_columns(data, columns):
     data[columns] = scaler.fit_transform(data[columns])
 
 
-def normalize_images(data):
+def normalize_images(data,normalized_folder):
+    os.makedirs(normalized_folder, exist_ok=True)
     normalized_images = []
-    for img_path in data["Ruta"]:
+    for i, img_path in data["Ruta"]:
         try:
             img = cv2.imread(img_path)
+            if img is None:
+                print(f"Error al leer la imagen: {img_path}")
+                continue
             img = img / 255.0
-            normalized_images.append(img)
+            filename = os.path.basename(img_path)
+            normalized_path = os.path.join(normalized_folder, filename)
+
+            # Guardar la imagen normalizada
+            cv2.imwrite(normalized_path, (img * 255).astype('uint8'))
+
+            if (i + 1) % 10 == 0:
+                print(f"Procesadas {i + 1}/{len(data)} imágenes")
+        except Exception as e:
+            print(f"Error normalizing image {img_path}: {e}")
+            if (i + 1) % 10 == 0:
+                print(f"Procesadas {i + 1}/{len(data)} imágenes")
         except Exception as e:
             print(f"Error normalizing image {img_path}: {e}")
     return np.array(normalized_images)
-
 
 # Para calcular la media y varianza y luego aplicarlas en el tranforms
 def mean_std_image(data):

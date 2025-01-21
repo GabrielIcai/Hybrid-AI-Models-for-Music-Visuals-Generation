@@ -48,23 +48,7 @@ epochs = 50
 
 
 def main():
-    # Preprocesado
-    data = load_data(data_path)
-    data["Ruta"] = data["Ruta"].str.replace("\\", "/")
-    data["Ruta"] = base_path + data["Ruta"]
-
-    print(data.head(10))
-
-    normalize_columns(data, columns)
-
-    print(data.head(4))
-
-    for img_path in data["Ruta"]:
-        if not os.path.exists(img_path):
-            print(f"Ruta no encontrada: {img_path}")
-    print("Rutas comprobadas")
-    
-    normalize_images(data)
+    data=load_data(data_path)
     mean, std = mean_std_image(data)
     
     print(mean,std)
