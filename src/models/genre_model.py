@@ -41,15 +41,18 @@ class CNN_LSTM_genre(nn.Module):
 
 
     def forward(self, x, additional_features):
-    
+
         batch_size, seq_len, channels, height, width = x.size()
-    
+
         # Primero aplicamos la CNN a cada fragmento de una secuencia de tres:
+        print(f"Forma de x antes de la CNN: {x.size()}")
         x = x.view(seq_len * batch_size, channels, height, width)
         x = self.cnn(x)  # Bloque Cnn
         x = x.view(batch_size, seq_len, -1)
+        print(f"Forma de x después de la CNN: {x.size()}")
         # Añado las caracteristicas adicionales
         x = torch.cat((x, additional_features), dim=-1)
+        print(f"Forma de x después de concatenar características adicionales: {x.size()}")
         # LSTM
         lstm_out, _ = self.lstm(x)
         # Capa final
