@@ -62,7 +62,8 @@ def main():
     for img_path in data["Ruta"]:
         if not os.path.exists(img_path):
             print(f"Ruta no encontrada: {img_path}")
-
+    print("Rutas comprobadas")
+    
     normalize_images(data)
     mean, std = mean_std_image(data)
     
