@@ -40,18 +40,18 @@ class CNN_LSTM_genre(nn.Module):
         self.fc = nn.Linear(256, num_classes)
 
 
-def forward(self, x, additional_features):
-
-    batch_size, seq_len, channels, height, width = x.size()
-
-    # Primero aplicamos la CNN a cada fragmento de una secuencia de tres:
-    x = x.view(seq_len * batch_size, channels, height, width)
-    x = self.cnn(x)  # Bloque Cnn
-    x = x.view(batch_size, seq_len, -1)
-    # Añado las caracteristicas adicionales
-    x = torch.cat((x, additional_features), dim=-1)
-    # LSTM
-    lstm_out, _ = self.lstm(x)
-    # Capa final
-    out = self.fc(lstm_out[:, -1, :])
-    return out
+    def forward(self, x, additional_features):
+    
+        batch_size, seq_len, channels, height, width = x.size()
+    
+        # Primero aplicamos la CNN a cada fragmento de una secuencia de tres:
+        x = x.view(seq_len * batch_size, channels, height, width)
+        x = self.cnn(x)  # Bloque Cnn
+        x = x.view(batch_size, seq_len, -1)
+        # Añado las caracteristicas adicionales
+        x = torch.cat((x, additional_features), dim=-1)
+        # LSTM
+        lstm_out, _ = self.lstm(x)
+        # Capa final
+        out = self.fc(lstm_out[:, -1, :])
+        return out
