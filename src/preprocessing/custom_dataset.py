@@ -26,6 +26,7 @@ def c_transform(mean, std):
 class CustomDataset(torch.utils.data.Dataset):
     def __init__(self, data, base_path, transform):
         self.data = data
+        self.data = data.reset_index(drop=True)
         self.base_path = base_path
         self.transform = transform
 
@@ -34,7 +35,8 @@ class CustomDataset(torch.utils.data.Dataset):
 
     def __getitem__(self, idx):
         row = self.data.iloc[idx]
-        img_path = os.path.join(self.base_path, row["Ruta"])
+        ruta=row["Ruta"]
+        img_path = os.path.join(self.base_path, ruta)
 
         try:
             image = Image.open(img_path).convert("RGB")

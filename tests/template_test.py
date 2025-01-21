@@ -47,14 +47,14 @@ def test_custom_dataset():
     base_path = "data\\"
     dataset = CustomDataset(small_df, base_path, transform)
 
-    with patch("PIL.Image.open", return_value=Image.new("RGB", (155, 155))):
+    with patch("PIL.Image.open", return_value=Image.new("RGB", (128, 128))):
 
         assert len(dataset) == 20
 
         image, additional_features, labels = dataset[2]
 
         assert isinstance(image, torch.Tensor)
-        assert image.shape == (3, 155, 155)
+        assert image.shape == (3, 128, 128)
 
         assert isinstance(labels, torch.Tensor)
         assert labels.shape == (6,)
@@ -88,7 +88,7 @@ def test_collate_fn_with_real_data():
     dataset = CustomDataset(small_df, base_path, transform)
 
     # Creo un lote simulando un DataLoader
-    with patch("PIL.Image.open", return_value=Image.new("RGB", (155, 155))):
+    with patch("PIL.Image.open", return_value=Image.new("RGB", (128, 128))):
         batch = [
             (
                 dataset[i][0],
@@ -105,8 +105,8 @@ def test_collate_fn_with_real_data():
         5,
         3,
         3,
-        155,
-        155,
+        128,
+        128,
     )  # 5 canciones, 3 fragmentos por canción, canales y dimensiones
     assert additional_features.shape == (
         5,
