@@ -4,6 +4,10 @@ import cv2
 import os
 from torchvision import transforms
 from PIL import Image
+from tqdm import tqdm
+import torch
+import gc
+
 
 
 def normalize_columns(data, columns):
@@ -37,24 +41,43 @@ def normalize_images(data,normalized_folder):
             print(f"Error normalizing image {img_path}: {e}")
     return np.array(normalized_images)
 
-# Para calcular la media y varianza y luego aplicarlas en el tranforms
-def mean_std_image(data):
-    mean = 0.0
-    std = 0.0
-    n_s = 0
-    transform = transforms.ToTensor()
 
-    for idx, row in data.iterrows():
-        img_path =row["Ruta"]
-        try:
-            image = Image.open(img_path).convert("RGB")
-            batch_s = 1
-            n_s += batch_s
-            tensor_image = transform(image)
-            mean += tensor_image.mean([1, 2])
-            std += tensor_image.std([1, 2])
-        except Exception as e:
-            print(f"Error {img_path}: {e}")
-    mean = mean / n_s
-    std = std / n_s
-    return mean, std
+def mean_std_image(data, batch_size=100):
+    transform = transforms.ToTensor()
+    total_mean = torch.zeros(3)
+    total_std = torch.zeros(3)
+    total_pixels = 0
+
+    for i in tqdm(range(0, len(data), batch_size), desc="Calculando mean/std"):
+        batch_paths = data["Ruta"][i:i + batch_size]
+        batch_means = []
+        batch_stds = []
+        batch_pixels = 0
+
+        for img_path in batch_paths:
+            try:
+                image = Image.open(img_path).convert("RGB")
+                tensor_image = transform(image)
+                batch_pixels += tensor_image.shape[1] * tensor_image.shape[2]  # Total de píxeles por canal
+                batch_means.append(tensor_image.mean([1, 2]))
+                batch_stds.append(tensor_image.std([1, 2]))
+            except Exception as e:
+                print(f"Error en {img_path}: {e}")
+
+        if batch_means:
+            batch_means = torch.stack(batch_means).mean(0)
+            batch_stds = torch.stack(batch_stds).mean(0)
+
+            # GLOBAL
+            total_mean += batch_means * batch_pixels
+            total_std += batch_stds * batch_pixels
+            total_pixels += batch_pixels
+
+        # Liberar memoria
+        gc.collect()
+
+    # Calcular media y std globales
+    global_mean = total_mean / total_pixels
+    global_std = total_std / total_pixels
+
+    return global_mean, global_std
