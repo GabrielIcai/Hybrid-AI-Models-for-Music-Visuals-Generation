@@ -127,9 +127,8 @@ def main():
         val_f1 = f1_score(val_labels, val_preds, average="weighted")
         val_precision = precision_score(val_labels, val_preds, average="weighted")
         val_recall = recall_score(val_labels, val_preds, average="weighted")
-        val_auc = roc_auc_score(
-            val_labels, val_preds, average="weighted", multi_class="ovr"
-        )
+        val_auc = roc_auc_score(val_labels, val_preds, average="weighted", multi_class="ovr")
+        
         epochs_list.append(epoch + 1)
         train_losses.append(train_loss)
         val_losses.append(val_loss)
@@ -148,14 +147,6 @@ def main():
             f"Val Recall: {val_recall:.4f} | Val AUC: {val_auc:.4f}"
         )
 
-        with open("metrics.txt", "a") as f:
-            f.write(
-                f"Epoch {epoch + 1}: "
-                f"Train Loss: {train_loss:.4f} | Train Accuracy: {train_accuracy:.4f} | "
-                f"Val Loss: {val_loss:.4f} | Val Accuracy: {val_accuracy:.4f} | "
-                f"Val F1: {val_f1:.4f} | Val Precision: {val_precision:.4f} | "
-                f"Val Recall: {val_recall:.4f} | Val AUC: {val_auc:.4f}\n"
-            )
     metrics_df = pd.DataFrame({
     'Epoch': epochs_list,
     'Train Loss': train_losses,
