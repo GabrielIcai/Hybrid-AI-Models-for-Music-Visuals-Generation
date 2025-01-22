@@ -43,10 +43,21 @@ hidden_size = 256
 additional_features_dim = 12
 num_classes = 6
 learning_rate = 0.001
-epochs = 50
+epochs = 25
 
 
 def main():
+
+    epochs_list = []
+    train_losses = []
+    val_losses = []
+    train_accuracies = []
+    val_accuracies = []
+    val_f1_scores = []
+    val_precisions = []
+    val_recalls = []
+    val_aucs = []
+
      # Preprocesado
     data = load_data(data_path)
     data["Ruta"] = data["Ruta"].str.replace("\\", "/")
@@ -122,6 +133,15 @@ def main():
         val_auc = roc_auc_score(
             val_labels, val_preds, average="weighted", multi_class="ovr"
         )
+        epochs_list.append(epoch + 1)
+        train_losses.append(train_loss)
+        val_losses.append(val_loss)
+        train_accuracies.append(train_accuracy)
+        val_accuracies.append(val_accuracy)
+        val_f1_scores.append(val_f1)
+        val_precisions.append(val_precision)
+        val_recalls.append(val_recall)
+        val_aucs.append(val_auc)
 
         print(f"Epoch {epoch + 1}/{epochs}")
         print(
@@ -139,8 +159,21 @@ def main():
                 f"Val F1: {val_f1:.4f} | Val Precision: {val_precision:.4f} | "
                 f"Val Recall: {val_recall:.4f} | Val AUC: {val_auc:.4f}\n"
             )
+    metrics_df = pd.DataFrame({
+    'Epoch': epochs_list,
+    'Train Loss': train_losses,
+    'Val Loss': val_losses,
+    'Train Accuracy': train_accuracies,
+    'Val Accuracy': val_accuracies,
+    'Val F1': val_f1_scores,
+    'Val Precision': val_precisions,
+    'Val Recall': val_recalls,
+    'Val AUC': val_aucs
+})
+    #Guardo Métricas
+    metrics_df.to_csv("/content/drive/MyDrive/TFG/src/models/training_metrics_genre.csv", index=False)
 
-    # Guardar el modelo
+    # Guardo el modelo
     model_save_path = "/content/drive/MyDrive/TFG/src/models/cnn_lstm_genre.pth"
     torch.save(model.state_dict(), model_save_path)
     print(f"Modelo guardado en {model_save_path}")
