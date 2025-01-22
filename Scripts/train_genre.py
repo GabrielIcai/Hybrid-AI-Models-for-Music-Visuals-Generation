@@ -171,10 +171,10 @@ def main():
     'Val AUC': val_aucs
 })
     #Guardo Métricas
-    metrics_df.to_csv("/content/drive/MyDrive/TFG/src/models/training_metrics_genre.csv", index=False)
+    metrics_df.to_csv("/content/drive/MyDrive/TFG/models/training_metrics_genre.csv", index=False)
 
     # Guardo el modelo
-    model_save_path = "/content/drive/MyDrive/TFG/src/models/cnn_lstm_genre.pth"
+    model_save_path = "/content/drive/MyDrive/TFG/models/cnn_lstm_genre.pth"
     torch.save(model.state_dict(), model_save_path)
     print(f"Modelo guardado en {model_save_path}")
 
