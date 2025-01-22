@@ -4,8 +4,8 @@ import torch
 def train(model, train_loader, optimizer, criterion, device):
     model.train()
     running_loss = 0.0
-    correct=0
-    total=0
+    correct = 0
+    total = 0
 
     for batch in train_loader:
         images, additional_features, labels = batch
@@ -17,17 +17,17 @@ def train(model, train_loader, optimizer, criterion, device):
         outputs = model(images, additional_features)
 
         if labels.dim() > 1:
-            labels = torch.argmax(labels, dim=1) 
+            labels = torch.argmax(labels, dim=1)  # Convertir a índices
 
-        #Calculo perdida
         loss = criterion(outputs, labels)
         loss.backward()
         optimizer.step()
         running_loss += loss.item()
 
+        # Predicciones
         _, predicted = torch.max(outputs.data, 1)
-        _, labels_max = torch.max(labels, 1)
-        correct += (predicted == labels_max).sum().item()
+
+        correct += (predicted == labels).sum().item()
         total += labels.size(0)
         accuracy = 100 * correct / total
 
