@@ -65,7 +65,6 @@ def main():
     data["Ruta"] = data["Ruta"].str.replace("espectrogramas_salida1", "espectrogramas_normalizados")
 
     print(data.head(10))
-    data = data.head(20)
 
     normalize_columns(data, columns)
 
