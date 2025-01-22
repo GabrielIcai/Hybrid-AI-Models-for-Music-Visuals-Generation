@@ -28,11 +28,8 @@ def main():
     data["Ruta"] = base_path + data["Ruta"]
 
     print(data.head(10))
-    data = data.head(20)
 
     normalize_columns(data, columns)
-
-    print(data.head(4))
 
     for img_path in data["Ruta"]:
         if not os.path.exists(img_path):
