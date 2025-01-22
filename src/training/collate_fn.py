@@ -29,7 +29,7 @@ def collate_fn(batch):
     labels = []
 
     for song_name, fragments in grouped_by_song.items():
-
+        print(f"Canción: {song_name}, Número de fragmentos: {len(fragments)}")
         # Padding
         while len(fragments) % 3 != 0:
             fragments.append(
@@ -39,6 +39,7 @@ def collate_fn(batch):
                     torch.zeros_like(fragments[0][2]),
                 )
             )
+        print(f"Canción: {song_name}, Fragmentos después de padding: {len(fragments)}")
 
         # Crear ventanas de 3 fragmentos consecutivos
         for i in range(0, len(fragments), 3):
@@ -55,7 +56,7 @@ def collate_fn(batch):
             
             song_labels = song_labels[0]  # Uso la etiqueta del primer fragmento
             labels.append(song_labels)
-
+            print(f"Ventana creada para canción {song_name}: Fragmentos {i}-{i+2}")
             # Convertir las listas de fragmentos en tensores
             images.append(torch.stack(song_images, dim=0))
             additional_features.append(torch.stack(song_additional_features, dim=0))
