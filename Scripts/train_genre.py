@@ -74,7 +74,7 @@ def main():
         if not os.path.exists(img_path):
             print(f"Ruta no encontrada: {img_path}")
     print("Rutas comprobadas")
-    data=data.head(100)
+    data=data.head(600)
     mean, std = mean_std_image(data)
     
     print(mean,std)
