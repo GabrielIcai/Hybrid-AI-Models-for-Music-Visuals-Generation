@@ -39,6 +39,8 @@ columns = ["Spectral Centroid", "Spectral Bandwidth", "Spectral Roll-off"]
 #Cargo las imagenes desde drive
 data_path = "/content/drive/MyDrive/TFG/images/espectrogramas_normalizados/dataset_genero_completo.csv"
 base_path = "/content/drive/MyDrive/TFG/images/"
+mean=[0.676956295967102, 0.2529653012752533, 0.4388839304447174]
+std=[0.21755781769752502, 0.15407244861125946, 0.07557372003793716]
 hidden_size = 256
 additional_features_dim = 12
 num_classes = 6
@@ -74,10 +76,7 @@ def main():
         if not os.path.exists(img_path):
             print(f"Ruta no encontrada: {img_path}")
     print("Rutas comprobadas")
-    mean, std = mean_std_image(data)
     
-    print(mean,std)
-
     # Defino las Transformaciones
     train_transform = c_transform(mean, std)
     test_transform = c_transform(mean, std)
