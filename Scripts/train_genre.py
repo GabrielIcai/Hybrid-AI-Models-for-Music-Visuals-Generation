@@ -141,7 +141,7 @@ def main():
             )
 
     # Guardar el modelo
-    model_save_path = "/content/TFG/src/models/cnn_lstm_genre.pth"
+    model_save_path = "/content/drive/MyDrive/TFG/src/models/cnn_lstm_genre.pth"
     torch.save(model.state_dict(), model_save_path)
     print(f"Modelo guardado en {model_save_path}")
 
