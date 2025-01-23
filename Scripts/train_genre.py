@@ -44,9 +44,9 @@ std=[0.21755781769752502, 0.15407244861125946, 0.07557372003793716]
 hidden_size = 256
 additional_features_dim = 12
 num_classes = 6
-learning_rate = 0.001
-epochs = 25
-
+learning_rate = 0.008
+epochs = 50
+weight_decay= 1e-4
 
 def main():
 
@@ -100,31 +100,32 @@ def main():
 
     # DataLoader
     train_loader = DataLoader(
-        train_dataset, batch_size=32, collate_fn=collate_fn, shuffle=False
+        train_dataset, batch_size=128, collate_fn=collate_fn, shuffle=False, num_workers=2, pin_memory=True
     )
     val_loader = DataLoader(
-        test_dataset, batch_size=32, collate_fn=collate_fn, shuffle=False
+        test_dataset, batch_size=128, collate_fn=collate_fn, shuffle=False, num_workers=2, pin_memory=True
     )
     print("DataLoaders creados")
 
     # Modelo
     model = CNN_LSTM_genre(num_classes, additional_features_dim, hidden_size).to(device)
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+    optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
+
+    #Early stopping
+    patience = 5  
+    best_val_loss = float("inf")
+    early_stop_counter = 0
 
     # Entrenamiento
     for epoch in range(epochs):
+    
         train_loss, train_accuracy = train(
             model, train_loader, optimizer, criterion, device
         )
         val_loss, val_accuracy, val_preds, val_labels = validate(
             model, val_loader, criterion, device
-        )
-        
-        #Comprobaciones de GPU
-        print(torch.cuda.is_available())
-        print(torch.cuda.current_device())
-        print(torch.cuda.get_device_name(0))    
+        )   
 
         val_accuracy = accuracy_score(val_labels, val_preds)
         val_f1 = f1_score(val_labels, val_preds, average="weighted")
@@ -149,6 +150,21 @@ def main():
             f"Val F1: {val_f1:.4f} | Val Precision: {val_precision:.4f} | "
             f"Val Recall: {val_recall:.4f} | Val AUC: {val_auc:.4f}"
         )
+        
+        if val_loss < best_val_loss:
+            best_val_loss = val_loss
+            early_stop_counter = 0
+            # Guarda el mejor modelo
+            model_save_path = "/content/drive/MyDrive/TFG/models/best_cnn_lstm_genre.pth"
+            torch.save(model.state_dict(), model_save_path)
+            print(f"Mejor modelo guardado en {model_save_path}")
+        else:
+            early_stop_counter += 1
+            print(f"No mejora en validación por {early_stop_counter} época(s)")
+
+        if early_stop_counter >= patience:
+            print("Early stopping activado")
+            break
 
     metrics_df = pd.DataFrame({
     'Epoch': epochs_list,

@@ -22,6 +22,11 @@ def train(model, train_loader, optimizer, criterion, device):
             labels = torch.argmax(labels, dim=1)  # Convertir a índices
             print(f"Labels (after conversion to indices): {labels}")
             print(f"Labels shape (after conversion): {labels.size()}")
+            
+        #Comprobaciones de GPU
+        print(torch.cuda.is_available())
+        print(torch.cuda.current_device())
+        print(torch.cuda.get_device_name(0)) 
 
         loss = criterion(outputs, labels)
         loss.backward()
