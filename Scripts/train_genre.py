@@ -71,7 +71,6 @@ def main():
     normalize_columns(data, columns)
     data= data.iloc[1976:2601]
     print(data.head(4))
-    data=data(1000)
     for img_path in data["Ruta"]:
         if not os.path.exists(img_path):
             print(f"Ruta no encontrada: {img_path}")
