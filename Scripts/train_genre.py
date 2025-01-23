@@ -1,6 +1,7 @@
 import os
 import sys
 import pandas as pd
+import numpy as np
 repo_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../"))
 if repo_path not in sys.path:
     sys.path.append(repo_path)
@@ -124,13 +125,17 @@ def main():
         )
         val_loss, val_accuracy, val_preds, val_labels, val_probs = validate(
             model, val_loader, criterion, device
-        )   
+        )
+        
+        print(f"val_labels shape: {np.array(val_labels).shape}")
+        print(f"val_preds shape: {np.array(val_preds).shape}")
+        print(f"val_probs shape: {np.array(val_probs).shape}")
 
         val_accuracy = accuracy_score(val_labels, val_preds)
-        val_f1 = f1_score(val_labels, val_preds, average="weighted")
-        val_precision = precision_score(val_labels, val_probs, average="weighted")
+        val_precision = precision_score(val_labels, val_preds, average="weighted")
         val_recall = recall_score(val_labels, val_preds, average="weighted")
-        val_auc = roc_auc_score(val_labels, val_preds, average="weighted", multi_class="ovr")
+        val_f1 = f1_score(val_labels, val_preds, average="weighted")
+        val_auc = roc_auc_score(val_labels, val_probs, average="weighted", multi_class="ovr")
         
         epochs_list.append(epoch + 1)
         train_losses.append(train_loss)
