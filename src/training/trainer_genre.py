@@ -15,9 +15,13 @@ def train(model, train_loader, optimizer, criterion, device):
 
         optimizer.zero_grad()
         outputs = model(images, additional_features)
+        print("labels before conversion")
+        print(labels)
 
         if labels.dim() > 1:
             labels = torch.argmax(labels, dim=1)  # Convertir a índices
+            print(f"Labels (after conversion to indices): {labels}")
+            print(f"Labels shape (after conversion): {labels.size()}")
 
         loss = criterion(outputs, labels)
         loss.backward()
