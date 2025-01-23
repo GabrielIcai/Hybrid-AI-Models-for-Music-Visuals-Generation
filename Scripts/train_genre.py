@@ -67,7 +67,7 @@ def main():
     data["Ruta"] = data["Ruta"].str.replace("espectrogramas_salida1", "espectrogramas_normalizados")
 
     print(data.head(10))
-    data=data.iloc[1670:1800]
+    data=data.iloc[2240:2600]
     normalize_columns(data, columns)
     print(data.head(4))
     for img_path in data["Ruta"]:
