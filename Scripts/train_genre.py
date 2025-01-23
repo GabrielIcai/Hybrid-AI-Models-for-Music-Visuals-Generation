@@ -120,6 +120,11 @@ def main():
         val_loss, val_accuracy, val_preds, val_labels = validate(
             model, val_loader, criterion, device
         )
+        
+        #Comprobaciones de GPU
+        print(torch.cuda.is_available())
+        print(torch.cuda.current_device())
+        print(torch.cuda.get_device_name(0))    
 
         val_accuracy = accuracy_score(val_labels, val_preds)
         val_f1 = f1_score(val_labels, val_preds, average="weighted")
