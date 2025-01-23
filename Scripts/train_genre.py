@@ -136,7 +136,6 @@ def main():
         val_precision = precision_score(val_labels, val_preds, average="weighted")
         val_recall = recall_score(val_labels, val_preds, average="weighted")
         val_f1 = f1_score(val_labels, val_preds, average="weighted")
-        val_auc = roc_auc_score(val_labels, val_probs, average="weighted", multi_class="ovr")
         
         epochs_list.append(epoch + 1)
         train_losses.append(train_loss)
@@ -146,14 +145,13 @@ def main():
         val_f1_scores.append(val_f1)
         val_precisions.append(val_precision)
         val_recalls.append(val_recall)
-        val_aucs.append(val_auc)
+        
 
         print(f"Epoch {epoch + 1}/{epochs}")
         print(
             f"Train Loss: {train_loss:.4f} | Train Accuracy: {train_accuracy:.4f} | "
             f"Val Loss: {val_loss:.4f} | Val Accuracy: {val_accuracy:.4f} | "
             f"Val F1: {val_f1:.4f} | Val Precision: {val_precision:.4f} | "
-            f"Val Recall: {val_recall:.4f} | Val AUC: {val_auc:.4f}"
         )
         
         if val_loss < best_val_loss:
@@ -180,7 +178,6 @@ def main():
     'Val F1': val_f1_scores,
     'Val Precision': val_precisions,
     'Val Recall': val_recalls,
-    'Val AUC': val_aucs
 })
     #Guardo Métricas
     metrics_df.to_csv("/content/drive/MyDrive/TFG/models/training_metrics_genre.csv", index=False)
