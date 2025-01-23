@@ -10,7 +10,6 @@ from src.models.genre_model import CNN_LSTM_genre
 from src.preprocessing import (
     CustomDataset,
     load_data,
-    mean_std_image,
     normalize_columns,
     split_dataset,
     c_transform,
@@ -67,7 +66,7 @@ def main():
     data["Ruta"] = data["Ruta"].str.replace("espectrogramas_salida1", "espectrogramas_normalizados")
 
     print(data.head(10))
-
+    data=data.iloc[1670:1800]
     normalize_columns(data, columns)
     print(data.head(4))
     for img_path in data["Ruta"]:
@@ -123,13 +122,13 @@ def main():
         train_loss, train_accuracy = train(
             model, train_loader, optimizer, criterion, device
         )
-        val_loss, val_accuracy, val_preds, val_labels = validate(
+        val_loss, val_accuracy, val_preds, val_labels, val_probs = validate(
             model, val_loader, criterion, device
         )   
 
         val_accuracy = accuracy_score(val_labels, val_preds)
         val_f1 = f1_score(val_labels, val_preds, average="weighted")
-        val_precision = precision_score(val_labels, val_preds, average="weighted")
+        val_precision = precision_score(val_labels, val_probs, average="weighted")
         val_recall = recall_score(val_labels, val_preds, average="weighted")
         val_auc = roc_auc_score(val_labels, val_preds, average="weighted", multi_class="ovr")
         
