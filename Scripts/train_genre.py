@@ -69,7 +69,6 @@ def main():
     print(data.head(10))
 
     normalize_columns(data, columns)
-    data= data.iloc[1976:2601]
     print(data.head(4))
     for img_path in data["Ruta"]:
         if not os.path.exists(img_path):
@@ -101,10 +100,10 @@ def main():
 
     # DataLoader
     train_loader = DataLoader(
-        train_dataset, batch_size=8, collate_fn=collate_fn, shuffle=False
+        train_dataset, batch_size=32, collate_fn=collate_fn, shuffle=False
     )
     val_loader = DataLoader(
-        test_dataset, batch_size=8, collate_fn=collate_fn, shuffle=False
+        test_dataset, batch_size=32, collate_fn=collate_fn, shuffle=False
     )
     print("DataLoaders creados")
 
