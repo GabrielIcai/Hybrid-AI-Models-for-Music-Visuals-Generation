@@ -68,9 +68,8 @@ class CustomDataset(torch.utils.data.Dataset):
             additional_features = torch.tensor(additional_features, dtype=torch.float32)
 
             labels = torch.tensor(
-                row.iloc[list(range(1, 5)) + list(range(6, 8))].values.astype(float),
-                dtype=torch.float32,
-            )
+            row.iloc[list(range(1, 5)) + list(range(6, 8))].values.astype(int),
+            dtype=torch.long)
             return image, additional_features, labels, img_path
 
         except Exception as e:

@@ -128,6 +128,7 @@ def main():
         )
         
         print(f"val_labels shape: {np.array(val_labels).shape}")
+        print(f"val_labels: {val_labels}")
         print(f"val_preds shape: {np.array(val_preds).shape}")
         print(f"val_probs shape: {np.array(val_probs).shape}")
 
