@@ -71,3 +71,4 @@ def validate(model, test_loader, criterion, device):
             val_accuracy = 100 * correct / total if total > 0 else 0
 
     return val_loss / len(test_loader), val_accuracy, val_preds, val_labels
+

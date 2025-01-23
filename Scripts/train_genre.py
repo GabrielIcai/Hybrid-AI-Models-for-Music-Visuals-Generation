@@ -69,9 +69,9 @@ def main():
     print(data.head(10))
 
     normalize_columns(data, columns)
-
+    data= data.iloc[1976:2601]
     print(data.head(4))
-
+    data=data(1000)
     for img_path in data["Ruta"]:
         if not os.path.exists(img_path):
             print(f"Ruta no encontrada: {img_path}")
@@ -89,8 +89,8 @@ def main():
     print(f"Tamaño de test_data después de preprocesamiento: {len(test_data)}")
     pd.set_option('display.max_rows', None)  # Mostrar todas las filas
     pd.set_option('display.max_columns', None)  # Mostrar todas las columnas
+    
     # Mostrar el DataFrame completo
-    print(train_data)   
     train_data = train_data.reset_index(drop=True)
     test_data = test_data.reset_index(drop=True)
 

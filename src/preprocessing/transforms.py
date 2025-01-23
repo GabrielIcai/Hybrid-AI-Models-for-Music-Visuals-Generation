@@ -58,7 +58,7 @@ def mean_std_image(data, batch_size=100):
             try:
                 image = Image.open(img_path).convert("RGB")
                 tensor_image = transform(image)
-                batch_pixels += tensor_image.shape[1] * tensor_image.shape[2]  # Total de píxeles por canal
+                batch_pixels += tensor_image.shape[1] * tensor_image.shape[2] 
                 batch_means.append(tensor_image.mean([1, 2]))
                 batch_stds.append(tensor_image.std([1, 2]))
             except Exception as e:
