@@ -51,69 +51,62 @@ def main():
     test_transform = c_transform(mean, std)
     nuevo_dataset = CustomDataset(data, base_path, transform=test_transform)
     nuevo_loader = DataLoader(
-        nuevo_dataset, batch_size=128,collate_fn = collate_fn, shuffle=False, num_workers=2, pin_memory=True
+        nuevo_dataset, batch_size=128, collate_fn=collate_fn, shuffle=False, num_workers=2, pin_memory=True
     )
 
-    # Asegúrate de que el modelo esté en modo evaluación
-    model.eval()
-
-    # Inicializa las listas para guardar las predicciones y probabilidades
+    # Predicciones
     all_preds = []
-    all_probs = []
     all_labels = []
 
-    # Recorrer el DataLoader
     with torch.no_grad():
         for batch in nuevo_loader:
-            images, features, labels= batch  # Desempaquetar los cuatro elementos
+            images, features, labels = batch  # Desempaquetar los cuatro elementos
             images = images.to(device)
             features = features.to(device)
             labels = labels.to(device)
 
-            # Obtener las salidas del modelo
+            # Predicción en fragmentos de tres en tres
             outputs = model(images, features)
+            preds = torch.argmax(outputs, dim=1)
 
-            # Convertir las salidas a probabilidades usando softmax
-            probs = torch.softmax(outputs, dim=1)  # Aplicar softmax para obtener probabilidades
-
-            # Obtener las predicciones (la clase con la mayor probabilidad)
-            preds = torch.argmax(probs, dim=1)
-
-            # Guardar las probabilidades y las predicciones
             all_preds.extend(preds.cpu().numpy())
-            all_probs.extend(probs.cpu().numpy())
             all_labels.extend(labels.cpu().numpy())
 
-    # Convertir las probabilidades a un DataFrame para guardarlas
-    probs_df = pd.DataFrame(all_probs, columns=[f"Clase_{i}" for i in range(probs.shape[1])])
+    # Desglosar las predicciones para fragmentos individuales
+    individual_preds = []
+    individual_labels = []
 
-    # Verifica el tamaño de all_preds y data
-    print(f"Tamaño de all_preds: {len(all_preds)}")
-    print(f"Tamaño de data: {len(data)}")
-    
-    # Asegúrate de que all_preds tenga la misma longitud que el número de filas en data
-    if len(all_preds) != len(data):
-        print(f"Error: La longitud de all_preds ({len(all_preds)}) no coincide con el número de filas en data ({len(data)})")
-        # Aquí puedes tomar medidas para solucionar el desajuste, como filtrar o ajustar el DataLoader.
-    
-    # Si las longitudes coinciden, agrega las predicciones al DataFrame
-    if len(all_preds) == len(data):
-        data["Predicciones"] = all_preds
-        print("Predicciones agregadas al DataFrame.")
-    else:
-        print("No se pudo agregar las predicciones debido a un desajuste en las longitudes.")
-    
-    # Aquí continúas con el resto de tu código, como guardar el archivo CSV o cualquier otra operación.
+    for i in range(0, len(all_preds), 3):  # Iterar de tres en tres
+        # Extraer las predicciones y etiquetas de cada fragmento
+        fragment_preds = all_preds[i:i+3]
+        fragment_labels = all_labels[i:i+3]
+        
+        # Tomar la predicción más frecuente del fragmento
+        most_common_pred = max(set(fragment_preds), key=fragment_preds.count)
+        individual_preds.append(most_common_pred)
+        
+        # Tomar la etiqueta más frecuente del fragmento
+        most_common_label = max(set(fragment_labels), key=fragment_labels.count)
+        individual_labels.append(most_common_label)
 
-    data["Predicciones"] = all_preds
-    data = pd.concat([data, probs_df], axis=1)
+    # Matriz de confusión
+    cm = confusion_matrix(individual_labels, individual_preds)
+    plt.figure(figsize=(10, 7))
+    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
+    plt.xlabel('Predicción')
+    plt.ylabel('Etiqueta Real')
+    plt.title('Matriz de Confusión')
+    plt.show()
 
-    # Guardar el CSV con las predicciones y probabilidades
-    output_csv_path = "/content/drive/MyDrive/TFG/predicciones_con_probabilidades.csv"
+    # Reporte de clasificación
+    print("Reporte de Clasificación:")
+    print(classification_report(individual_labels, individual_preds))
+
+    # Guardar predicciones en un archivo CSV
+    data["Predicciones"] = individual_preds
+    output_csv_path = "/content/drive/MyDrive/TFG/predicciones_con_matriz_confusion.csv"
     data.to_csv(output_csv_path, index=False)
-    print(f"Predicciones y probabilidades guardadas en {output_csv_path}")
-
-
+    print(f"Predicciones guardadas en {output_csv_path}")
 
 if __name__ == "__main__":
     main()
