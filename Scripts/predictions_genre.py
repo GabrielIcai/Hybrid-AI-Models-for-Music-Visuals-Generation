@@ -55,6 +55,7 @@ def main():
     )
 
     # Predicciones y etiquetas
+    # Predicciones y etiquetas
     all_preds = []
     all_labels = []
 
@@ -73,25 +74,22 @@ def main():
             all_labels.extend([label.argmax().item() for label in labels])  # Convertir etiquetas one-hot
             all_preds.extend(preds.cpu().numpy())  # Predicciones
 
-    # Matriz de confusión
-    cm = confusion_matrix(all_labels, all_preds)
-    plt.figure(figsize=(10, 7))
-    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
-    plt.xlabel('Predicción')
-    plt.ylabel('Etiqueta Real')
-    plt.title('Matriz de Confusión')
-    plt.show()
+    # Verificar la longitud de las predicciones y las etiquetas
+    print(f"Longitud de all_preds: {len(all_preds)}")
+    print(f"Longitud de data: {len(data)}")
 
-    # Reporte de clasificación
-    print("Reporte de Clasificación:")
-    print(classification_report(all_labels, all_preds))
+    # Si las predicciones son menos que las muestras, rellena con un valor por defecto
+    while len(all_preds) < len(data):
+        all_preds.append(-1)  # Rellenar con un valor predeterminado
 
+    # Asignar las predicciones al DataFrame
+    data["Predicciones"] = all_preds
 
     # Guardar predicciones en un archivo CSV
-    data["Predicciones"] = all_preds
     output_csv_path = "/content/drive/MyDrive/TFG/predicciones_con_matriz_confusion.csv"
     data.to_csv(output_csv_path, index=False)
     print(f"Predicciones guardadas en {output_csv_path}")
+
 
 if __name__ == "__main__":
     main()
