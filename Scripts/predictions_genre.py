@@ -1,5 +1,6 @@
 import os
 import sys
+import numpy as np
 import pandas as pd
 import seaborn as sns
 repo_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../"))
@@ -81,9 +82,9 @@ def main():
         fragment_preds = all_preds[i:i+3]
         fragment_labels = all_labels[i:i+3]
 
-        # Convertir las etiquetas y predicciones a enteros antes de usar set()
+        # Convertir las etiquetas de one-hot encoding a enteros (índice de la clase)
         fragment_preds = [int(pred) for pred in fragment_preds]
-        fragment_labels = [int(label) for label in fragment_labels]
+        fragment_labels = [int(np.argmax(label)) for label in fragment_labels]  # Convertir one-hot a clase
 
         # Tomar la predicción más frecuente del fragmento
         most_common_pred = max(set(fragment_preds), key=fragment_preds.count)
@@ -114,4 +115,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
