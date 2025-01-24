@@ -45,8 +45,6 @@ def train(model, train_loader, optimizer, criterion, device):
 
     return running_loss / len(train_loader), accuracy
 
-
-
 def validate(model, test_loader, criterion, device):
     model.eval()
     val_loss = 0.0

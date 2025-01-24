@@ -60,17 +60,20 @@ def main():
 
     with torch.no_grad():
         for batch in nuevo_loader:
-            images, features, labels = batch
+            images, features, labels, img_paths = batch  # Desempaquetar los cuatro elementos
             images = images.to(device)
             features = features.to(device)
             labels = labels.to(device)
 
-            outputs = model(images, features)
-            preds = torch.argmax(outputs, dim=1)
+    outputs = model(images, features)
+    preds = torch.argmax(outputs, dim=1)
 
-            all_preds.extend(preds.cpu().numpy())
-            all_labels.extend(labels.cpu().numpy())
+    all_preds.extend(preds.cpu().numpy())
+    all_labels.extend(labels.cpu().numpy())
 
+    # Si necesitas usar las rutas de las imágenes, puedes hacer algo como:
+    for img_path in img_paths:
+        print(f"Predicción para la imagen: {img_path}")
     # Matriz de confusión
     cm = confusion_matrix(all_labels, all_preds)
     plt.figure(figsize=(10, 7))
