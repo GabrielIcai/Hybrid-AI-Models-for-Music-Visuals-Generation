@@ -67,7 +67,7 @@ def main():
     all_labels = []
 
     with torch.no_grad():
-        for images, features, labels, _ in nuevo_loader: #añadimos _ para ignorar las rutas
+        for images, features, labels in nuevo_loader: 
             images = [image.to(device) for image in images]
             features = [feature.to(device) for feature in features]
             labels = torch.stack(labels).to(device) #Stack de labels
