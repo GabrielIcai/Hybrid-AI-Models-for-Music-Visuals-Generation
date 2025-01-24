@@ -2,12 +2,11 @@ import os
 import sys
 import pandas as pd
 import seaborn as sns
-from src.training import collate_fn
 repo_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../"))
 if repo_path not in sys.path:
     sys.path.append(repo_path)
 
-
+from src.training import collate_fn
 from src.models.genre_model import CRNN
 import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix, classification_report
