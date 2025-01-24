@@ -65,7 +65,7 @@ def main():
     data["Ruta"] = base_path + data["Ruta"]
     normalize_columns(data, columns)
 
-    # Crear dataset y DataLoader
+    # Crear dataset y DataLoader:
     test_transform = c_transform(mean, std)
     nuevo_dataset = CustomDataset(data, base_path, transform=test_transform)
     nuevo_loader = DataLoader(
