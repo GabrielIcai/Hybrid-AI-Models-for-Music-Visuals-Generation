@@ -35,7 +35,17 @@ hidden_size = 256
 additional_features_dim = 12
 num_classes = 6
 
+import torch
+import pandas as pd
+import numpy as np
+from sklearn.metrics import confusion_matrix, classification_report
+import seaborn as sns
+import matplotlib.pyplot as plt
+from torch.utils.data import DataLoader
+
+
 def main():
+    # Cargar el modelo
     model = CRNN(num_classes, additional_features_dim, hidden_size)
     model.load_state_dict(torch.load(model_path, map_location=torch.device("cpu")))
     model.to(device)
@@ -58,10 +68,12 @@ def main():
     # Predicciones
     all_preds = []
     all_labels = []
+    fragment_preds = []  # Aquí almacenaremos las predicciones por fragmento de tres
+    fragment_labels = []  # Aquí almacenaremos las etiquetas por fragmento de tres
 
     with torch.no_grad():
         for batch in nuevo_loader:
-            images, features, labels= batch  # Desempaquetar los cuatro elementos
+            images, features, labels = batch  # Desempaquetar los cuatro elementos
             images = images.to(device)
             features = features.to(device)
             labels = labels.to(device)
@@ -70,32 +82,22 @@ def main():
             outputs = model(images, features)
             preds = torch.argmax(outputs, dim=1)
 
-            all_preds.extend(preds.cpu().numpy())
-            all_labels.extend(labels.cpu().numpy())
+            # Almacenamos las predicciones y etiquetas por fragmento
+            fragment_preds.append(preds.cpu().numpy())
+            fragment_labels.append(labels.cpu().numpy())
 
-    # Desglosar las predicciones para fragmentos individuales
-    individual_preds = []
-    individual_labels = []
+    # Convertir las etiquetas one-hot a enteros (índice de la clase)
+    all_labels = [int(np.argmax(label)) for label in fragment_labels]
 
-    for i in range(0, len(all_preds), 3):  # Iterar de tres en tres
-        # Extraer las predicciones y etiquetas de cada fragmento
-        fragment_preds = all_preds[i:i+3]
-        fragment_labels = all_labels[i:i+3]
-
-        # Convertir las etiquetas de one-hot encoding a enteros (índice de la clase)
-        fragment_preds = [int(pred) for pred in fragment_preds]
-        fragment_labels = [int(np.argmax(label)) for label in fragment_labels]  # Convertir one-hot a clase
-
-        # Tomar la predicción más frecuente del fragmento
-        most_common_pred = max(set(fragment_preds), key=fragment_preds.count)
-        individual_preds.append(most_common_pred)
-        
-        # Tomar la etiqueta más frecuente del fragmento
-        most_common_label = max(set(fragment_labels), key=fragment_labels.count)
-        individual_labels.append(most_common_label)
+    # Ahora asignamos la predicción final para cada fragmento individual
+    for i, preds in enumerate(fragment_preds):
+        # Para cada fragmento, obtenemos la predicción más probable
+        most_common_pred = np.argmax(np.bincount(preds))
+        # Añadimos la predicción más probable para cada elemento en el fragmento
+        all_preds.extend([most_common_pred] * len(preds))
 
     # Matriz de confusión
-    cm = confusion_matrix(individual_labels, individual_preds)
+    cm = confusion_matrix(all_labels, all_preds)
     plt.figure(figsize=(10, 7))
     sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
     plt.xlabel('Predicción')
@@ -105,10 +107,10 @@ def main():
 
     # Reporte de clasificación
     print("Reporte de Clasificación:")
-    print(classification_report(individual_labels, individual_preds))
+    print(classification_report(all_labels, all_preds))
 
     # Guardar predicciones en un archivo CSV
-    data["Predicciones"] = individual_preds
+    data["Predicciones"] = all_preds  # Aquí usamos todas las predicciones
     output_csv_path = "/content/drive/MyDrive/TFG/predicciones_con_matriz_confusion.csv"
     data.to_csv(output_csv_path, index=False)
     print(f"Predicciones guardadas en {output_csv_path}")
