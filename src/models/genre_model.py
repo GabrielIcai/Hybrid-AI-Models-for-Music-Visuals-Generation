@@ -89,7 +89,7 @@ class CRNN(nn.Module):
         
         # Bloque RNN
         self.rnn = nn.GRU(
-            input_size=128 * 8+additional_features_dim,
+            input_size=128 * 8 * 8 +additional_features_dim,
             hidden_size=hidden_size,
             num_layers=2,
             batch_first=True,
