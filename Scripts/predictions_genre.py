@@ -45,8 +45,8 @@ from torch.utils.data import DataLoader
 
 def main():
     # Cargar el modelo
-    model = CRNN(num_classes, additional_features_dim, hidden_size).to(device) #Mover el modelo al device
-    model.load_state_dict(torch.load(model_path, map_location=device)) #Cargar el modelo en el device
+    model = CRNN(num_classes, additional_features_dim, hidden_size).to(device)
+    model.load_state_dict(torch.load(model_path, map_location=device))
     model.eval()
     print("Modelo cargado.")
 
@@ -60,23 +60,27 @@ def main():
     test_transform = c_transform(mean, std)
     nuevo_dataset = CustomDataset(data, base_path, transform=test_transform)
     nuevo_loader = DataLoader(
-        nuevo_dataset, batch_size=3, collate_fn=collate_fn, shuffle=False, num_workers=2, pin_memory=True #batch size 3
+        nuevo_dataset, batch_size=3, collate_fn=collate_fn, shuffle=False, num_workers=2, pin_memory=True
     )
 
     all_preds = []
     all_labels = []
 
     with torch.no_grad():
-        for images, features, labels in nuevo_loader: 
+        for images, features, labels, _ in nuevo_loader:  # Add _ to ignore paths
             images = [image.to(device) for image in images]
             features = [feature.to(device) for feature in features]
-            labels = torch.stack(labels).to(device) #Stack de labels
-            
+
+            # Ensure labels is a list of tensors (check CustomDataset and collate_fn)
+            if not isinstance(labels, list):
+                labels = [labels]  # Wrap single tensor in a list if necessary
+            labels = torch.stack(labels).to(device)
+
             outputs = model(images, features)
 
             # Obtener predicciones y etiquetas
             preds = torch.argmax(outputs, dim=1).cpu().numpy()
-            true_labels = np.argmax(labels.cpu().numpy(), axis=2)[:,0] #Obtener las etiquetas correctas
+            true_labels = np.argmax(labels.cpu().numpy(), axis=2)[:, 0]
 
             all_preds.extend(preds)
             all_labels.extend(true_labels)
