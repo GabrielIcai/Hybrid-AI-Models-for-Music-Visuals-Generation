@@ -66,7 +66,7 @@ class CRNN(nn.Module):
         
         # Bloque CNN
         self.cnn = nn.Sequential(
-            nn.Conv2d(1, 32, kernel_size=3, stride=1, padding=1),
+            nn.Conv2d(3, 32, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
             nn.BatchNorm2d(32),
             nn.MaxPool2d((2, 2)),  # Reduce a (64, 64)
