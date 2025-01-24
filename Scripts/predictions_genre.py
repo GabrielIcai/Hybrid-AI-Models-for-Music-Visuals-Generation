@@ -54,41 +54,48 @@ def main():
         nuevo_dataset, batch_size=128,collate_fn = collate_fn, shuffle=False, num_workers=2, pin_memory=True
     )
 
-    # Predicciones y etiquetas
-    # Predicciones y etiquetas
+    # Asegúrate de que el modelo esté en modo evaluación
+    model.eval()
+
+    # Inicializa las listas para guardar las predicciones y probabilidades
     all_preds = []
+    all_probs = []
     all_labels = []
 
+    # Recorrer el DataLoader
     with torch.no_grad():
         for batch in nuevo_loader:
-            images, features, labels = batch  # Desempaquetar los cuatro elementos
+            images, features, labels, img_paths = batch  # Desempaquetar los cuatro elementos
             images = images.to(device)
             features = features.to(device)
             labels = labels.to(device)
 
-            # Obtener las predicciones del modelo
+            # Obtener las salidas del modelo
             outputs = model(images, features)
-            preds = torch.argmax(outputs, dim=1)
 
-            # Convertir las etiquetas one-hot a un valor de clase
-            all_labels.extend([label.argmax().item() for label in labels])  # Convertir etiquetas one-hot
-            all_preds.extend(preds.cpu().numpy())  # Predicciones
+            # Convertir las salidas a probabilidades usando softmax
+            probs = torch.softmax(outputs, dim=1)  # Aplicar softmax para obtener probabilidades
 
-    # Verificar la longitud de las predicciones y las etiquetas
-    print(f"Longitud de all_preds: {len(all_preds)}")
-    print(f"Longitud de data: {len(data)}")
+            # Obtener las predicciones (la clase con la mayor probabilidad)
+            preds = torch.argmax(probs, dim=1)
 
-    # Si las predicciones son menos que las muestras, rellena con un valor por defecto
-    while len(all_preds) < len(data):
-        all_preds.append(-1)  # Rellenar con un valor predeterminado
+            # Guardar las probabilidades y las predicciones
+            all_preds.extend(preds.cpu().numpy())
+            all_probs.extend(probs.cpu().numpy())  # Guardar el vector de probabilidades
+            all_labels.extend(labels.cpu().numpy())
 
-    # Asignar las predicciones al DataFrame
+    # Convertir las probabilidades a un DataFrame para guardarlas
+    probs_df = pd.DataFrame(all_probs, columns=[f"Clase_{i}" for i in range(probs.shape[1])])
+
+    # Agregar las probabilidades y las predicciones al DataFrame original
     data["Predicciones"] = all_preds
+    data = pd.concat([data, probs_df], axis=1)
 
-    # Guardar predicciones en un archivo CSV
-    output_csv_path = "/content/drive/MyDrive/TFG/predicciones_con_matriz_confusion.csv"
+    # Guardar el CSV con las predicciones y probabilidades
+    output_csv_path = "/content/drive/MyDrive/TFG/predicciones_con_probabilidades.csv"
     data.to_csv(output_csv_path, index=False)
-    print(f"Predicciones guardadas en {output_csv_path}")
+    print(f"Predicciones y probabilidades guardadas en {output_csv_path}")
+
 
 
 if __name__ == "__main__":
