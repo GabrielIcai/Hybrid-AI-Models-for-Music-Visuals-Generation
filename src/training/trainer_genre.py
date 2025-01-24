@@ -40,6 +40,9 @@ def train(model, train_loader, optimizer, criterion, device):
         total += labels.size(0)
         accuracy = 100 * correct / total
 
+        print(f"Batch {batch}/{len(train_loader)} - "
+              f"Loss: {loss.item():.4f} - Accuracy: {accuracy:.2f}% -")
+
     return running_loss / len(train_loader), accuracy
 
 
