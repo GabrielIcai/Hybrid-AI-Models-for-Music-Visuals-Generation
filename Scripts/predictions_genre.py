@@ -65,7 +65,7 @@ def main():
     # Recorrer el DataLoader
     with torch.no_grad():
         for batch in nuevo_loader:
-            images, features, labels, img_paths = batch  # Desempaquetar los cuatro elementos
+            images, features, labels= batch  # Desempaquetar los cuatro elementos
             images = images.to(device)
             features = features.to(device)
             labels = labels.to(device)
