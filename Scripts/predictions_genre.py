@@ -67,7 +67,7 @@ def main():
     all_labels = []
 
     with torch.no_grad():
-        for images, features, labels, _ in nuevo_loader:  # Add _ to ignore paths
+        for images, features, labels in nuevo_loader:  # Add _ to ignore paths
             images = [image.to(device) for image in images]
             features = [feature.to(device) for feature in features]
 
