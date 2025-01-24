@@ -1,14 +1,16 @@
 import torch
 import time
 
+import time
+
 def train(model, train_loader, optimizer, criterion, device):
     model.train()
     running_loss = 0.0
     correct = 0
     total = 0
     start_time = time.time()
-    for batch in train_loader:
 
+    for i, batch in enumerate(train_loader):  # Usa enumerate para obtener el índice
         images, additional_features, labels = batch
         images = images.to(device)
         additional_features = additional_features.to(device)
@@ -16,18 +18,9 @@ def train(model, train_loader, optimizer, criterion, device):
 
         optimizer.zero_grad()
         outputs = model(images, additional_features)
-        print("labels before conversion")
-        print(labels)
 
         if labels.dim() > 1:
             labels = torch.argmax(labels, dim=1)  # Convertir a índices
-            print(f"Labels (after conversion to indices): {labels}")
-            print(f"Labels shape (after conversion): {labels.size()}")
-
-        #Comprobaciones de GPU
-        print(torch.cuda.is_available())
-        print(torch.cuda.current_device())
-        print(torch.cuda.get_device_name(0)) 
 
         loss = criterion(outputs, labels)
         loss.backward()
@@ -36,21 +29,22 @@ def train(model, train_loader, optimizer, criterion, device):
 
         # Predicciones
         _, predicted = torch.max(outputs.data, 1)
-
         correct += (predicted == labels).sum().item()
         total += labels.size(0)
         accuracy = 100 * correct / total
 
+        # Cálculo del tiempo restante
         elapsed_time = time.time() - start_time
-        batches_remaining = len(train_loader) - batch
-        avg_batch_time = elapsed_time / batch
+        batches_remaining = len(train_loader) - i - 1
+        avg_batch_time = elapsed_time / (i + 1)
         estimated_time_remaining = avg_batch_time * batches_remaining
 
-        print(f"Batch {batch}/{len(train_loader)} - "
+        print(f"Batch {i + 1}/{len(train_loader)} - "
               f"Loss: {loss.item():.4f} - Accuracy: {accuracy:.2f}% - "
               f"Time remaining: {estimated_time_remaining:.2f}s")
 
     return running_loss / len(train_loader), accuracy
+
 
 
 def validate(model, test_loader, criterion, device):
