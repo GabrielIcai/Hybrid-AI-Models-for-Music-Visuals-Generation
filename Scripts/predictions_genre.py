@@ -43,6 +43,15 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader
 
+import torch
+import pandas as pd
+import numpy as np
+from sklearn.metrics import confusion_matrix, classification_report
+import seaborn as sns
+import matplotlib.pyplot as plt
+from torch.utils.data import DataLoader
+
+
 def main():
     # Cargar el modelo
     model = CRNN(num_classes, additional_features_dim, hidden_size).to(device)
@@ -68,19 +77,22 @@ def main():
 
     with torch.no_grad():
         for images, features, labels in nuevo_loader:  # Add _ to ignore paths
-            images = [image.to(device) for image in images]
-            features = [feature.to(device) for feature in features]
+            # Convertir las listas en tensores
+            images = torch.stack([image.to(device) for image in images])  # Asegurarse de que images sea un tensor
+            features = torch.stack([feature.to(device) for feature in features])  # Asegurarse de que features sea un tensor
 
-            # Ensure labels is a list of tensors (check CustomDataset and collate_fn)
-            if not isinstance(labels, list):
-                labels = [labels]  # Wrap single tensor in a list if necessary
-            labels = torch.stack(labels).to(device)
+            # Asegurarse de que labels sea un tensor
+            if not isinstance(labels, torch.Tensor):
+                labels = torch.stack(labels).to(device)
+            else:
+                labels = labels.to(device)
 
+            # Realizar la predicción
             outputs = model(images, features)
 
-            # Obtener predicciones y etiquetas
+            # Obtener las predicciones y etiquetas
             preds = torch.argmax(outputs, dim=1).cpu().numpy()
-            true_labels = np.argmax(labels.cpu().numpy(), axis=2)[:, 0]
+            true_labels = np.argmax(labels.cpu().numpy(), axis=1)  # Asegúrate de que las etiquetas estén bien formateadas
 
             all_preds.extend(preds)
             all_labels.extend(true_labels)
@@ -106,4 +118,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
