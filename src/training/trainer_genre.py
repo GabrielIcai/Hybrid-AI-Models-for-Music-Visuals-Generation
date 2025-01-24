@@ -1,13 +1,14 @@
 import torch
-
+import time
 
 def train(model, train_loader, optimizer, criterion, device):
     model.train()
     running_loss = 0.0
     correct = 0
     total = 0
-
+    start_time = time.time()
     for batch in train_loader:
+
         images, additional_features, labels = batch
         images = images.to(device)
         additional_features = additional_features.to(device)
@@ -40,8 +41,14 @@ def train(model, train_loader, optimizer, criterion, device):
         total += labels.size(0)
         accuracy = 100 * correct / total
 
+        elapsed_time = time.time() - start_time
+        batches_remaining = len(train_loader) - batch
+        avg_batch_time = elapsed_time / batch
+        estimated_time_remaining = avg_batch_time * batches_remaining
+
         print(f"Batch {batch}/{len(train_loader)} - "
-              f"Loss: {loss.item():.4f} - Accuracy: {accuracy:.2f}% -")
+              f"Loss: {loss.item():.4f} - Accuracy: {accuracy:.2f}% - "
+              f"Time remaining: {estimated_time_remaining:.2f}s")
 
     return running_loss / len(train_loader), accuracy
 
