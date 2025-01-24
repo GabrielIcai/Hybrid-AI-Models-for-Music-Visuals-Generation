@@ -2,6 +2,7 @@ import os
 import sys
 import pandas as pd
 import seaborn as sns
+from src.training import collate_fn
 repo_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../"))
 if repo_path not in sys.path:
     sys.path.append(repo_path)
@@ -51,7 +52,7 @@ def main():
     test_transform = c_transform(mean, std)
     nuevo_dataset = CustomDataset(data, base_path, transform=test_transform)
     nuevo_loader = DataLoader(
-        nuevo_dataset, batch_size=128, shuffle=False, num_workers=2, pin_memory=True
+        nuevo_dataset, batch_size=128,collate_fn = collate_fn, shuffle=False, num_workers=2, pin_memory=True
     )
 
     # Predicciones
