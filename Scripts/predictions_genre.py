@@ -81,13 +81,30 @@ def main():
 
             # Guardar las probabilidades y las predicciones
             all_preds.extend(preds.cpu().numpy())
-            all_probs.extend(probs.cpu().numpy())  # Guardar el vector de probabilidades
+            all_probs.extend(probs.cpu().numpy())
             all_labels.extend(labels.cpu().numpy())
 
     # Convertir las probabilidades a un DataFrame para guardarlas
     probs_df = pd.DataFrame(all_probs, columns=[f"Clase_{i}" for i in range(probs.shape[1])])
 
-    # Agregar las probabilidades y las predicciones al DataFrame original
+    # Verifica el tamaño de all_preds y data
+    print(f"Tamaño de all_preds: {len(all_preds)}")
+    print(f"Tamaño de data: {len(data)}")
+    
+    # Asegúrate de que all_preds tenga la misma longitud que el número de filas en data
+    if len(all_preds) != len(data):
+        print(f"Error: La longitud de all_preds ({len(all_preds)}) no coincide con el número de filas en data ({len(data)})")
+        # Aquí puedes tomar medidas para solucionar el desajuste, como filtrar o ajustar el DataLoader.
+    
+    # Si las longitudes coinciden, agrega las predicciones al DataFrame
+    if len(all_preds) == len(data):
+        data["Predicciones"] = all_preds
+        print("Predicciones agregadas al DataFrame.")
+    else:
+        print("No se pudo agregar las predicciones debido a un desajuste en las longitudes.")
+    
+    # Aquí continúas con el resto de tu código, como guardar el archivo CSV o cualquier otra operación.
+
     data["Predicciones"] = all_preds
     data = pd.concat([data, probs_df], axis=1)
 
