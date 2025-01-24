@@ -95,7 +95,7 @@ class CRNN(nn.Module):
             batch_first=True,
             bidirectional=True
         )
-        self.fc = nn.Linear(128 * 2, num_classes)
+        self.fc = nn.Linear(hidden_size * 2, num_classes)
 
     def forward(self, x, additional_features):
         batch_size, seq_len, channels, height, width = x.size()  # x: (batch_size, 3, 1, 128, 128)
