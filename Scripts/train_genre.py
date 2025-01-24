@@ -7,7 +7,7 @@ if repo_path not in sys.path:
     sys.path.append(repo_path)
 
 
-from src.models.genre_model import CNN_LSTM_genre
+from src.models.genre_model import CNN_LSTM_genre, CRNN
 from src.preprocessing import (
     CustomDataset,
     load_data,
@@ -106,7 +106,7 @@ def main():
     print("DataLoaders creados")
 
     # Modelo
-    model = CNN_LSTM_genre(num_classes, additional_features_dim, hidden_size).to(device)
+    model = CRNN(num_classes, additional_features_dim, hidden_size).to(device)
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
 
@@ -156,7 +156,7 @@ def main():
             best_val_loss = val_loss
             early_stop_counter = 0
             # Guarda el mejor modelo
-            model_save_path = "/content/drive/MyDrive/TFG/models/best_cnn_lstm_genre.pth"
+            model_save_path = "/content/drive/MyDrive/TFG/models/best_crnn_genre.pth"
             torch.save(model.state_dict(), model_save_path)
             print(f"Mejor modelo guardado en {model_save_path}")
         else:
@@ -178,10 +178,10 @@ def main():
     'Val Recall': val_recalls,
 })
     #Guardo Métricas
-    metrics_df.to_csv("/content/drive/MyDrive/TFG/models/training_metrics_genre.csv", index=False)
+    metrics_df.to_csv("/content/drive/MyDrive/TFG/models/training_metrics_genre_crnn.csv", index=False)
 
     # Guardo el modelo
-    model_save_path = "/content/drive/MyDrive/TFG/models/cnn_lstm_genre.pth"
+    model_save_path = "/content/drive/MyDrive/TFG/models/crnn_genre.pth"
     torch.save(model.state_dict(), model_save_path)
     print(f"Modelo guardado en {model_save_path}")
 

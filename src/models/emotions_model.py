@@ -1,17 +1,34 @@
 import torch
-from torch import nn
+import torch.nn as nn
+import torchvision.models as models
 
-class CNN_LSTM_emotions(nn.module):
+class EmotionRecognitionCNN_LSTM(nn.Module):
     def __init__(self, num_classes, additional_features_dim, hidden_size):
-        super(CNN_LSTM_emotions, self).__init__()
+        super(EmotionRecognitionCNN_LSTM, self).__init__()
+        
+        #CNN
+        self.resnet = models.resnet18(pretrained=True)
+        self.resnet.fc = nn.Identity()
+        
+        # LSTM
+        self.lstm = nn.LSTM(
+            input_size=512 + additional_features_dim,
+            hidden_size=hidden_size,
+            num_layers=2,
+            batch_first=True,
+            dropout=0.5
+        )
+        
+        self.fc = nn.Linear(hidden_size, num_classes)
 
-        # Bloque CNN
-        self.cnn = nn.Sequential(
-            nn.Conv2d(3, 32, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(),
-            nn.BatchNorm2d(32),
-            nn.MaxPool2d(2, 2),
-            nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1),
-            nn.ReLU(),
-            nn.BatchNorm2d(64),
-            nn.MaxPool2d(2, 2))
+    def forward(self, x, additional_features):
+        cnn_features = self.resnet(x)  # (batch_size, 512)
+        
+        combined_features = torch.cat((cnn_features, additional_features), dim=1)
+        lstm_input = combined_features.unsqueeze(1)
+        lstm_out, _ = self.lstm(lstm_input)
+        lstm_out = lstm_out[:, -1, :]  # (batch_size, hidden_size)
+
+        output = self.fc(lstm_out)
+        
+        return output

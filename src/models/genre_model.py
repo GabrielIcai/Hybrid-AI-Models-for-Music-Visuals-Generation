@@ -58,3 +58,55 @@ class CNN_LSTM_genre(nn.Module):
         # Capa final
         out = self.fc(lstm_out[:, -1, :])
         return out
+
+#PRUEBA CRNN
+class CRNN(nn.Module):
+    def __init__(self, num_classes):
+        super(CRNN, self).__init__()
+        
+        # Bloque CNN
+        self.cnn = nn.Sequential(
+            nn.Conv2d(1, 32, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(),
+            nn.BatchNorm2d(32),
+            nn.MaxPool2d((2, 2)),  # Reduce a (64, 64)
+
+            nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(),
+            nn.BatchNorm2d(64),
+            nn.MaxPool2d((2, 2)),  # Reduce a (32, 32)
+
+            nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(),
+            nn.BatchNorm2d(128),
+            nn.MaxPool2d((2, 2)),  # Reduce a (16, 16)
+
+            nn.Conv2d(128, 128, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(),
+            nn.BatchNorm2d(128),
+            nn.MaxPool2d((2, 2))  # Reduce a (8, 8)
+        )
+        
+        # Bloque RNN
+        self.rnn = nn.GRU(
+            input_size=128 * 8,
+            hidden_size=128,
+            num_layers=2,
+            batch_first=True,
+            bidirectional=True
+        )
+        self.fc = nn.Linear(128 * 2, num_classes)
+
+    def forward(self, x):
+        batch_size, seq_len, channels, height, width = x.size()  # x: (batch_size, 3, 1, 128, 128)
+        
+        x = x.view(batch_size * seq_len, channels, height, width)
+        x = self.cnn(x)
+
+        x = x.view(batch_size, seq_len, -1)
+
+        x, _ = self.rnn(x)
+        
+        x = self.fc(x[:, -1, :])
+        
+        return x
