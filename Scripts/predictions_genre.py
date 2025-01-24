@@ -70,6 +70,9 @@ def main():
 
     all_preds.extend(preds.cpu().numpy())
     all_labels.extend(labels.cpu().numpy())
+    all_labels = [label.item() for label in all_labels]  # Convertir las etiquetas a enteros
+    all_preds = [pred.item() for pred in all_preds]  # Convertir las predicciones a enteros
+
 
     # Matriz de confusión
     cm = confusion_matrix(all_labels, all_preds)
