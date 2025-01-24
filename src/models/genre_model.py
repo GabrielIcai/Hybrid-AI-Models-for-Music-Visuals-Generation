@@ -61,7 +61,7 @@ class CNN_LSTM_genre(nn.Module):
 
 #PRUEBA CRNN
 class CRNN(nn.Module):
-    def __init__(self, num_classes):
+    def __init__(self, num_classes, additional_features_dim, hidden_size):
         super(CRNN, self).__init__()
         
         # Bloque CNN
@@ -89,24 +89,24 @@ class CRNN(nn.Module):
         
         # Bloque RNN
         self.rnn = nn.GRU(
-            input_size=128 * 8,
-            hidden_size=128,
+            input_size=128 * 8+additional_features_dim,
+            hidden_size=hidden_size,
             num_layers=2,
             batch_first=True,
             bidirectional=True
         )
         self.fc = nn.Linear(128 * 2, num_classes)
 
-    def forward(self, x):
+    def forward(self, x, additional_features):
         batch_size, seq_len, channels, height, width = x.size()  # x: (batch_size, 3, 1, 128, 128)
         
         x = x.view(batch_size * seq_len, channels, height, width)
         x = self.cnn(x)
 
         x = x.view(batch_size, seq_len, -1)
-
+        x = torch.cat((x, additional_features), dim=-1)
         x, _ = self.rnn(x)
         
-        x = self.fc(x[:, -1, :])
+        out = self.fc(x[:, -1, :])
         
-        return x
+        return out
