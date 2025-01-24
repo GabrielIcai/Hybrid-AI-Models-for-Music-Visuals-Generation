@@ -36,7 +36,7 @@ num_classes = 6
 
 def main():
     model = CRNN(num_classes, additional_features_dim, hidden_size)
-    model.load_state_dict(torch.load(model_path))
+    model.load_state_dict(torch.load(model_path, map_location=torch.device("cpu")))
     model.to(device)
     model.eval()
     print("Modelo cargado.")
