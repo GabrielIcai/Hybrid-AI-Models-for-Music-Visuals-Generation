@@ -60,7 +60,7 @@ def main():
 
     with torch.no_grad():
         for batch in nuevo_loader:
-            images, features, labels = batch  # Desempaquetar los cuatro elementos
+            images, features, labels= batch  # Desempaquetar los cuatro elementos
             images = images.to(device)
             features = features.to(device)
             labels = labels.to(device)
@@ -80,7 +80,11 @@ def main():
         # Extraer las predicciones y etiquetas de cada fragmento
         fragment_preds = all_preds[i:i+3]
         fragment_labels = all_labels[i:i+3]
-        
+
+        # Convertir las etiquetas y predicciones a enteros antes de usar set()
+        fragment_preds = [int(pred) for pred in fragment_preds]
+        fragment_labels = [int(label) for label in fragment_labels]
+
         # Tomar la predicción más frecuente del fragmento
         most_common_pred = max(set(fragment_preds), key=fragment_preds.count)
         individual_preds.append(most_common_pred)
@@ -110,3 +114,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
