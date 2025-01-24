@@ -89,3 +89,6 @@ def main():
     output_csv_path = "/content/drive/MyDrive/TFG/predicciones_con_matriz_confusion.csv"
     data.to_csv(output_csv_path, index=False)
     print(f"Predicciones guardadas en {output_csv_path}")
+
+if __name__ == "__main__":
+    main()
