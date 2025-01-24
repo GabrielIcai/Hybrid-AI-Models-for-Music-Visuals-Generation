@@ -43,48 +43,63 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader
 
-
 def main():
-  # Cargar el modelo
-  model = CRNN(num_classes, additional_features_dim, hidden_size)
-  model.load_state_dict(torch.load(model_path, map_location=torch.device("cpu")))
-  model.to(device)
-  model.eval()
-  print("Modelo cargado.")
+    # Cargar el modelo
+    model = CRNN(num_classes, additional_features_dim, hidden_size).to(device) #Mover el modelo al device
+    model.load_state_dict(torch.load(model_path, map_location=device)) #Cargar el modelo en el device
+    model.eval()
+    print("Modelo cargado.")
 
-  # Preprocesar nuevos datos
-  data = pd.read_csv(nuevo_csv_path)
-  data["Ruta"] = data["Ruta"].str.replace("\\", "/")
-  data["Ruta"] = base_path + data["Ruta"]
-  normalize_columns(data, columns)
+    # Preprocesar nuevos datos
+    data = pd.read_csv(nuevo_csv_path)
+    data["Ruta"] = data["Ruta"].str.replace("\\", "/")
+    data["Ruta"] = base_path + data["Ruta"]
+    normalize_columns(data, columns)
 
-  # Crear dataset y DataLoader
-  test_transform = c_transform(mean, std)
-  nuevo_dataset = CustomDataset(data, base_path, transform=test_transform)
-  nuevo_loader = DataLoader(
-      nuevo_dataset, batch_size=128, collate_fn=collate_fn, shuffle=False, num_workers=2, pin_memory=True
-  )
+    # Crear dataset y DataLoader
+    test_transform = c_transform(mean, std)
+    nuevo_dataset = CustomDataset(data, base_path, transform=test_transform)
+    nuevo_loader = DataLoader(
+        nuevo_dataset, batch_size=3, collate_fn=collate_fn, shuffle=False, num_workers=2, pin_memory=True #batch size 3
+    )
 
-  # Predicciones
-  all_preds = []
-  all_labels = []
-  fragment_preds = []  # Aquí almacenaremos las predicciones por fragmento de tres
-  fragment_labels = []  # Aquí almacenaremos las etiquetas por fragmento de tres
+    all_preds = []
+    all_labels = []
 
-  with torch.no_grad():
-    for batch in nuevo_loader:
-      images, features, labels = batch  # Desempaquetar los cuatro elementos
-      images = images.to(device)
-      features = features.to(device)
-      labels = labels.to(device)
+    with torch.no_grad():
+        for images, features, labels, _ in nuevo_loader: #añadimos _ para ignorar las rutas
+            images = [image.to(device) for image in images]
+            features = [feature.to(device) for feature in features]
+            labels = torch.stack(labels).to(device) #Stack de labels
+            
+            outputs = model(images, features)
 
-      # Predicción en fragmentos de tres en tres
-      outputs = model(images, features)
-      preds = torch.argmax(outputs, dim=1)
+            # Obtener predicciones y etiquetas
+            preds = torch.argmax(outputs, dim=1).cpu().numpy()
+            true_labels = np.argmax(labels.cpu().numpy(), axis=2)[:,0] #Obtener las etiquetas correctas
 
-      # Almacenamos las predicciones y etiquetas por fragmento
-      fragment_preds.append(preds.cpu().numpy())
-      fragment_labels.append(labels.cpu().numpy())
+            all_preds.extend(preds)
+            all_labels.extend(true_labels)
 
-  # Convertir las etiquetas one-hot a enteros (índice de la clase)
+    # Matriz de confusión
+    cm = confusion_matrix(all_labels, all_preds)
+    plt.figure(figsize=(10, 7))
+    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
+    plt.xlabel('Predicción')
+    plt.ylabel('Etiqueta Real')
+    plt.title('Matriz de Confusión')
+    plt.show()
+
+    # Reporte de clasificación
+    print("Reporte de Clasificación:")
+    print(classification_report(all_labels, all_preds))
+
+    # Guardar predicciones en un archivo CSV (opcional)
+    data["Predicciones"] = all_preds
+    output_csv_path = "/content/drive/MyDrive/TFG/predicciones_con_matriz_confusion.csv"
+    data.to_csv(output_csv_path, index=False)
+    print(f"Predicciones guardadas en {output_csv_path}")
+
+if __name__ == "__main__":
+    main()
 
