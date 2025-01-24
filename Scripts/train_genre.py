@@ -68,6 +68,7 @@ def main():
     print(data.head(10))
     normalize_columns(data, columns)
     print(data.head(4))
+    data = pd.concat([data.iloc[2100:2450], data.iloc[9780:10000]])
     for img_path in data["Ruta"]:
         if not os.path.exists(img_path):
             print(f"Ruta no encontrada: {img_path}")
