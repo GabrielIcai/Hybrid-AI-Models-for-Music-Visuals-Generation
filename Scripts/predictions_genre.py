@@ -54,26 +54,25 @@ def main():
         nuevo_dataset, batch_size=128,collate_fn = collate_fn, shuffle=False, num_workers=2, pin_memory=True
     )
 
-    # Predicciones
+    # Predicciones y etiquetas
     all_preds = []
     all_labels = []
-
+    
     with torch.no_grad():
         for batch in nuevo_loader:
-            images, features, labels= batch  # Desempaquetar los cuatro elementos
+            images, features, labels, img_paths = batch  # Desempaquetar los cuatro elementos
             images = images.to(device)
             features = features.to(device)
             labels = labels.to(device)
-
-    outputs = model(images, features)
-    preds = torch.argmax(outputs, dim=1)
-
-    all_preds.extend(preds.cpu().numpy())
-    all_labels.extend(labels.cpu().numpy())
-    all_labels = [label.item() for label in all_labels]  # Convertir las etiquetas a enteros
-    all_preds = [pred.item() for pred in all_preds]  # Convertir las predicciones a enteros
-
-
+    
+            # Obtener las predicciones del modelo
+            outputs = model(images, features)
+            preds = torch.argmax(outputs, dim=1)
+    
+            # Convertir las etiquetas one-hot a un valor de clase
+            all_labels.extend([label.argmax().item() for label in labels])  # Convertir etiquetas one-hot
+            all_preds.extend(preds.cpu().numpy())  # Predicciones
+    
     # Matriz de confusión
     cm = confusion_matrix(all_labels, all_preds)
     plt.figure(figsize=(10, 7))
@@ -82,11 +81,12 @@ def main():
     plt.ylabel('Etiqueta Real')
     plt.title('Matriz de Confusión')
     plt.show()
-
+    
     # Reporte de clasificación
     print("Reporte de Clasificación:")
     print(classification_report(all_labels, all_preds))
-
+    
+    
     # Guardar predicciones en un archivo CSV
     data["Predicciones"] = all_preds
     output_csv_path = "/content/drive/MyDrive/TFG/predicciones_con_matriz_confusion.csv"
