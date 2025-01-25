@@ -99,14 +99,17 @@ class CRNN(nn.Module):
 
     def forward(self, x, additional_features):
         batch_size, seq_len, channels, height, width = x.size()  # x: (batch_size, 3, 1, 128, 128)
-        
+        print(f"Entrada inicial: {x.shape}")
+
         x = x.view(batch_size * seq_len, channels, height, width)
         x = self.cnn(x)
-
         x = x.view(batch_size, seq_len, -1)
+        print(f"Salida de la CNN: {x.shape}")
+        print(f"Características adicionales: {additional_features.shape}")
         x = torch.cat((x, additional_features), dim=-1)
+        print(f"Después de concatenar características adicionales: {x.shape}")
         x, _ = self.rnn(x)
         
         out = self.fc(x[:, -1, :])
-        
+        print(f"Salida final: {out.shape}")
         return out
