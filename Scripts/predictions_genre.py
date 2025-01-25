@@ -61,7 +61,9 @@ def predict(model, dataloader, device):
     
     with torch.no_grad():  # Desactivar el cálculo de gradientes para predicciones
         for data in dataloader:
-            inputs, labels = data
+            print(data)  # Ver qué contiene 'data'
+            inputs, labels = data  # Desempaquetar los datos
+            
             inputs, labels = inputs.to(device), labels.to(device)
             
             # Hacer predicciones
@@ -75,6 +77,7 @@ def predict(model, dataloader, device):
             y_pred.extend(predicted.cpu().numpy())
     
     return np.array(y_true), np.array(y_pred)
+
 
 def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
