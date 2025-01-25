@@ -83,7 +83,7 @@ def main():
     transform = c_transform(mean, std)
     dataset = CustomDataset(data, base_path, transform=transform)
     dataloader = DataLoader(dataset, batch_size=128,collate_fn=collate_fn, shuffle=False, num_workers=2)
-    data.head(100)
+    print(data.head(100))
     # Carga del modelo
     num_classes = 6
     additional_features_dim = 12
