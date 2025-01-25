@@ -42,20 +42,10 @@ def load_model(model_path, num_classes, additional_features_dim, hidden_size):
     model.load_state_dict(torch.load(model_path, map_location=device))
     return model
 
-def predict(model, dataloader, device):
-    all_preds = []
-    all_labels = []
-
-    with torch.no_grad():
-        for images, features, labels in dataloader:
-            images, features = images.to(device), features.to(device)
-            outputs = model(images, features)
-            preds = torch.argmax(outputs, dim=1)
-
-            all_preds.extend(preds.cpu().numpy())
-            all_labels.extend(labels.cpu().numpy())
-
-    return np.array(all_preds), np.array(all_labels)
+import torch
+import numpy as np
+from sklearn.metrics import classification_report, confusion_matrix, ConfusionMatrixDisplay
+import matplotlib.pyplot as plt
 
 def plot_confusion_matrix(y_true, y_pred, class_names):
     cm = confusion_matrix(y_true, y_pred)
@@ -64,22 +54,52 @@ def plot_confusion_matrix(y_true, y_pred, class_names):
     plt.title("Matriz de Confusión")
     plt.show()
 
+def predict(model, dataloader, device):
+    model.eval()  # Establecer el modelo en modo evaluación
+    y_true = []
+    y_pred = []
+    
+    with torch.no_grad():  # Desactivar el cálculo de gradientes para predicciones
+        for data in dataloader:
+            inputs, labels = data
+            inputs, labels = inputs.to(device), labels.to(device)
+            
+            # Hacer predicciones
+            outputs = model(inputs)
+            
+            # Convertir las salidas a etiquetas de clase (por ejemplo, usando argmax)
+            _, predicted = torch.max(outputs, 1)
+            
+            # Almacenar las etiquetas verdaderas y predichas
+            y_true.extend(labels.cpu().numpy())
+            y_pred.extend(predicted.cpu().numpy())
+    
+    return np.array(y_true), np.array(y_pred)
+
 def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Usando dispositivo: {device}")
 
+    # Cargar los datos
     data = load_data(nuevo_csv_path)
     transform = c_transform(mean, std)
     dataset = CustomDataset(data, base_path, transform=transform)
     dataloader = DataLoader(dataset, batch_size=128, collate_fn=collate_fn, shuffle=False, num_workers=2)
     print(data.head(100))
 
+    # Cargar el modelo
     model = load_model(model_path, num_classes, additional_features_dim, hidden_size).to(device)
 
-    y_pred, y_true = predict(model, dataloader, device)
+    # Realizar predicciones
+    y_true, y_pred = predict(model, dataloader, device)
 
+    # Definir los nombres de las clases
     class_names = ["Clase 0", "Clase 1", "Clase 2", "Clase 3", "Clase 4", "Clase 5"]
+
+    # Imprimir el reporte de clasificación
     print(classification_report(y_true, y_pred, target_names=class_names))
+
+    # Mostrar la matriz de confusión
     plot_confusion_matrix(y_true, y_pred, class_names)
 
 if __name__ == "__main__":
