@@ -52,8 +52,8 @@ class CustomDataset(torch.utils.data.Dataset):
 # Carga el modelo
 def load_model(model_path, num_classes, additional_features_dim, hidden_size):
     model = CRNN(num_classes, additional_features_dim, hidden_size)
-    model.load_state_dict(torch.load(model_path))
-    model.eval()
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model.load_state_dict(torch.load(model_path, map_location=device))
     return model
 
 # Realiza predicciones
