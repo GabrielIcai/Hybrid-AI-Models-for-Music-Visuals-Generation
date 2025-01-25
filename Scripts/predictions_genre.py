@@ -1,120 +1,105 @@
-import os
-import sys
-import numpy as np
-import pandas as pd
-import seaborn as sns
-repo_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../"))
-if repo_path not in sys.path:
-  sys.path.append(repo_path)
-
-from src.training import collate_fn
-from src.models.genre_model import CRNN
-import matplotlib.pyplot as plt
-from sklearn.metrics import confusion_matrix, classification_report
-from src.preprocessing import (
-  CustomDataset,
-  normalize_columns,
-  c_transform,
-)
-from torch.utils.data import DataLoader
 import torch
+import pandas as pd
+import numpy as np
+import os
+import matplotlib.pyplot as plt
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay, classification_report
 from torch.utils.data import DataLoader
-from src.preprocessing.custom_dataset import CustomDataset
-
-
-# Parámetros
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-print(f"Usando dispositivo: {device}")
-base_path = "/content/drive/MyDrive/TFG/data/"  # Use sus rutas
-model_path = "/content/drive/MyDrive/TFG/models/best_crnn_genre.pth"  # Use sus rutas
-nuevo_csv_path = "/content/drive/MyDrive/TFG/data/espectrogramas_salida_test/dataset_genero_test.csv"  # Use sus rutas
+from torchvision.transforms import Compose, Normalize, ToTensor
+from src.models.genre_model import CNN_LSTM_genre, CRNN
+# Define las transformaciones
 mean = [0.676956295967102, 0.2529653012752533, 0.4388839304447174]
 std = [0.21755781769752502, 0.15407244861125946, 0.07557372003793716]
-columns = ["Spectral Centroid", "Spectral Bandwidth", "Spectral Roll-off"]
-hidden_size = 256
-additional_features_dim = 12
-num_classes = 6
+def c_transform(mean, std):
+    return Compose([ToTensor(), Normalize(mean=mean, std=std)])
 
-import torch
-import pandas as pd
-import numpy as np
-from sklearn.metrics import confusion_matrix, classification_report
-import seaborn as sns
-import matplotlib.pyplot as plt
-from torch.utils.data import DataLoader
+# Ruta de los datos y el modelo
+base_path = "/content/drive/MyDrive/TFG/data/"
+model_path = "/content/drive/MyDrive/TFG/models/best_crnn_genre.pth"
+nuevo_csv_path = "/content/drive/MyDrive/TFG/data/espectrogramas_salida_test/dataset_genero_test.csv"
 
-import torch
-import pandas as pd
-import numpy as np
-from sklearn.metrics import confusion_matrix, classification_report
-import seaborn as sns
-import matplotlib.pyplot as plt
-from torch.utils.data import DataLoader
+# Carga los datos
+def load_data(csv_path):
+    data = pd.read_csv(csv_path)
+    data["Ruta"] = base_path + data["Ruta"].str.replace("\\", "/")
+    return data
 
+# Dataset personalizado
+class CustomDataset(torch.utils.data.Dataset):
+    def __init__(self, dataframe, base_path, transform=None):
+        self.dataframe = dataframe
+        self.base_path = base_path
+        self.transform = transform
 
-def main():
-    # Cargar el modelo
-    model = CRNN(num_classes, additional_features_dim, hidden_size).to(device)
-    model.load_state_dict(torch.load(model_path, map_location=device))
+    def __len__(self):
+        return len(self.dataframe)
+
+    def __getitem__(self, idx):
+        img_path = self.dataframe.iloc[idx]["Ruta"]
+        features = self.dataframe.iloc[idx]["Spectral Centroid":"Spectral Roll-off"].values.astype(np.float32)
+        label = self.dataframe.iloc[idx]["Label"]
+
+        image = plt.imread(img_path)
+        if self.transform:
+            image = self.transform(image)
+
+        return image, features, label
+
+# Carga el modelo
+def load_model(model_path, num_classes, additional_features_dim, hidden_size):
+    model = CRNN(num_classes, additional_features_dim, hidden_size)
+    model.load_state_dict(torch.load(model_path))
     model.eval()
-    print("Modelo cargado.")
+    return model
 
-    # Preprocesar nuevos datos
-    data = pd.read_csv(nuevo_csv_path)
-    data["Ruta"] = data["Ruta"].str.replace("\\", "/")
-    data["Ruta"] = base_path + data["Ruta"]
-    normalize_columns(data, columns)
-
-    # Crear dataset y DataLoader:
-    test_transform = c_transform(mean, std)
-    nuevo_dataset = CustomDataset(data, base_path, transform=test_transform)
-    nuevo_loader = DataLoader(
-        nuevo_dataset, batch_size=3, collate_fn=collate_fn, shuffle=False, num_workers=2, pin_memory=True
-    )
-
+# Realiza predicciones
+def predict(model, dataloader, device):
     all_preds = []
     all_labels = []
 
     with torch.no_grad():
-        for images, features, labels in nuevo_loader:  # Add _ to ignore paths
-            # Convertir las listas en tensores
-            images = torch.stack([image.to(device) for image in images])  # Asegurarse de que images sea un tensor
-            features = torch.stack([feature.to(device) for feature in features])  # Asegurarse de que features sea un tensor
-
-            # Asegurarse de que labels sea un tensor
-            if not isinstance(labels, torch.Tensor):
-                labels = torch.stack(labels).to(device)
-            else:
-                labels = labels.to(device)
-
-            # Realizar la predicción
+        for images, features, labels in dataloader:
+            images, features = images.to(device), features.to(device)
             outputs = model(images, features)
+            preds = torch.argmax(outputs, dim=1)
 
-            # Obtener las predicciones y etiquetas
-            preds = torch.argmax(outputs, dim=1).cpu().numpy()
-            true_labels = np.argmax(labels.cpu().numpy(), axis=1)  # Asegúrate de que las etiquetas estén bien formateadas
+            all_preds.extend(preds.cpu().numpy())
+            all_labels.extend(labels.cpu().numpy())
 
-            all_preds.extend(preds)
-            all_labels.extend(true_labels)
+    return np.array(all_preds), np.array(all_labels)
 
-    # Matriz de confusión
-    cm = confusion_matrix(all_labels, all_preds)
-    plt.figure(figsize=(10, 7))
-    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues')
-    plt.xlabel('Predicción')
-    plt.ylabel('Etiqueta Real')
-    plt.title('Matriz de Confusión')
+# Visualiza la matriz de confusión
+def plot_confusion_matrix(y_true, y_pred, class_names):
+    cm = confusion_matrix(y_true, y_pred)
+    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=class_names)
+    disp.plot(cmap="viridis")
+    plt.title("Matriz de Confusión")
     plt.show()
 
-    # Reporte de clasificación
-    print("Reporte de Clasificación:")
-    print(classification_report(all_labels, all_preds))
+# Main
+def main():
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(f"Usando dispositivo: {device}")
 
-    # Guardar predicciones en un archivo CSV (opcional)
-    data["Predicciones"] = all_preds
-    output_csv_path = "/content/drive/MyDrive/TFG/predicciones_con_matriz_confusion.csv"
-    data.to_csv(output_csv_path, index=False)
-    print(f"Predicciones guardadas en {output_csv_path}")
+    # Carga de datos
+    data = load_data(nuevo_csv_path)
+    transform = c_transform(mean, std)
+    dataset = CustomDataset(data, base_path, transform=transform)
+    dataloader = DataLoader(dataset, batch_size=128, shuffle=False, num_workers=2)
+
+    # Carga del modelo
+    num_classes = 6
+    additional_features_dim = 12
+    hidden_size = 256
+    model = load_model(model_path, num_classes, additional_features_dim, hidden_size).to(device)
+
+    # Predicciones
+    y_pred, y_true = predict(model, dataloader, device)
+
+    # Reporte y matriz de confusión
+    class_names = ["Clase 0", "Clase 1", "Clase 2", "Clase 3", "Clase 4", "Clase 5"]
+    print(classification_report(y_true, y_pred, target_names=class_names))
+    plot_confusion_matrix(y_true, y_pred, class_names)
 
 if __name__ == "__main__":
     main()
