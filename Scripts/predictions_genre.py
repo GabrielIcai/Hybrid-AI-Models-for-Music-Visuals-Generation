@@ -2,6 +2,9 @@ import torch
 import pandas as pd
 import numpy as np
 import os
+repo_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../"))
+if repo_path not in sys.path:
+    sys.path.append(repo_path)
 import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay, classification_report
 from torch.utils.data import DataLoader
