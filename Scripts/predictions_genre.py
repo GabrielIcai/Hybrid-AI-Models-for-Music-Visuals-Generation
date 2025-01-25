@@ -8,6 +8,7 @@ if repo_path not in sys.path:
     sys.path.append(repo_path)
     from src.preprocessing import (
     CustomDataset,
+    normalize_columns,
     load_data,
     c_transform,
 )
@@ -19,20 +20,26 @@ from torch.utils.data import DataLoader
 from torchvision.transforms import Compose, Normalize, ToTensor
 from src.models.genre_model import CRNN
 # Define las transformaciones
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print(f"Usando dispositivo: {device}")
+base_path = "/content/drive/MyDrive/TFG/data/"  # Use sus rutas
+model_path = "/content/drive/MyDrive/TFG/models/best_crnn_genre.pth"  # Use sus rutas
+nuevo_csv_path = "/content/drive/MyDrive/TFG/data/espectrogramas_salida_test/dataset_genero_test.csv"  # Use sus rutas
 mean = [0.676956295967102, 0.2529653012752533, 0.4388839304447174]
 std = [0.21755781769752502, 0.15407244861125946, 0.07557372003793716]
+columns = ["Spectral Centroid", "Spectral Bandwidth", "Spectral Roll-off"]
+hidden_size = 256
+additional_features_dim = 12
+num_classes = 6
 def c_transform(mean, std):
     return Compose([ToTensor(), Normalize(mean=mean, std=std)])
-
-# Ruta de los datos y el modelo
-base_path = "/content/drive/MyDrive/TFG/data/"
-model_path = "/content/drive/MyDrive/TFG/models/best_crnn_genre.pth"
-nuevo_csv_path = "/content/drive/MyDrive/TFG/data/espectrogramas_salida_test/dataset_genero_test.csv"
 
 # Carga los datos
 def load_data(csv_path):
     data = pd.read_csv(csv_path)
-    data["Ruta"] = base_path + data["Ruta"].str.replace("\\", "/")
+    data["Ruta"] = data["Ruta"].str.replace("\\", "/")
+    data["Ruta"] = base_path + data["Ruta"]
+    normalize_columns(data, columns)
     return data
 
 # Carga el modelo
