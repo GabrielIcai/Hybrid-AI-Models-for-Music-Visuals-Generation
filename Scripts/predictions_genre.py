@@ -6,11 +6,18 @@ import sys
 repo_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../"))
 if repo_path not in sys.path:
     sys.path.append(repo_path)
+    from src.preprocessing import (
+    CustomDataset,
+    load_data,
+    c_transform,
+)
 import matplotlib.pyplot as plt
+from src.training import collate_fn
+from torch.utils.data import DataLoader
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay, classification_report
 from torch.utils.data import DataLoader
 from torchvision.transforms import Compose, Normalize, ToTensor
-from src.models.genre_model import CNN_LSTM_genre, CRNN
+from src.models.genre_model import CRNN
 # Define las transformaciones
 mean = [0.676956295967102, 0.2529653012752533, 0.4388839304447174]
 std = [0.21755781769752502, 0.15407244861125946, 0.07557372003793716]
@@ -27,27 +34,6 @@ def load_data(csv_path):
     data = pd.read_csv(csv_path)
     data["Ruta"] = base_path + data["Ruta"].str.replace("\\", "/")
     return data
-
-# Dataset personalizado
-class CustomDataset(torch.utils.data.Dataset):
-    def __init__(self, dataframe, base_path, transform=None):
-        self.dataframe = dataframe
-        self.base_path = base_path
-        self.transform = transform
-
-    def __len__(self):
-        return len(self.dataframe)
-
-    def __getitem__(self, idx):
-        img_path = self.dataframe.iloc[idx]["Ruta"]
-        features = self.dataframe.iloc[idx]["Spectral Centroid":"Spectral Roll-off"].values.astype(np.float32)
-        label = self.dataframe.iloc[idx]["Label"]
-
-        image = plt.imread(img_path)
-        if self.transform:
-            image = self.transform(image)
-
-        return image, features, label
 
 # Carga el modelo
 def load_model(model_path, num_classes, additional_features_dim, hidden_size):
@@ -89,7 +75,7 @@ def main():
     data = load_data(nuevo_csv_path)
     transform = c_transform(mean, std)
     dataset = CustomDataset(data, base_path, transform=transform)
-    dataloader = DataLoader(dataset, batch_size=128, shuffle=False, num_workers=2)
+    dataloader = DataLoader(dataset, batch_size=128,collate_fn=collate_fn, shuffle=False, num_workers=2)
 
     # Carga del modelo
     num_classes = 6
