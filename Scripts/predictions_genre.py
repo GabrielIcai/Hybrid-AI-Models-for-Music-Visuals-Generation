@@ -2,6 +2,7 @@ import torch
 import pandas as pd
 import numpy as np
 import os
+import seaborn as sns
 import sys
 repo_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../"))
 if repo_path not in sys.path:
@@ -27,83 +28,60 @@ hidden_size = 256
 additional_features_dim = 12
 num_classes = 6
 
-def c_transform(mean, std):
-    return Compose([ToTensor(), Normalize(mean=mean, std=std)])
+model = CRNN(num_classes=num_classes, additional_features_dim=12, hidden_size=256)
+model.load_state_dict(torch.load(model_path, map_location=device))
+model.to(device)
+model.eval()
 
-def load_data(csv_path):
-    data = pd.read_csv(csv_path)
-    data["Ruta"] = data["Ruta"].str.replace("\\", "/")
-    data["Ruta"] = base_path + data["Ruta"]
-    normalize_columns(data, columns)
-    return data
-
-def load_model(model_path, num_classes, additional_features_dim, hidden_size):
-    model = CRNN(num_classes, additional_features_dim, hidden_size)
-    model.load_state_dict(torch.load(model_path, map_location=device))
-    return model
-
-import torch
-import numpy as np
-from sklearn.metrics import classification_report, confusion_matrix, ConfusionMatrixDisplay
-import matplotlib.pyplot as plt
-
-def plot_confusion_matrix(y_true, y_pred, class_names):
-    cm = confusion_matrix(y_true, y_pred)
-    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=class_names)
-    disp.plot(cmap="viridis")
-    plt.title("Matriz de Confusión")
-    plt.show()
-
-def predict(model, dataloader, device):
-    model.eval()  # Establecer el modelo en modo evaluación
-    y_true = []
-    y_pred = []
-    
-    with torch.no_grad():  # Desactivar el cálculo de gradientes para predicciones
-        for data in dataloader:
-            print(data)  # Ver qué contiene 'data'
-            inputs, labels = data  # Desempaquetar los datos
-            
-            inputs, labels = inputs.to(device), labels.to(device)
-            
-            # Hacer predicciones
-            outputs = model(inputs)
-            
-            # Convertir las salidas a etiquetas de clase (por ejemplo, usando argmax)
-            _, predicted = torch.max(outputs, 1)
-            
-            # Almacenar las etiquetas verdaderas y predichas
-            y_true.extend(labels.cpu().numpy())
-            y_pred.extend(predicted.cpu().numpy())
-    
-    return np.array(y_true), np.array(y_pred)
+data = load_data(csv_path)
+data["Ruta"] = data["Ruta"].str.replace("\\", "/")
+data["Ruta"] = base_path + data["Ruta"]
+normalize_columns(data, columns)
 
 
-def main():
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print(f"Usando dispositivo: {device}")
+# Verificar rutas
+for img_path in data["Ruta"]:
+    if not os.path.exists(img_path):
+        print(f"Ruta no encontrada: {img_path}")
 
-    # Cargar los datos
-    data = load_data(nuevo_csv_path)
-    transform = c_transform(mean, std)
-    dataset = CustomDataset(data, base_path, transform=transform)
-    dataloader = DataLoader(dataset, batch_size=128, collate_fn=collate_fn, shuffle=False, num_workers=2)
-    print(data.head(100))
+# Definir transformaciones
+test_transform = c_transform(mean, std)
 
-    # Cargar el modelo
-    model = load_model(model_path, num_classes, additional_features_dim, hidden_size).to(device)
+# Crear dataset y DataLoader
+test_dataset = CustomDataset(data, base_path, transform=test_transform)
+test_loader = DataLoader(
+    test_dataset, batch_size=batch_size, collate_fn=collate_fn, shuffle=False, num_workers=2, pin_memory=True
+)
 
-    # Realizar predicciones
-    y_true, y_pred = predict(model, dataloader, device)
+# Realizar predicciones
+all_preds = []
+all_labels = []
 
-    # Definir los nombres de las clases
-    class_names = ["Clase 0", "Clase 1", "Clase 2", "Clase 3", "Clase 4", "Clase 5"]
+with torch.no_grad():
+    for images, additional_features, labels in test_loader:
+        images = images.to(device)
+        additional_features = additional_features.to(device)
+        labels = labels.to(device)
 
-    # Imprimir el reporte de clasificación
-    print(classification_report(y_true, y_pred, target_names=class_names))
+        outputs = model(images, additional_features)
+        preds = torch.argmax(outputs, dim=1)
 
-    # Mostrar la matriz de confusión
-    plot_confusion_matrix(y_true, y_pred, class_names)
+        all_preds.extend(preds.cpu().numpy())
+        all_labels.extend(labels[:, 0].cpu().numpy())  # Usar la etiqueta del primer fragmento
 
-if __name__ == "__main__":
-    main()
+# Generar matriz de confusión
+conf_matrix = confusion_matrix(all_labels, all_preds)
+print("Matriz de confusión:")
+print(conf_matrix)
+
+# Reporte de clasificación
+print("Reporte de clasificación:")
+print(classification_report(all_labels, all_preds))
+
+# Visualizar matriz de confusión
+plt.figure(figsize=(10, 8))
+sns.heatmap(conf_matrix, annot=True, fmt="d", cmap="Blues", xticklabels=range(num_classes), yticklabels=range(num_classes))
+plt.xlabel("Predicciones")
+plt.ylabel("Etiquetas Reales")
+plt.title("Matriz de Confusión")
+plt.show()
