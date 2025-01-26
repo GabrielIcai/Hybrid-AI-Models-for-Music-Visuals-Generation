@@ -2,7 +2,7 @@ import os
 import sys
 import pandas as pd
 import numpy as np
-repo_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../"))
+repo_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"))
 if repo_path not in sys.path:
     sys.path.append(repo_path)
 
@@ -155,6 +155,7 @@ def main():
         if val_loss < best_val_loss:
             best_val_loss = val_loss
             early_stop_counter = 0
+
             # Guarda el mejor modelo
             model_save_path = "/content/drive/MyDrive/TFG/models/best_crnn_genre.pth"
             torch.save(model.state_dict(), model_save_path)

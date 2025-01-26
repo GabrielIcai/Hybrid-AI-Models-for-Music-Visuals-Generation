@@ -2,7 +2,7 @@ import os
 import sys
 import json
 
-repo_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../"))
+repo_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"))
 if repo_path not in sys.path:
     sys.path.append(repo_path)
 
