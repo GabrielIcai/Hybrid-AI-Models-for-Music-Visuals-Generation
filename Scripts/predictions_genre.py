@@ -75,7 +75,7 @@ with torch.no_grad():
         preds = torch.argmax(outputs, dim=2)  # Predicciones por fragmento
 
         # Procesar etiquetas reales
-        labels_grouped = torch.argmax(labels, dim=2)  # Convertir etiquetas a índices de clase
+        labels_grouped = torch.argmax(labels, dim=1)  # Convertir etiquetas a índices de clase
         labels_final = labels_grouped[:, 0]  # Seleccionar la etiqueta del primer fragmento
 
         # Procesar predicciones
