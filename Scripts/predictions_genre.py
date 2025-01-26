@@ -99,7 +99,7 @@ image_path = "/content/drive/MyDrive/TFG/matriz_confusion_generos.png"
 plt.savefig(image_path)
 plt.close()
 
-example_idx = 919  
+example_idx = 300  
 probabilities = all_probabilities[example_idx]
 class_names = ["Afro House", "Ambient", "Deep House", "Techno", "Trance", "Progressive House"]
 
