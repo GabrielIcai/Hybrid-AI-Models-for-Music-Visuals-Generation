@@ -40,7 +40,7 @@ data["Ruta"] = base_path + data["Ruta"]
 normalize_columns(data, columns)
 
 class_counts = data[["Afro House", "Ambient", "Deep House", "Techno", "Trance","Progressive House"]].sum()
-
+class_names = ["Afro House", "Ambient", "Deep House", "Techno", "Trance", "Progressive House"]
 
 # Mostrar el conteo por clase
 print("Distribución de clases en el conjunto de datos:")
@@ -59,9 +59,10 @@ test_loader = DataLoader(
     test_dataset, batch_size=128, collate_fn=collate_fn, shuffle=False, num_workers=2, pin_memory=True
 )
 
+# Después de completar la inferencia
 all_preds = []
 all_labels = []
-all_probabilities = [] 
+all_probabilities = []
 
 with torch.no_grad():
     for images, additional_features, labels in test_loader:
@@ -78,17 +79,30 @@ with torch.no_grad():
         all_preds.extend(preds.cpu().numpy())
         all_labels.extend(labels_grouped.cpu().numpy())
 
+# Análisis de distribución antes de generar la matriz de confusión
+print("\nAnálisis de distribución de etiquetas reales y predicciones:")
+real_counts = pd.Series(all_labels).value_counts()
+pred_counts = pd.Series(all_preds).value_counts()
+
+# Asegurarte de que todas las clases estén representadas en el análisis
+real_counts = real_counts.reindex(range(num_classes), fill_value=0)
+pred_counts = pred_counts.reindex(range(num_classes), fill_value=0)
+
+for i, class_name in enumerate(class_names):
+    print(f"Clase '{class_name}':")
+    print(f"  Etiquetas reales: {real_counts[i]}")
+    print(f"  Predicciones: {pred_counts[i]}")
+
 # Generar matriz de confusión
 conf_matrix = confusion_matrix(all_labels, all_preds)
-print("Matriz de confusión:")
+print("\nMatriz de confusión:")
 print(conf_matrix)
 
 # Reporte de clasificación
-print("Reporte de clasificación:")
+print("\nReporte de clasificación:")
 print(classification_report(all_labels, all_preds))
 
 # Visualizar matriz de confusión
-class_names = ["Afro House", "Ambient", "Deep House", "Techno", "Trance", "Progressive House"]
 plt.figure(figsize=(10, 8))
 sns.heatmap(conf_matrix, annot=True, fmt="d", cmap="Blues", xticklabels=class_names, yticklabels=class_names)
 plt.xlabel("Predicciones")
@@ -99,11 +113,11 @@ image_path = "/content/drive/MyDrive/TFG/matriz_confusion_generos.png"
 plt.savefig(image_path)
 plt.close()
 
+# Ejemplo de probabilidades
 example_idx = 2  
 probabilities = all_probabilities[example_idx]
-class_names = ["Afro House", "Ambient", "Deep House", "Techno", "Trance", "Progressive House"]
 
-print(f"Probabilidades para el ejemplo {example_idx}:")
-print(f"Probabilidades: {all_probabilities[example_idx]}")
+print(f"\nProbabilidades para el ejemplo {example_idx}:")
+print(f"Probabilidades: {probabilities}")
 print(f"Predicción: {all_preds[example_idx]}")
 print(f"Etiqueta real: {all_labels[example_idx]}")
