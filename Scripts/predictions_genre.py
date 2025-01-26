@@ -103,10 +103,7 @@ example_idx = 120
 probabilities = all_probabilities[example_idx]
 class_names = ["Afro House", "Ambient", "Deep House", "Techno", "Trance", "Progressive House"]
 
-# Graficar las probabilidades
-plt.bar(class_names, probabilities)
-plt.xlabel("Clases")
-plt.ylabel("Probabilidad")
-plt.title(f"Probabilidades para el ejemplo {example_idx}")
-plt.xticks(rotation=45)
-plt.show()
+print(f"Probabilidades para el ejemplo {example_idx}:")
+print(f"Probabilidades: {all_probabilities[example_idx]}")
+print(f"Predicción: {all_preds[example_idx]}")
+print(f"Etiqueta real: {all_labels[example_idx]}")
