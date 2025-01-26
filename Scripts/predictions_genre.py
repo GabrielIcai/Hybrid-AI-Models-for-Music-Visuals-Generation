@@ -52,16 +52,13 @@ for img_path in data["Ruta"]:
     if not os.path.exists(img_path):
         print(f"Ruta no encontrada: {img_path}")
 
-# Definir transformaciones
 test_transform = c_transform(mean, std)
 
-# Crear dataset y DataLoader
 test_dataset = CustomDataset(data, base_path, transform=test_transform)
 test_loader = DataLoader(
     test_dataset, batch_size=128, collate_fn=collate_fn, shuffle=False, num_workers=2, pin_memory=True
 )
 
-# Realizar predicciones
 all_preds = []
 all_labels = []
 
@@ -69,18 +66,14 @@ with torch.no_grad():
     for images, additional_features, labels in test_loader:
         images = images.to(device)
         additional_features = additional_features.to(device)
-        labels = labels.to(device)  # Etiquetas en formato one-hot
+        labels = labels.to(device)
 
-        # Obtener predicciones del modelo
-        outputs = model(images, additional_features)  # Salida: (batch_size, num_classes)
-        preds = torch.argmax(outputs, dim=1)  # Predicciones por muestra (no por fragmento)
+        outputs = model(images, additional_features)
+        preds = torch.argmax(outputs, dim=1)
+        labels_grouped = torch.argmax(labels, dim=1)
 
-        # Convertir etiquetas a índices de clase
-        labels_grouped = torch.argmax(labels, dim=1)  # Convertir etiquetas a índices de clase
-
-        # Almacenar etiquetas y predicciones finales
         all_preds.extend(preds.cpu().numpy())
-        all_labels.extend(labels_grouped.cpu().numpy())  # Usar labels_grouped directamente
+        all_labels.extend(labels_grouped.cpu().numpy())
 
 # Generar matriz de confusión
 conf_matrix = confusion_matrix(all_labels, all_preds)
@@ -98,4 +91,5 @@ plt.xlabel("Predicciones")
 plt.ylabel("Etiquetas Reales")
 plt.title("Matriz de Confusión")
 plt.show()
+plt.draw()
 plt.close()
