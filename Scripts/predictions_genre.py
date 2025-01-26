@@ -61,6 +61,7 @@ test_loader = DataLoader(
 
 all_preds = []
 all_labels = []
+all_probabilities = [] 
 
 with torch.no_grad():
     for images, additional_features, labels in test_loader:
@@ -71,7 +72,9 @@ with torch.no_grad():
         outputs = model(images, additional_features)
         preds = torch.argmax(outputs, dim=1)
         labels_grouped = torch.argmax(labels, dim=1)
+        probabilities = torch.softmax(outputs, dim=1)
 
+        all_probabilities.extend(probabilities.cpu().numpy())
         all_preds.extend(preds.cpu().numpy())
         all_labels.extend(labels_grouped.cpu().numpy())
 
@@ -95,3 +98,15 @@ plt.title("Matriz de Confusión")
 image_path = "/content/drive/MyDrive/TFG/matriz_confusion_generos.png"
 plt.savefig(image_path)
 plt.close()
+
+example_idx = 120  
+probabilities = all_probabilities[example_idx]
+class_names = ["Afro House", "Ambient", "Deep House", "Techno", "Trance", "Progressive House"]
+
+# Graficar las probabilidades
+plt.bar(class_names, probabilities)
+plt.xlabel("Clases")
+plt.ylabel("Probabilidad")
+plt.title(f"Probabilidades para el ejemplo {example_idx}")
+plt.xticks(rotation=45)
+plt.show()
