@@ -72,7 +72,7 @@ with torch.no_grad():
 
         # Obtener predicciones del modelo
         outputs = model(images, additional_features)  # Salida: (batch_size, 3, num_classes)
-        preds = torch.argmax(outputs, dim=2)  # Predicciones por fragmento
+        preds = torch.argmax(outputs, dim=1)  # Predicciones por fragmento
 
         # Procesar etiquetas reales
         labels_grouped = torch.argmax(labels, dim=1)  # Convertir etiquetas a índices de clase
