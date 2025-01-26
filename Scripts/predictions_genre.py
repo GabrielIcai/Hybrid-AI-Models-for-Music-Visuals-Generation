@@ -15,6 +15,7 @@ from src.preprocessing import CustomDataset, normalize_columns, load_data, c_tra
 from src.training import collate_fn
 from src.models.genre_model import CRNN
 
+
 # Define las transformaciones
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Usando dispositivo: {device}")
@@ -97,3 +98,4 @@ plt.xlabel("Predicciones")
 plt.ylabel("Etiquetas Reales")
 plt.title("Matriz de Confusión")
 plt.show()
+plt.close()
