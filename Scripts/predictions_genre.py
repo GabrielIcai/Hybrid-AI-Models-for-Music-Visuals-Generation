@@ -38,6 +38,13 @@ data["Ruta"] = data["Ruta"].str.replace("\\", "/")
 data["Ruta"] = base_path + data["Ruta"]
 normalize_columns(data, columns)
 
+class_counts = data[["Afro House", "Ambient", "Deep House", "Techno", "Trance","Progressive House"]].sum()
+
+
+# Mostrar el conteo por clase
+print("Distribución de clases en el conjunto de datos:")
+print(class_counts)
+
 
 # Verificar rutas
 for img_path in data["Ruta"]:
