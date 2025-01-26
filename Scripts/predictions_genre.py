@@ -85,11 +85,13 @@ print("Reporte de clasificación:")
 print(classification_report(all_labels, all_preds))
 
 # Visualizar matriz de confusión
+class_names = ["Afro House", "Ambient", "Deep House", "Techno", "Trance", "Progressive House"]
 plt.figure(figsize=(10, 8))
-sns.heatmap(conf_matrix, annot=True, fmt="d", cmap="Blues", xticklabels=range(num_classes), yticklabels=range(num_classes))
+sns.heatmap(conf_matrix, annot=True, fmt="d", cmap="Blues", xticklabels=class_names, yticklabels=class_names)
 plt.xlabel("Predicciones")
 plt.ylabel("Etiquetas Reales")
 plt.title("Matriz de Confusión")
-plt.show()
-plt.draw()
+
+image_path = "/content/drive/MyDrive/TFG/matriz_confusion_generos.png"
+plt.savefig(image_path)
 plt.close()
