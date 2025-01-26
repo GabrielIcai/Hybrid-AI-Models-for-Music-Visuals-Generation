@@ -50,7 +50,7 @@ test_transform = c_transform(mean, std)
 # Crear dataset y DataLoader
 test_dataset = CustomDataset(data, base_path, transform=test_transform)
 test_loader = DataLoader(
-    test_dataset, batch_size=batch_size, collate_fn=collate_fn, shuffle=False, num_workers=2, pin_memory=True
+    test_dataset, batch_size=128, collate_fn=collate_fn, shuffle=False, num_workers=2, pin_memory=True
 )
 
 # Realizar predicciones
