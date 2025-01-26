@@ -30,7 +30,6 @@ from sklearn.metrics import (
     f1_score,
     precision_score,
     recall_score,
-    roc_auc_score,
 )
 # Parametros
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -106,7 +105,7 @@ def main():
     print("DataLoaders creados")
 
     # Modelo
-    model = CRNN(num_classes, additional_features_dim, hidden_size).to(device)
+    model = CNN_LSTM_genre(num_classes, additional_features_dim, hidden_size).to(device)
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
 
@@ -157,7 +156,7 @@ def main():
             early_stop_counter = 0
 
             # Guarda el mejor modelo
-            model_save_path = "/content/drive/MyDrive/TFG/models/best_crnn_genre.pth"
+            model_save_path = "/content/drive/MyDrive/TFG/models/best_cnn_lstm_genre.pth"
             torch.save(model.state_dict(), model_save_path)
             print(f"Mejor modelo guardado en {model_save_path}")
         else:
@@ -179,10 +178,10 @@ def main():
     'Val Recall': val_recalls,
 })
     #Guardo Métricas
-    metrics_df.to_csv("/content/drive/MyDrive/TFG/models/training_metrics_genre_crnn.csv", index=False)
+    metrics_df.to_csv("/content/drive/MyDrive/TFG/models/training_metrics_genre.csv", index=False)
 
     # Guardo el modelo
-    model_save_path = "/content/drive/MyDrive/TFG/models/crnn_genre.pth"
+    model_save_path = "/content/drive/MyDrive/TFG/models/cnn_lstm__genre.pth"
     torch.save(model.state_dict(), model_save_path)
     print(f"Modelo guardado en {model_save_path}")
 

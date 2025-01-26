@@ -10,26 +10,27 @@ class CNN_LSTM_genre(nn.Module):
 
         # Bloque CNN
         self.cnn = nn.Sequential(
-            # Bloque 1
             nn.Conv2d(3, 32, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
             nn.BatchNorm2d(32),
-            nn.MaxPool2d(2, 2),  # (128x128)-> (64x64)
-            # Bloque 2
+            nn.MaxPool2d((2, 2)),  # Reduce a (64, 64)
             nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
             nn.BatchNorm2d(64),
-            nn.MaxPool2d(2, 2),  # (64x64) -> (32x32)
-            # Bloque 3
+            nn.MaxPool2d((2, 2)),  # Reduce a (32, 32)
             nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=1),
             nn.ReLU(),
             nn.BatchNorm2d(128),
-            nn.MaxPool2d(2, 2),  # (32x32) -> (16x16)
+            nn.MaxPool2d((2, 2)),  # Reduce a (16, 16)
+            nn.Conv2d(128, 128, kernel_size=3, stride=1, padding=1),
+            nn.ReLU(),
+            nn.BatchNorm2d(128),
+            nn.MaxPool2d((2, 2))  # Reduce a (8, 8)
         )
 
         # Bloque LSTM
         self.lstm = nn.LSTM(
-            input_size=16 * 16 * 128 + additional_features_dim,
+            input_size=128 * 8 * 8 + additional_features_dim,
             hidden_size=hidden_size,
             num_layers=2,
             batch_first=True,
