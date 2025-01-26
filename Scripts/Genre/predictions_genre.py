@@ -16,7 +16,7 @@ from src.training import collate_fn
 from src.models.genre_model import CRNN
 
 
-# Define las transformaciones: Normalización y conversión a tensor
+# Define las transformacionesr
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Usando dispositivo: {device}")
 base_path = "/content/drive/MyDrive/TFG/data/"
