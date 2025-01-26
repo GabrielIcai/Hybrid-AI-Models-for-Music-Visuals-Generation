@@ -71,24 +71,15 @@ with torch.no_grad():
         labels = labels.to(device)  # Etiquetas en formato one-hot
 
         # Obtener predicciones del modelo
-        outputs = model(images, additional_features)  # Salida: (batch_size, 3, num_classes)
-        preds = torch.argmax(outputs, dim=1)  # Predicciones por fragmento
+        outputs = model(images, additional_features)  # Salida: (batch_size, num_classes)
+        preds = torch.argmax(outputs, dim=1)  # Predicciones por muestra (no por fragmento)
 
-        # Procesar etiquetas reales
+        # Convertir etiquetas a índices de clase
         labels_grouped = torch.argmax(labels, dim=1)  # Convertir etiquetas a índices de clase
-        labels_final = labels_grouped[:, 0]  # Seleccionar la etiqueta del primer fragmento
-
-        # Procesar predicciones
-        preds_final = preds[:, 0]  # Seleccionar la predicción del primer fragmento
-
-        # Verificar consistencia de los grupos
-        for label_group in labels_grouped:
-            if not torch.all(label_group == label_group[0]):
-                print(f"Advertencia: Grupo inconsistente encontrado: {label_group}")
 
         # Almacenar etiquetas y predicciones finales
-        all_preds.extend(preds_final.cpu().numpy())
-        all_labels.extend(labels_final.cpu().numpy())
+        all_preds.extend(preds.cpu().numpy())
+        all_labels.extend(labels_grouped.cpu().numpy())  # Usar labels_grouped directamente
 
 # Generar matriz de confusión
 conf_matrix = confusion_matrix(all_labels, all_preds)
