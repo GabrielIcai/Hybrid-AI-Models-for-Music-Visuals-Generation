@@ -71,7 +71,6 @@ class CustomDataset(torch.utils.data.Dataset):
             "Afro House",
             "Ambient",
             "Deep House",
-            "Pop/Dance",
             "Techno",
             "Trance",
             "Progressive House"]
