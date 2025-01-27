@@ -4,6 +4,11 @@ import numpy as np
 import os
 import seaborn as sns
 import sys
+import torch
+
+repo_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"))
+if repo_path not in sys.path:
+    sys.path.append(repo_path)
 import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix, classification_report
 from torch.utils.data import DataLoader
