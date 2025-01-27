@@ -13,14 +13,15 @@ from torch.utils.data import DataLoader
 from torchvision.transforms import Compose, Normalize, ToTensor
 from src.preprocessing import CustomDataset, normalize_columns, load_data, c_transform
 from src.training import collate_fn
-from src.models.genre_model import CRNN
+from src.models.genre_model import CRNN, CNN_LSTM_genre
+
 
 
 # Define las transformacionesr
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Usando dispositivo: {device}")
 base_path = "/content/drive/MyDrive/TFG/data/"
-model_path = "/content/drive/MyDrive/TFG/models/best_crnn_genre.pth"
+model_path = "/content/drive/MyDrive/TFG/models/best_cnn_lstm_genre.pth"
 csv_path = "/content/drive/MyDrive/TFG/data/espectrogramas_salida_test/dataset_genero_test.csv"
 mean = [0.676956295967102, 0.2529653012752533, 0.4388839304447174]
 std = [0.21755781769752502, 0.15407244861125946, 0.07557372003793716]
@@ -29,7 +30,7 @@ hidden_size = 256
 additional_features_dim = 12
 num_classes = 6
 
-model = CRNN(num_classes=num_classes, additional_features_dim=12, hidden_size=256)
+model = CNN_LSTM_genre(num_classes=num_classes, additional_features_dim=12, hidden_size=256)
 model.load_state_dict(torch.load(model_path, map_location=device))
 model.to(device)
 model.eval()
@@ -109,7 +110,7 @@ plt.xlabel("Predicciones")
 plt.ylabel("Etiquetas Reales")
 plt.title("Matriz de Confusión")
 
-image_path = "/content/drive/MyDrive/TFG/matriz_confusion_generos.png"
+image_path = "/content/drive/MyDrive/TFG/matriz_confusion_generos_lstm.png"
 plt.savefig(image_path)
 plt.close()
 
