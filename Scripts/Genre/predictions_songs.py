@@ -31,6 +31,7 @@ class_names = ["Afro House", "Ambient", "Deep House", "Techno", "Trance", "Progr
 
 # Cargar y preparar datos
 data = load_data(csv_path)
+pd.set_option("display.max_columns", None)
 print(data.head())
 # Verificar columna Song ID
 assert "Song ID" in data.columns, "El CSV debe contener la columna 'Song ID' para agrupar por canciones"
