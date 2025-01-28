@@ -64,7 +64,7 @@ all_labels = []
 all_song_ids = []
 
 with torch.no_grad():
-    for images, additional_features, labels in test_loader:
+    for images, additional_features, labels, song_ids in test_loader:  # Asegúrate de que song_ids se devuelve en __getitem__
         # Mover datos al dispositivo
         images = images.to(device)
         additional_features = additional_features.to(device)
@@ -80,7 +80,7 @@ with torch.no_grad():
         # Guardar resultados
         all_preds.extend(preds.cpu().numpy())
         all_labels.extend(labels_indices.cpu().numpy())
-        all_song_ids.extend(test_dataset.data["Song ID"].iloc[[idx for idx in range(len(test_dataset))]].tolist())
+        all_song_ids.extend(song_ids.cpu().numpy())  # Guardar los song_ids
 
 # Agrupar predicciones por canción
 song_predictions = {}
