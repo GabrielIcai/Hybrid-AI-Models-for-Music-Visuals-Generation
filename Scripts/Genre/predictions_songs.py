@@ -30,7 +30,8 @@ columns_to_normalize = ["Spectral Centroid", "Spectral Bandwidth", "Spectral Rol
 class_names = ["Afro House", "Ambient", "Deep House", "Techno", "Trance", "Progressive House"]
 
 # Cargar y preparar datos
-data = load_data(csv_path)
+data = pd.read_csv(csv_path, sep=",", decimal=".")
+data = data.replace({r'\.': '', ',': '.'}, regex=True)
 pd.set_option("display.max_columns", None)
 print(data.head())
 # Verificar columna Song ID
@@ -115,7 +116,7 @@ os.makedirs(output_dir, exist_ok=True)  # Crear directorio si no existe
 # Matriz de confusión
 conf_matrix = confusion_matrix(final_true_labels, final_predictions)
 plt.figure(figsize=(10, 8))
-sns.heatmap(conf_matrix, annot=True, fmt="d", cmap="Blues", 
+sns.heatmap(conf_matrix, annot=True, fmt="d", cmap="hot", 
             xticklabels=class_names, yticklabels=class_names)
 plt.xlabel("Predicciones")
 plt.ylabel("Etiquetas Reales")
