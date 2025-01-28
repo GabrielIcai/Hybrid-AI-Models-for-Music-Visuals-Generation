@@ -5,6 +5,7 @@ import torchvision.models as models
 class ResNetCRNNEmotionModel(nn.Module):
     def __init__(self, num_valencia_classes=10, num_arousal_classes=10, hidden_size=256, num_layers=2):
         super(ResNetCRNNEmotionModel, self).__init__()
+        
         #RESNET-18
         resnet = models.resnet18(pretrained=True)
         
