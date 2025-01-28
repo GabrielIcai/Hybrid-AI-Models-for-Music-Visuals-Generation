@@ -59,106 +59,71 @@ test_loader = DataLoader(
     pin_memory=True
 )
 
+from collections import Counter
+
+# Después de completar la inferencia
 all_preds = []
 all_labels = []
-all_song_ids = []
+all_probabilities = []
+song_ids = data["Song ID"].tolist()  # Asegúrate de que el dataset tenga una columna 'Song ID'
+
+song_group_predictions = {}  # Diccionario para almacenar predicciones por canción
+song_group_labels = {}       # Diccionario para etiquetas reales por canción
 
 with torch.no_grad():
-    for images, additional_features, labels, song_ids in test_loader:  # Asegúrate de que song_ids se devuelve en __getitem__
-        # Mover datos al dispositivo
+    for idx, (images, additional_features, labels) in enumerate(test_loader):
         images = images.to(device)
         additional_features = additional_features.to(device)
         labels = labels.to(device)
-        
-        # Forward pass
+
         outputs = model(images, additional_features)
-        
-        # Obtener predicciones
         preds = torch.argmax(outputs, dim=1)
-        labels_indices = torch.argmax(labels, dim=1)
+        probabilities = torch.softmax(outputs, dim=1)
+
+        # Obtener IDs de las canciones para este batch
+        batch_song_ids = song_ids[idx * test_loader.batch_size : (idx + 1) * test_loader.batch_size]
         
-        # Guardar resultados
-        all_preds.extend(preds.cpu().numpy())
-        all_labels.extend(labels_indices.cpu().numpy())
-        all_song_ids.extend(song_ids.cpu().numpy())  # Guardar los song_ids
+        # Agrupar predicciones y etiquetas por canción
+        for i, song_id in enumerate(batch_song_ids):
+            if song_id not in song_group_predictions:
+                song_group_predictions[song_id] = []
+                song_group_labels[song_id] = []
 
-# Agrupar predicciones por canción
-song_predictions = {}
-song_true_labels = {}
+            song_group_predictions[song_id].append(preds[i].item())
+            song_group_labels[song_id].append(torch.argmax(labels[i]).item())
 
-for song_id, pred, true_label in zip(all_song_ids, all_preds, all_labels):
-    if song_id not in song_predictions:
-        song_predictions[song_id] = []
-        song_true_labels[song_id] = true_label  # Asumimos que todos los fragmentos tienen la misma etiqueta
+# Obtener la predicción final por canción (la más frecuente)
+final_song_predictions = {}
+final_song_labels = {}
+
+for song_id, predictions in song_group_predictions.items():
+    # Predicción más frecuente
+    most_common_prediction = Counter(predictions).most_common(1)[0][0]
+    final_song_predictions[song_id] = most_common_prediction
     
-    song_predictions[song_id].append(pred)
+    # Etiqueta real (asumimos que es la misma para todos los fragmentos de la canción)
+    final_song_labels[song_id] = song_group_labels[song_id][0]
 
-# Votación mayoritaria por canción
-final_predictions = []
-final_true_labels = []
+# Convertir a listas para métricas
+final_preds = list(final_song_predictions.values())
+final_labels = list(final_song_labels.values())
 
-for song_id in song_predictions:
-    # Obtener la moda de las predicciones
-    majority_vote = np.argmax(np.bincount(song_predictions[song_id]))
-    final_predictions.append(majority_vote)
-    final_true_labels.append(song_true_labels[song_id])
-
-# Evaluación a nivel de canción
-print("\nEvaluación a nivel de canción completa:")
-print("--------------------------------------")
-
-# Directorio para guardar resultados
-output_dir = "/content/drive/MyDrive/TFG/resultados/"
-os.makedirs(output_dir, exist_ok=True)  # Crear directorio si no existe
-
-# Matriz de confusión
-conf_matrix = confusion_matrix(final_true_labels, final_predictions)
-plt.figure(figsize=(10, 8))
-sns.heatmap(conf_matrix, annot=True, fmt="d", cmap="hot", 
-            xticklabels=class_names, yticklabels=class_names)
-plt.xlabel("Predicciones")
-plt.ylabel("Etiquetas Reales")
-plt.title("Matriz de Confusión LSTM - Canción")
-plt.savefig(os.path.join(output_dir, "matriz_confusion_canciones_LSTM.png"))
-plt.close()
+# Generar matriz de confusión
+conf_matrix = confusion_matrix(final_labels, final_preds)
+print("\nMatriz de confusión (por canción):")
+print(conf_matrix)
 
 # Reporte de clasificación
-class_report = classification_report(final_true_labels, final_predictions, target_names=class_names, output_dict=True)
-with open(os.path.join(output_dir, "reporte_clasificacion.txt"), "w") as f:
-    f.write(classification_report(final_true_labels, final_predictions, target_names=class_names))
+print("\nReporte de clasificación (por canción):")
+print(classification_report(final_labels, final_preds, target_names=class_names))
 
-# Gráficas adicionales
+# Visualizar matriz de confusión
+plt.figure(figsize=(10, 8))
+sns.heatmap(conf_matrix, annot=True, fmt="d", cmap="Blues", xticklabels=class_names, yticklabels=class_names)
+plt.xlabel("Predicciones")
+plt.ylabel("Etiquetas Reales")
+plt.title("Matriz de Confusión (por canción)")
 
-# 1. Distribución de Predicciones por Canción
-plt.figure(figsize=(12, 6))
-for i, song_id in enumerate(song_predictions):
-    plt.bar(i, len(song_predictions[song_id]), label=f'{song_id} - {class_names[final_predictions[i]]}')
-plt.xlabel("Canciones")
-plt.ylabel("Número de Fragmentos")
-plt.title("Distribución de Predicciones por Canción LSTM")
-plt.xticks([])
-plt.legend()
-plt.savefig(os.path.join(output_dir, "distribucion_predicciones_por_cancion_LSTM.png"))
+image_path = "/content/drive/MyDrive/TFG/matriz_confusion_generos_lstm_por_cancion.png"
+plt.savefig(image_path)
 plt.close()
-
-# 2. Precisión por Clase
-precision_values = [class_report[class_name]['precision'] for class_name in class_names]
-plt.figure(figsize=(10, 6))
-sns.barplot(x=class_names, y=precision_values, palette="viridis")
-plt.xlabel("Clases")
-plt.ylabel("Precisión")
-plt.title("Precisión por Clase LSTM")
-plt.savefig(os.path.join(output_dir, "precision_por_clase_LSTM.png"))
-plt.close()
-
-# 3. Distribución de Etiquetas Reales
-plt.figure(figsize=(10, 6))
-sns.countplot(x=final_true_labels, palette="Set2")
-plt.xticks(ticks=range(len(class_names)), labels=class_names, rotation=45)
-plt.xlabel("Clases")
-plt.ylabel("Número de Canciones")
-plt.title("Distribución de Etiquetas Reales LSTM")
-plt.savefig(os.path.join(output_dir, "distribucion_etiquetas_reales_LSTM.png"))
-plt.close()
-
-print(f"Resultados guardados en: {output_dir}")
