@@ -12,7 +12,7 @@ if repo_path not in sys.path:
 import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix, classification_report
 from torch.utils.data import DataLoader
-from src.preprocessing import CustomDataset, normalize_columns, load_data, c_transform
+from src.preprocessing import CustomDataset_s, normalize_columns, load_data, c_transform
 from src.training import collate_fn
 from src.models.genre_model import CNN_LSTM_genre
 
@@ -49,7 +49,7 @@ model.eval()
 
 # Dataset y DataLoader
 test_transform = c_transform(mean, std)
-test_dataset = CustomDataset(data, base_path, transform=test_transform)
+test_dataset = CustomDataset_s(data, base_path, transform=test_transform)
 test_loader = DataLoader(
     test_dataset, 
     batch_size=128, 
@@ -59,13 +59,12 @@ test_loader = DataLoader(
     pin_memory=True
 )
 
-# Realizar inferencia
 all_preds = []
 all_labels = []
 all_song_ids = []
 
 with torch.no_grad():
-    for images, additional_features, labels in test_loader:
+    for images, additional_features, labels, song_ids in test_loader:  # Asegúrate de que song_ids se devuelve en __getitem__
         # Mover datos al dispositivo
         images = images.to(device)
         additional_features = additional_features.to(device)
@@ -81,7 +80,7 @@ with torch.no_grad():
         # Guardar resultados
         all_preds.extend(preds.cpu().numpy())
         all_labels.extend(labels_indices.cpu().numpy())
-        all_song_ids.extend(test_dataset.data["Song ID"].iloc[test_dataset.indices].tolist())
+        all_song_ids.extend(song_ids.cpu().numpy())  # Guardar los song_ids
 
 # Agrupar predicciones por canción
 song_predictions = {}
