@@ -23,15 +23,14 @@ print(f"Usando dispositivo: {device}")
 # Parámetros
 base_path = "/content/drive/MyDrive/TFG/data/"
 model_path = "/content/drive/MyDrive/TFG/models/best_cnn_lstm_genre.pth"
-csv_path = "/content/drive/MyDrive/TFG/data/espectrogramas_salida_test/dataset_genero_test - dataset_genero_test.csv"
+csv_path = "/content/drive/MyDrive/TFG/data/espectrogramas_salida_test/dataset_genero_test.csv"
 mean = [0.676956295967102, 0.2529653012752533, 0.4388839304447174]
 std = [0.21755781769752502, 0.15407244861125946, 0.07557372003793716]
 columns_to_normalize = ["Spectral Centroid", "Spectral Bandwidth", "Spectral Roll-off"]
 class_names = ["Afro House", "Ambient", "Deep House", "Techno", "Trance", "Progressive House"]
 
 # Cargar y preparar datos
-data = pd.read_csv(csv_path, sep=",", decimal=".")
-data = data.replace({r'\.': '', ',': '.'}, regex=True)
+data = load_data(csv_path)
 pd.set_option("display.max_columns", None)
 print(data.head())
 # Verificar columna Song ID
