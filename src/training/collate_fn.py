@@ -21,6 +21,7 @@ def collate_fn(batch):
     for img, add_feats, label, image_path in batch:
         if img is not None:
             song_name = extract_song_name(image_path)
+            print(song_name)
             if song_name:
                 grouped_by_song[song_name].append((img, add_feats, label))
             else:
