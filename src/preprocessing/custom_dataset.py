@@ -98,8 +98,10 @@ class CustomDataset_s(torch.utils.data.Dataset):
             raise IndexError(f"Índice {idx} fuera de rango")
 
         row = self.data.iloc[idx]
-        ruta = row["Ruta"]
-        img_path = os.path.join(self.base_path, ruta)
+        img_path = os.path.join(self.base_path, row["Ruta"])
+
+        if not os.path.exists(img_path):
+            raise RuntimeError(f"Imagen no encontrada: {img_path}")
 
         try:
             # Cargar la imagen
@@ -122,10 +124,6 @@ class CustomDataset_s(torch.utils.data.Dataset):
                 "Spectral Variation",
                 "Tempo",
             ]
-            for col in required_columns:
-                if col not in row:
-                    raise ValueError(f"Columna {col} no encontrada en el DataFrame.")
-
             additional_features = row[required_columns].values.astype(float)
             additional_features = torch.tensor(additional_features, dtype=torch.float32)
 
@@ -141,11 +139,10 @@ class CustomDataset_s(torch.utils.data.Dataset):
             labels = torch.tensor(row[label_columns].values.astype(int), dtype=torch.long)
 
             # Obtener el Song ID
-            song_id = row["Song ID"]  # Asegúrate de que "Song ID" esté en tu DataFrame
+            song_id = row["Song ID"]
 
             return image, additional_features, labels, song_id
 
         except Exception as e:
-            raise RuntimeError(
-                f"Error procesando el índice {idx}, archivo {img_path}: {e}"
-            )
+            print(f"Error procesando el índice {idx}: {e}")
+            return None  # Devuelve None si hay un error

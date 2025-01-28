@@ -55,6 +55,7 @@ for img_path in data["Ruta"]:
 test_transform = c_transform(mean, std)
 
 test_dataset = CustomDataset(data, base_path, transform=test_transform)
+model.load_state_dict(torch.load(model_path, map_location=device, weights_only=True))
 test_loader = DataLoader(
     test_dataset, batch_size=128, collate_fn=collate_fn, shuffle=False, num_workers=2, pin_memory=True
 )
