@@ -104,8 +104,9 @@ class CustomDataset_s(torch.utils.data.Dataset):
             raise RuntimeError(f"Imagen no encontrada: {img_path}")
 
         try:
-            # Cargar la imagen
+
             image = Image.open(img_path).convert("RGB")
+            
             if self.transform:
                 image = self.transform(image)
 
@@ -146,3 +147,5 @@ class CustomDataset_s(torch.utils.data.Dataset):
         except Exception as e:
             print(f"Error procesando el índice {idx}: {e}")
             return None  # Devuelve None si hay un error
+        except Exception as e:
+            raise RuntimeError(f"Error cargando la imagen en {img_path}: {e}")
