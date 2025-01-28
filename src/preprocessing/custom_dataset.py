@@ -75,7 +75,12 @@ class CustomDataset(torch.utils.data.Dataset):
             "Progressive House"]
             labels = torch.tensor(row[label_columns].values.astype(int),dtype=torch.long
         )
-            return image, additional_features, labels, img_path
+            song_id = self.data.iloc[idx]["Song ID"] if "Song ID" in self.data.columns else None
+
+            if song_id is not None:
+                return image, additional_features, labels, song_id
+            else:
+                return image, additional_features, labels
 
         except Exception as e:
             raise RuntimeError(
@@ -85,8 +90,7 @@ class CustomDataset(torch.utils.data.Dataset):
 
 class CustomDataset_s(torch.utils.data.Dataset):
     def __init__(self, data, base_path, transform):
-        self.data = data
-        self.data = data.reset_index(drop=True)  # Reiniciar índices para evitar problemas
+        self.data = data.reset_index(drop=True)  # Reinicia los índices del DataFrame
         self.base_path = base_path
         self.transform = transform
 
@@ -96,56 +100,51 @@ class CustomDataset_s(torch.utils.data.Dataset):
     def __getitem__(self, idx):
         if idx < 0 or idx >= len(self.data):
             raise IndexError(f"Índice {idx} fuera de rango")
-
+        
         row = self.data.iloc[idx]
         img_path = os.path.join(self.base_path, row["Ruta"])
 
-        if not os.path.exists(img_path):
-            raise RuntimeError(f"Imagen no encontrada: {img_path}")
-
         try:
-
+            print(f"Cargando imagen desde: {img_path}")
+            # Carga la imagen y aplica transformaciones
             image = Image.open(img_path).convert("RGB")
-            
             if self.transform:
                 image = self.transform(image)
 
-            # Verificar y obtener características adicionales
+            # Verifica que todas las columnas necesarias estén presentes
             required_columns = [
-                "RMS",
-                "ZCR",
-                "Mean Absolute Amplitude",
-                "Crest Factor",
-                "Standard Deviation of Amplitude",
-                "Spectral Centroid",
-                "Spectral Bandwidth",
-                "Spectral Roll-off",
-                "Spectral Flux",
-                "VAD",
-                "Spectral Variation",
-                "Tempo",
+                "RMS", "ZCR", "Mean Absolute Amplitude", "Crest Factor",
+                "Standard Deviation of Amplitude", "Spectral Centroid",
+                "Spectral Bandwidth", "Spectral Roll-off", "Spectral Flux",
+                "VAD", "Spectral Variation", "Tempo",
             ]
-            additional_features = row[required_columns].values.astype(float)
-            additional_features = torch.tensor(additional_features, dtype=torch.float32)
+            missing_columns = [col for col in required_columns if col not in row]
+            if missing_columns:
+                raise ValueError(f"Faltan columnas: {', '.join(missing_columns)}")
 
-            # Obtener etiquetas
+            # Obtén las características adicionales
+            additional_features = torch.tensor(
+                row[required_columns].values.astype(float), dtype=torch.float32
+            )
+
+            # Obtén las etiquetas
             label_columns = [
-                "Afro House",
-                "Ambient",
-                "Deep House",
-                "Techno",
-                "Trance",
-                "Progressive House",
+                "Afro House", "Ambient", "Deep House",
+                "Techno", "Trance", "Progressive House",
             ]
-            labels = torch.tensor(row[label_columns].values.astype(int), dtype=torch.long)
+            labels = torch.tensor(
+                row[label_columns].values.astype(int), dtype=torch.long
+            )
 
-            # Obtener el Song ID
-            song_id = row["Song ID"]
+            # Obtén el Song ID si existe
+            song_id = row["Song ID"] if "Song ID" in row else None
 
-            return image, additional_features, labels, song_id
+            if song_id is not None:
+                return image, additional_features, labels, song_id
+            else:
+                return image, additional_features, labels
 
         except Exception as e:
-            print(f"Error procesando el índice {idx}: {e}")
-            return None  # Devuelve None si hay un error
-        except Exception as e:
-            raise RuntimeError(f"Error cargando la imagen en {img_path}: {e}")
+            raise RuntimeError(
+                f"Error procesando el índice {idx}, archivo {img_path}: {e}"
+            )
