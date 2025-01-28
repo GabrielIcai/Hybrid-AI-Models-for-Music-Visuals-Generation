@@ -18,6 +18,9 @@ from collections import defaultdict
 import torch
 
 def collate_fn(batch):
+    from collections import defaultdict
+    import torch
+
     # Filtrar elementos inválidos
     batch = [item for item in batch if item is not None]
     if not batch:
@@ -30,12 +33,15 @@ def collate_fn(batch):
         song_name = extract_song_name(image_path)
         if song_name:
             grouped_by_song[song_name].append((img, add_feats, label))
+        else:
+            print(f"Fragmento con nombre de canción inválido: {image_path}")
 
     images = []
     additional_features = []
     labels = []
 
     for song_name, fragments in grouped_by_song.items():
+        print(f"Procesando canción: {song_name} con {len(fragments)} fragmentos.")
         if len(fragments) < 3:
             print(f"La canción {song_name} tiene menos de 3 fragmentos y será ignorada.")
             continue
@@ -67,6 +73,7 @@ def collate_fn(batch):
             additional_features.append(torch.stack(song_additional_features, dim=0))
 
     if not images:
+        print("No se generaron imágenes válidas.")
         raise ValueError("No se generaron imágenes válidas en el collate_fn.")
 
     images = torch.stack(images, dim=0)  # (batch_size, 3, canales, altura, anchura)
