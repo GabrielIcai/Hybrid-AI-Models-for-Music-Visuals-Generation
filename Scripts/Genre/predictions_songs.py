@@ -7,7 +7,7 @@ import sys
 import torch
 from collections import Counter, defaultdict
 import re
-from PIL import Image
+from scipy import stats
 
 repo_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"))
 if repo_path not in sys.path:
