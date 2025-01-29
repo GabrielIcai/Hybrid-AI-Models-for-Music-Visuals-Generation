@@ -119,6 +119,8 @@ class CustomDataset_s(torch.utils.data.Dataset):
 
             #SONG ID ES OPCIONAL
             song_id = row["Song ID"] if "Song ID" in row else None
+            print("En custom dataset")
+            print(song_id)
 
             if song_id is not None:
                 print(song_id)
