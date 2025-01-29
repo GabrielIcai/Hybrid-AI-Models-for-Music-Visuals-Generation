@@ -19,3 +19,6 @@ runs:
     - name: Lint with PyLint
       run: pylint src tests
       shell: bash
+    - name: Check complexity
+      run: complexipy .
+      shell: bash

@@ -45,7 +45,7 @@ def main():
 
     mean, std = mean_std_image(data)
 
-    # Guardar resultados en JSON
+    #JSON
     mean_std_data = {"mean": mean.tolist(), "std": std.tolist()}
     with open(output_path, "w") as f:
         json.dump(mean_std_data, f)

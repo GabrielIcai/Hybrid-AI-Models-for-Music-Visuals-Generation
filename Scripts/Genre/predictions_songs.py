@@ -34,7 +34,7 @@ data = load_data(csv_path)
 pd.set_option("display.max_columns", None)
 print(data.head())
 # Verificar columna Song ID
-assert "Song ID" in data.columns, "El CSV debe contener la columna 'Song ID' para agrupar por canciones"
+assert "Song ID" in data.columns, "El CSV tiene que contener la columna 'Song ID' para agrupar por canciones"
 
 # Preprocesamiento
 data["Ruta"] = data["Ruta"].str.replace("\\", "/")
@@ -65,10 +65,10 @@ from collections import Counter
 all_preds = []
 all_labels = []
 all_probabilities = []
-song_ids = data["Song ID"].tolist()  # Asegúrate de que el dataset tenga una columna 'Song ID'
+song_ids = data["Song ID"].tolist()
 
-song_group_predictions = {}  # Diccionario para almacenar predicciones por canción
-song_group_labels = {}       # Diccionario para etiquetas reales por canción
+song_group_predictions = {}
+song_group_labels = {}
 
 with torch.no_grad():
     for idx, (images, additional_features, labels) in enumerate(test_loader):
@@ -80,10 +80,8 @@ with torch.no_grad():
         preds = torch.argmax(outputs, dim=1)
         probabilities = torch.softmax(outputs, dim=1)
 
-        # Obtener IDs de las canciones para este batch
         batch_song_ids = song_ids[idx * test_loader.batch_size : (idx + 1) * test_loader.batch_size]
         
-        # Agrupar predicciones y etiquetas por canción
         for i, song_id in enumerate(batch_song_ids):
             if song_id not in song_group_predictions:
                 song_group_predictions[song_id] = []
@@ -92,16 +90,15 @@ with torch.no_grad():
             song_group_predictions[song_id].append(preds[i].item())
             song_group_labels[song_id].append(torch.argmax(labels[i]).item())
 
-# Obtener la predicción final por canción (la más frecuente)
 final_song_predictions = {}
 final_song_labels = {}
 
 for song_id, predictions in song_group_predictions.items():
-    # Predicción más frecuente
-    most_common_prediction = Counter(predictions).most_common(1)[0][0]
-    final_song_predictions[song_id] = most_common_prediction
+    counter = Counter(predictions)
+    most_common_element = counter.most_common(1)
+    result = most_common_element[0][0]
+    final_song_predictions[song_id] = result
     
-    # Etiqueta real (asumimos que es la misma para todos los fragmentos de la canción)
     final_song_labels[song_id] = song_group_labels[song_id][0]
 
 # Convertir a listas para métricas

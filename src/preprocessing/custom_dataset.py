@@ -45,20 +45,9 @@ class CustomDataset(torch.utils.data.Dataset):
             if self.transform:
                 image = self.transform(image)
 
-            required_columns = [
-                "RMS",
-                "ZCR",
-                "Mean Absolute Amplitude",
-                "Crest Factor",
-                "Standard Deviation of Amplitude",
-                "Spectral Centroid",
-                "Spectral Bandwidth",
-                "Spectral Roll-off",
-                "Spectral Flux",
-                "VAD",
-                "Spectral Variation",
-                "Tempo",
-            ]
+            required_columns = ["RMS","ZCR","Mean Absolute Amplitude","Crest Factor","Standard Deviation of Amplitude",
+                "Spectral Centroid","Spectral Bandwidth","Spectral Roll-off","Spectral Flux","VAD","Spectral Variation",
+                "Tempo"]
             for col in required_columns:
                 if col not in row:
                     raise ValueError(f"Columna {col} no encontrada en el DataFrame.")
@@ -66,13 +55,7 @@ class CustomDataset(torch.utils.data.Dataset):
             additional_features = row[required_columns].values.astype(float)
             additional_features = torch.tensor(additional_features, dtype=torch.float32)
             #Selecciono 
-            label_columns = [
-            "Afro House",
-            "Ambient",
-            "Deep House",
-            "Techno",
-            "Trance",
-            "Progressive House"]
+            label_columns = ["Afro House","Ambient","Deep House","Techno","Trance","Progressive House"]
             labels = torch.tensor(row[label_columns].values.astype(int),dtype=torch.long
         )
             song_id = self.data.iloc[idx]["Song ID"] if "Song ID" in self.data.columns else None
@@ -88,9 +71,12 @@ class CustomDataset(torch.utils.data.Dataset):
             )
 
 
+
+
+#PRUEBAS CANCIONES
 class CustomDataset_s(torch.utils.data.Dataset):
     def __init__(self, data, base_path, transform):
-        self.data = data.reset_index(drop=True)  # Reinicia los índices del DataFrame
+        self.data = data.reset_index(drop=True)
         self.base_path = base_path
         self.transform = transform
 
@@ -106,12 +92,9 @@ class CustomDataset_s(torch.utils.data.Dataset):
 
         try:
             print(f"Cargando imagen desde: {img_path}")
-            # Carga la imagen y aplica transformaciones
             image = Image.open(img_path).convert("RGB")
             if self.transform:
                 image = self.transform(image)
-
-            # Verifica que todas las columnas necesarias estén presentes
             required_columns = [
                 "RMS", "ZCR", "Mean Absolute Amplitude", "Crest Factor",
                 "Standard Deviation of Amplitude", "Spectral Centroid",
@@ -121,13 +104,9 @@ class CustomDataset_s(torch.utils.data.Dataset):
             missing_columns = [col for col in required_columns if col not in row]
             if missing_columns:
                 raise ValueError(f"Faltan columnas: {', '.join(missing_columns)}")
-
-            # Obtén las características adicionales
             additional_features = torch.tensor(
                 row[required_columns].values.astype(float), dtype=torch.float32
             )
-
-            # Obtén las etiquetas
             label_columns = [
                 "Afro House", "Ambient", "Deep House",
                 "Techno", "Trance", "Progressive House",
@@ -136,7 +115,7 @@ class CustomDataset_s(torch.utils.data.Dataset):
                 row[label_columns].values.astype(int), dtype=torch.long
             )
 
-            # Obtén el Song ID si existe
+            #SONG ID ES OPCIONAL
             song_id = row["Song ID"] if "Song ID" in row else None
 
             if song_id is not None:

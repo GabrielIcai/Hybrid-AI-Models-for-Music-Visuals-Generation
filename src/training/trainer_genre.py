@@ -1,16 +1,14 @@
 import torch
 import time
 
-import time
-
 def train(model, train_loader, optimizer, criterion, device):
     model.train()
-    running_loss = 0.0
-    correct = 0
-    total = 0
-    start_time = time.time()
+    running_loss =0.0
+    correct =0
+    total =0
+    start_time =time.time()
 
-    for i, batch in enumerate(train_loader):  # Usa enumerate para obtener el índice
+    for i, batch in enumerate(train_loader):
         images, additional_features, labels = batch
         images = images.to(device)
         additional_features = additional_features.to(device)
@@ -20,7 +18,7 @@ def train(model, train_loader, optimizer, criterion, device):
         outputs = model(images, additional_features)
 
         if labels.dim() > 1:
-            labels = torch.argmax(labels, dim=1)  # Convertir a índices
+            labels = torch.argmax(labels, dim=1)
 
         loss = criterion(outputs, labels)
         loss.backward()
@@ -68,19 +66,18 @@ def validate(model, test_loader, criterion, device):
             loss = criterion(outputs, labels)
             val_loss += loss.item()
             
-            # Probabilidades con softmax
+            # Probabilidades con softmax (IMPORTANTE PARA MAPEAR EN TOUCHDESIGNER)
             probs = torch.softmax(outputs, dim=1)
             preds = torch.argmax(probs, dim=1)
 
             val_probs.extend(probs.cpu().numpy())
             val_preds.extend(preds.cpu().numpy())
             val_labels.extend(labels.cpu().numpy())
-            
             correct += (preds == labels).sum().item()
             total += labels.size(0)
 
-    val_accuracy = 100 * correct / total if total > 0 else 0
+    val_accuracy =100 *correct/total if total > 0 else 0
 
-    return val_loss / len(test_loader), val_accuracy, val_preds, val_labels, val_probs
+    return val_loss/len(test_loader), val_accuracy, val_preds, val_labels, val_probs
 
 

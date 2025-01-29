@@ -16,12 +16,13 @@ from unittest.mock import patch
 from src.preprocessing.custom_dataset import CustomDataset
 from PIL import Image
 
+#USO DE CHATGPT#
 
 def test_normalize_columns():
     data = pd.DataFrame({"col1": [1, 2, 3], "col2": [4, 5, 6]})
     normalize_columns(data, ["col1"])
     print("Normalized DataFrame:")
-    print(data)  # Esto mostrará el DataFrame después de la normalización
+    print(data)
     assert data["col1"].min() == 0 and data["col1"].max() == 1
     assert data["col2"].min() == 4 and data["col2"].max() == 6
 
