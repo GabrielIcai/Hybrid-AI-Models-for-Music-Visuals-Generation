@@ -86,7 +86,7 @@ class CustomDataset_s(torch.utils.data.Dataset):
     def __getitem__(self, idx):
         if idx < 0 or idx >= len(self.data):
             raise IndexError(f"Índice {idx} fuera de rango")
-        
+
         row = self.data.iloc[idx]
         img_path = os.path.join(self.base_path, row["Ruta"])
         print("EN custom dataset")
@@ -97,6 +97,7 @@ class CustomDataset_s(torch.utils.data.Dataset):
             image = Image.open(img_path).convert("RGB")
             if self.transform:
                 image = self.transform(image)
+
             required_columns = [
                 "RMS", "ZCR", "Mean Absolute Amplitude", "Crest Factor",
                 "Standard Deviation of Amplitude", "Spectral Centroid",
@@ -106,9 +107,11 @@ class CustomDataset_s(torch.utils.data.Dataset):
             missing_columns = [col for col in required_columns if col not in row]
             if missing_columns:
                 raise ValueError(f"Faltan columnas: {', '.join(missing_columns)}")
+
             additional_features = torch.tensor(
                 row[required_columns].values.astype(float), dtype=torch.float32
             )
+
             label_columns = [
                 "Afro House", "Ambient", "Deep House",
                 "Techno", "Trance", "Progressive House",
@@ -117,18 +120,14 @@ class CustomDataset_s(torch.utils.data.Dataset):
                 row[label_columns].values.astype(int), dtype=torch.long
             )
 
-            #SONG ID ES OPCIONAL
+            # SONG ID ES OPCIONAL, pero siempre devolvemos 4 valores
             song_id = row["Song ID"] if "Song ID" in row else None
+
             print("En custom dataset")
             print(song_id)
 
-            if song_id is not None:
-                print(song_id)
-                return image, additional_features, labels, song_id
-            else:
-                return image, additional_features, labels
-
+            return image, additional_features, labels, img_path  # <-- Devuelve SIEMPRE img_path
         except Exception as e:
             raise RuntimeError(
-                f"Error procesando el índice {idx}, archivo {img_path}: {e}"
-            )
+            f"Error procesando el índice {idx}, archivo {img_path}: {e}"
+        )

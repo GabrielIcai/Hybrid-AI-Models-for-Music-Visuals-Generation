@@ -24,6 +24,7 @@ def collate_fn(batch):
     for img, add_feats, label, image_path in batch:
         if img is not None:
             song_name = extract_song_name(image_path)
+            print(f"Extraído: {song_name} de {image_path}")  # Debug
             if song_name:
                 grouped_by_song[song_name].append((img, add_feats, label))
             else:
@@ -45,7 +46,7 @@ def collate_fn(batch):
                     torch.zeros_like(fragments[0][2]),
                 )
             )
-        # 3 frgamentos por canción
+        # 3 fragmentos por canción
         for i in range(0, len(fragments), 3):
             song_images = []
             song_additional_features = []
@@ -61,13 +62,13 @@ def collate_fn(batch):
             song_labels = song_labels[0]
             labels.append(song_labels)
 
-            # Convierto listas en fragmentos  
-            images.append(torch.stack(song_images, dim=0)) #????
+            # Convierto listas en tensores  
+            images.append(torch.stack(song_images, dim=0))
             additional_features.append(torch.stack(song_additional_features, dim=0))
 
     images = torch.stack(images, dim=0)  #(batch_size, 3, canales, altura, anchura)
     additional_features = torch.stack(
         additional_features, dim=0)  # (batch_size, 3, num_features)
-    labels = torch.stack(labels, dim=0)  # (batch_size, 3, num_labels)
+    labels = torch.stack(labels, dim=0)  # (batch_size, num_labels)
 
     return images, additional_features, labels
