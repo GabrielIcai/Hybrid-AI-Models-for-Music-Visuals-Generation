@@ -5,6 +5,7 @@ import os
 import seaborn as sns
 import sys
 import torch
+from collections import Counter
 
 repo_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"))
 if repo_path not in sys.path:
@@ -33,6 +34,7 @@ class_names = ["Afro House", "Ambient", "Deep House", "Techno", "Trance", "Progr
 data = load_data(csv_path)
 pd.set_option("display.max_columns", None)
 print(data.head())
+
 # Verificar columna Song ID
 assert "Song ID" in data.columns, "El CSV tiene que contener la columna 'Song ID' para agrupar por canciones"
 
@@ -58,8 +60,6 @@ test_loader = DataLoader(
     num_workers=2,
     pin_memory=True
 )
-
-from collections import Counter
 
 # Después de completar la inferencia
 all_preds = []
@@ -89,6 +89,7 @@ with torch.no_grad():
             song_group_predictions[song_id].append(preds[i].item())
             song_group_labels[song_id].append(torch.argmax(labels[i]).item())
 
+# Agregar predicciones por canción
 final_song_predictions = {}
 final_song_labels = {}
 
