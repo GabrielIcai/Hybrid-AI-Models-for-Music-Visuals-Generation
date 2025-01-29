@@ -6,7 +6,9 @@ import os
 
 def extract_song_name(image_path):
     filename = os.path.basename(image_path)  # Obtiene solo el nombre del archivo
-    match = re.match(r"(.+)_fragmento_\d+\.png", filename)  # Extrae el nombre de la canción
+    match = re.match(r"(.+)_fragmento_\d+\.png", filename)
+    print(filename)
+    print(match)
     if match:
         return match.group(1)
     else:
@@ -22,7 +24,6 @@ def collate_fn(batch):
     for img, add_feats, label, image_path in batch:
         if img is not None:
             song_name = extract_song_name(image_path)
-            print(song_name)
             if song_name:
                 grouped_by_song[song_name].append((img, add_feats, label))
             else:
