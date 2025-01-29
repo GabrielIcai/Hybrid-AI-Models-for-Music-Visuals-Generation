@@ -89,6 +89,8 @@ class CustomDataset_s(torch.utils.data.Dataset):
         
         row = self.data.iloc[idx]
         img_path = os.path.join(self.base_path, row["Ruta"])
+        print("EN custom dataset")
+        print(img_path)
 
         try:
             print(f"Cargando imagen desde: {img_path}")
