@@ -77,6 +77,11 @@ with torch.no_grad():
 
         outputs = model(images, additional_features)
         preds = torch.argmax(outputs, dim=1)
+        if i < len(preds):
+            song_group_predictions[song_id].append(preds[i].item())
+        else:
+            print(f"Índice {i} fuera de rango para el tamaño de preds ({len(preds)})")
+
         probabilities = torch.softmax(outputs, dim=1)
 
         batch_song_ids = song_ids[idx * test_loader.batch_size : (idx + 1) * test_loader.batch_size]
