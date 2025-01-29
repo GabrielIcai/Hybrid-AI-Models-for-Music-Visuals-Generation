@@ -5,7 +5,9 @@ import os
 import seaborn as sns
 import sys
 import torch
-from collections import Counter
+from collections import Counter, defaultdict
+import re
+from PIL import Image
 
 repo_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"))
 if repo_path not in sys.path:
@@ -66,8 +68,8 @@ all_preds = []
 all_labels = []
 all_probabilities = []
 song_ids = data["Song ID"].tolist()
-song_group_predictions = {}
-song_group_labels = {}
+song_group_predictions = defaultdict(list)
+song_group_labels = defaultdict(list)
 
 with torch.no_grad():
     for idx, (images, additional_features, labels) in enumerate(test_loader):
@@ -77,22 +79,14 @@ with torch.no_grad():
 
         outputs = model(images, additional_features)
         preds = torch.argmax(outputs, dim=1)
-        if i < len(preds):
-            song_group_predictions[song_id].append(preds[i].item())
-        else:
-            print(f"Índice {i} fuera de rango para el tamaño de preds ({len(preds)})")
-
         probabilities = torch.softmax(outputs, dim=1)
 
         batch_song_ids = song_ids[idx * test_loader.batch_size : (idx + 1) * test_loader.batch_size]
         
         for i, song_id in enumerate(batch_song_ids):
-            if song_id not in song_group_predictions:
-                song_group_predictions[song_id] = []
-                song_group_labels[song_id] = []
-
-            song_group_predictions[song_id].append(preds[i].item())
-            song_group_labels[song_id].append(torch.argmax(labels[i]).item())
+            if i < len(preds):  # Asegúrate de no exceder el tamaño de preds
+                song_group_predictions[song_id].append(preds[i].item())
+                song_group_labels[song_id].append(torch.argmax(labels[i]).item())
 
 # Agregar predicciones por canción
 final_song_predictions = {}
