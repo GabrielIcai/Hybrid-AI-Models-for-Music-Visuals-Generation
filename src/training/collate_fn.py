@@ -2,15 +2,16 @@ import torch
 from collections import defaultdict
 import torch
 import re
-
+import os
 
 def extract_song_name(image_path):
-    match = re.match(r"(.*)_fragmento_\d+\.png", image_path)
-    print(match)
+    filename = os.path.basename(image_path)  # Obtiene solo el nombre del archivo
+    match = re.match(r"(.+)_fragmento_\d+\.png", filename)  # Extrae el nombre de la canción
     if match:
         return match.group(1)
     else:
         return None
+
 
 # Para genero necesito agrupar fragmentos de las mismas cnciones en un batch que no puedo hacer con un dataset normal. Con collate proceso y agrupo varios
 # elementos individuales

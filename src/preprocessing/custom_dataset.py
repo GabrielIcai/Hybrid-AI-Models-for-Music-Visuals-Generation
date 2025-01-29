@@ -119,6 +119,7 @@ class CustomDataset_s(torch.utils.data.Dataset):
             song_id = row["Song ID"] if "Song ID" in row else None
 
             if song_id is not None:
+                print(song_id)
                 return image, additional_features, labels, song_id
             else:
                 return image, additional_features, labels
