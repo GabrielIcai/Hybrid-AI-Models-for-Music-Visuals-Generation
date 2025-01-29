@@ -6,6 +6,7 @@ import re
 
 def extract_song_name(image_path):
     match = re.match(r"(.*)_fragmento_\d+\.png", image_path)
+    print(match)
     if match:
         return match.group(1)
     else:
