@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix, classification_report
 from torch.utils.data import DataLoader
 from src.preprocessing import CustomDataset_s, normalize_columns, load_data, c_transform
-from src.training import collate_fn
+from src.training import collate_fn_s, extract_song_name
 from src.models.genre_model import CNN_LSTM_genre
 
 # Configuración inicial
@@ -57,7 +57,7 @@ test_dataset = CustomDataset_s(data, base_path, transform=test_transform)
 test_loader = DataLoader(
     test_dataset, 
     batch_size=128, 
-    collate_fn=collate_fn,
+    collate_fn=collate_fn_s,
     shuffle=False,
     num_workers=2,
     pin_memory=True
@@ -67,59 +67,37 @@ test_loader = DataLoader(
 all_preds = []
 all_labels = []
 all_probabilities = []
-song_ids = data["Song ID"].tolist()
-song_group_predictions = defaultdict(list)
-song_group_labels = defaultdict(list)
+song_group_predictions = defaultdict(list)  # Almacena las predicciones por canción
 
 with torch.no_grad():
-    for idx, (images, additional_features, labels) in enumerate(test_loader):
+    for images, additional_features, labels, image_paths in test_loader:
         images = images.to(device)
         additional_features = additional_features.to(device)
         labels = labels.to(device)
 
         outputs = model(images, additional_features)
         preds = torch.argmax(outputs, dim=1)
+        labels_grouped = torch.argmax(labels, dim=1)
         probabilities = torch.softmax(outputs, dim=1)
 
-        batch_song_ids = song_ids[idx * test_loader.batch_size : (idx + 1) * test_loader.batch_size]
-        
-        for i, song_id in enumerate(batch_song_ids):
-            if i < len(preds):  # Asegúrate de no exceder el tamaño de preds
-                song_group_predictions[song_id].append(preds[i].item())
-                song_group_labels[song_id].append(torch.argmax(labels[i]).item())
+        # Agrupar las predicciones por canción
+        for i, image_path in enumerate(image_paths):
+            song_name = extract_song_name(image_path)
+            if song_name:
+                song_group_predictions[song_name].append(preds[i].item())
 
-# Agregar predicciones por canción
+        all_probabilities.extend(probabilities.cpu().numpy())
+        all_preds.extend(preds.cpu().numpy())
+        all_labels.extend(labels_grouped.cpu().numpy())
+
+# Calcular la predicción más común (moda) por canción
 final_song_predictions = {}
-final_song_labels = {}
+for song_name, preds_list in song_group_predictions.items():
+    # Calculamos la moda de las predicciones para cada canción
+    most_common_pred = stats.mode(preds_list)[0][0]
+    final_song_predictions[song_name] = most_common_pred
 
-for song_id, predictions in song_group_predictions.items():
-    counter = Counter(predictions)
-    most_common_element = counter.most_common(1)
-    result = most_common_element[0][0]
-    final_song_predictions[song_id] = result
-    
-    final_song_labels[song_id] = song_group_labels[song_id][0]
-
-# Convertir a listas para métricas
-final_preds = list(final_song_predictions.values())
-final_labels = list(final_song_labels.values())
-
-# Generar matriz de confusión
-conf_matrix = confusion_matrix(final_labels, final_preds)
-print("\nMatriz de confusión (por canción):")
-print(conf_matrix)
-
-# Reporte de clasificación
-print("\nReporte de clasificación (por canción):")
-print(classification_report(final_labels, final_preds, target_names=class_names))
-
-# Visualizar matriz de confusión
-plt.figure(figsize=(10, 8))
-sns.heatmap(conf_matrix, annot=True, fmt="d", cmap="Blues", xticklabels=class_names, yticklabels=class_names)
-plt.xlabel("Predicciones")
-plt.ylabel("Etiquetas Reales")
-plt.title("Matriz de Confusión (por canción)")
-
-image_path = "/content/drive/MyDrive/TFG/matriz_confusion_generos_lstm_por_cancion.png"
-plt.savefig(image_path)
-plt.close()
+# Mostrar las predicciones finales por canción
+print("\nPredicciones finales por canción:")
+for song_name, pred in final_song_predictions.items():
+    print(f"Canción: {song_name}, Predicción más común: {class_names[pred]}")
