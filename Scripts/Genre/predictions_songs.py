@@ -93,7 +93,7 @@ for song_name, preds_list in song_group_predictions.items():
 
     most_common_pred = stats.mode(preds_list)[0][0]
     final_song_predictions[song_name] = most_common_pred
-
+print(f"Song group predictions: {song_group_predictions}")
 print("\nPredicciones finales por canción:")
 for song_name, pred in final_song_predictions.items():
     print(f"Canción: {song_name}, Predicción más común: {class_names[pred]}")
