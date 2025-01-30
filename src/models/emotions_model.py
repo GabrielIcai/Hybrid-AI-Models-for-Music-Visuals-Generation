@@ -20,7 +20,7 @@ class ResNetCRNNEmotionModel(nn.Module):
             batch_first=True,
             bidirectional=True
         )
-        
+        #Necesito dos salidas: valencia y arousal
         self.fc_valencia = nn.Linear(hidden_size * 2, num_valencia_classes)
         self.fc_arousal = nn.Linear(hidden_size * 2, num_arousal_classes)
 

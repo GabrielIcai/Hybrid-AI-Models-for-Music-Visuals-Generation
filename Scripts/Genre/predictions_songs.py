@@ -32,13 +32,13 @@ std = [0.21755781769752502, 0.15407244861125946, 0.07557372003793716]
 columns_to_normalize = ["Spectral Centroid", "Spectral Bandwidth", "Spectral Roll-off"]
 class_names = ["Afro House", "Ambient", "Deep House", "Techno", "Trance", "Progressive House"]
 
-# Cargar y preparar datos
+
 data = load_data(csv_path)
 pd.set_option("display.max_columns", None)
 print(data.head())
 
-# Verificar columna Song ID
-assert "Song ID" in data.columns, "El CSV tiene que contener la columna 'Song ID' para agrupar por canciones"
+# Verifico Song ID
+assert "Song ID" in data.columns, "El CSV tiene 'Song ID'"
 
 # Preprocesamiento
 data["Ruta"] = data["Ruta"].str.replace("\\", "/")
@@ -63,11 +63,10 @@ test_loader = DataLoader(
     pin_memory=True
 )
 
-# Después de completar la inferencia
 all_preds = []
 all_labels = []
 all_probabilities = []
-song_group_predictions = defaultdict(list)  # Almacena las predicciones por canción
+song_group_predictions = defaultdict(list)
 
 with torch.no_grad():
     for images, additional_features, labels, image_paths in test_loader:
@@ -80,7 +79,6 @@ with torch.no_grad():
         labels_grouped = torch.argmax(labels, dim=1)
         probabilities = torch.softmax(outputs, dim=1)
 
-        # Agrupar las predicciones por canción
         for i, image_path in enumerate(image_paths):
             song_name = extract_song_name(image_path)
             if song_name:
@@ -90,14 +88,12 @@ with torch.no_grad():
         all_preds.extend(preds.cpu().numpy())
         all_labels.extend(labels_grouped.cpu().numpy())
 
-# Calcular la predicción más común (moda) por canción
 final_song_predictions = {}
 for song_name, preds_list in song_group_predictions.items():
-    # Calculamos la moda de las predicciones para cada canción
+
     most_common_pred = stats.mode(preds_list)[0][0]
     final_song_predictions[song_name] = most_common_pred
 
-# Mostrar las predicciones finales por canción
 print("\nPredicciones finales por canción:")
 for song_name, pred in final_song_predictions.items():
     print(f"Canción: {song_name}, Predicción más común: {class_names[pred]}")

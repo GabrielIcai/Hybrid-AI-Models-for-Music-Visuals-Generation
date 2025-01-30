@@ -6,7 +6,7 @@ def load_data(data_path):
     data = pd.read_csv(data_path, encoding="latin-1")
     return data
 
-
+#0.8 de train y 0.2 de test
 def split_dataset(data, test_size=0.2, random_state=42):
     train_data, val_data = train_test_split(
         data, test_size=test_size, random_state=random_state
