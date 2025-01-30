@@ -10,26 +10,26 @@ def train(model, train_loader, optimizer, criterion, device):
 
     for i, batch in enumerate(train_loader):
         images, additional_features, labels = batch
-        images = images.to(device)
-        additional_features = additional_features.to(device)
-        labels = labels.to(device)
+        images =images.to(device)
+        additional_features =additional_features.to(device)
+        labels =labels.to(device)
 
         optimizer.zero_grad()
         outputs = model(images, additional_features)
 
         if labels.dim() > 1:
-            labels = torch.argmax(labels, dim=1)
+            labels =torch.argmax(labels, dim=1)
 
-        loss = criterion(outputs, labels)
-        loss.backward()
+        perdida= criterion(outputs, labels)
+        perdida.backward()
         optimizer.step()
-        running_loss += loss.item()
+        running_loss +=perdida.item()
 
         # Predicciones
         _, predicted = torch.max(outputs.data, 1)
         correct += (predicted == labels).sum().item()
         total += labels.size(0)
-        accuracy = 100 * correct / total
+        accuracy = 100*correct/total
 
         # Cálculo del tiempo restante
         elapsed_time = time.time() - start_time
@@ -38,19 +38,19 @@ def train(model, train_loader, optimizer, criterion, device):
         estimated_time_remaining = avg_batch_time * batches_remaining
 
         print(f"Batch {i + 1}/{len(train_loader)} - "
-              f"Loss: {loss.item():.4f} - Accuracy: {accuracy:.2f}% - "
+              f"Loss: {perdida.item():.4f} - Accuracy: {accuracy:.2f}% - "
               f"Time remaining: {estimated_time_remaining:.2f}s")
 
     return running_loss / len(train_loader), accuracy
 
 def validate(model, test_loader, criterion, device):
     model.eval()
-    val_loss = 0.0
-    val_preds = []
-    val_probs = [] 
-    val_labels = []
-    correct = 0
-    total = 0
+    val_loss =0.0
+    val_preds =[]
+    val_probs =[] 
+    val_labels =[]
+    correct =0
+    total =0
 
     with torch.no_grad():
         for batch in test_loader:

@@ -54,7 +54,7 @@ def collate_fn(batch):
 
             # Cojo 3 fragmentos
             for j in range(3):
-                img, add_feats, label = fragments[i + j]
+                img, add_feats, label = fragments[i+j]
                 song_images.append(img)
                 song_additional_features.append(add_feats)
                 song_labels.append(label)
@@ -67,13 +67,13 @@ def collate_fn(batch):
             additional_features.append(torch.stack(song_additional_features, dim=0))
 
     images = torch.stack(images, dim=0)  #(batch_size, 3, canales, altura, anchura)
-    additional_features = torch.stack(
-        additional_features, dim=0)  # (batch_size, 3, num_features)
+    additional_features = torch.stack(additional_features, dim=0)  # (batch_size, 3, num_features)
     labels = torch.stack(labels, dim=0)  # (batch_size, num_labels)
 
     return images, additional_features, labels
 
 def collate_fn_s(batch):
+    
     grouped_by_song = defaultdict(list)
 
     # Agrupo los fragmentos por canción
