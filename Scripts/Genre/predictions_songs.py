@@ -10,8 +10,8 @@ if repo_path not in sys.path:
 import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix, classification_report
 from torch.utils.data import DataLoader
-from src.preprocessing import CustomDataset_s, normalize_columns, load_data, c_transform
-from src.training import collate_fn_s
+from src.preprocessing import CustomDataset_s, normalize_columns, load_data, c_transform,CustomDataset
+from src.training import collate_fn_s,collate_fn
 from src.models.genre_model import CRNN, CNN_LSTM_genre
 
 # Configuración de dispositivo
@@ -22,7 +22,7 @@ print(f"Usando dispositivo: {device}")
 base_path = "/content/drive/MyDrive/TFG/data/"
 model_path = "/content/drive/MyDrive/TFG/models/best_cnn_lstm_genre.pth"
 csv_path = "/content/drive/MyDrive/TFG/data/espectrogramas_salida_test/dataset_test.csv"
-output_csv = "/content/drive/MyDrive/TFG/predicciones_canciones_LSTM.csv"
+output_csv_path = "/content/drive/MyDrive/TFG/predicciones_canciones_LSTM.csv"
 
 # Normalización
 mean = [0.676956295967102, 0.2529653012752533, 0.4388839304447174]
@@ -40,7 +40,7 @@ model.eval()
 data = load_data(csv_path)
 data["Ruta"] = data["Ruta"].str.replace("\\", "/")
 data["Ruta"] = base_path + data["Ruta"]
-data=data.head(100)
+data=data.head(20)
 normalize_columns(data, columns)
 print(data.head(20))
 
@@ -49,38 +49,40 @@ canciones_unicas = data["Song ID"].unique()
 
 # Transformación
 test_transform = c_transform(mean, std)
+test_dataset = CustomDataset(data, base_path, transform=test_transform)
+test_loader = DataLoader( test_dataset, batch_size=128, collate_fn=collate_fn, shuffle=False, num_workers=2, pin_memory=True)
 
-# Archivo CSV donde guardaremos los resultados
-csv_headers = ["Song ID", "fragmento", "etiqueta_real", "prediccion", "probabilidades"]
-with open(output_csv, "w") as f:
-    f.write(",".join(csv_headers) + "\n")
+# Crear listas vacías para almacenar las predicciones, etiquetas reales y probabilidades
+all_preds = []
+all_labels = []
+all_probabilities = []
 
-# Inferencia por canción
+# Procesar las imágenes y almacenar los resultados
 with torch.no_grad():
-    for song_id in canciones_unicas:
-        print(f"\nProcesando canción ID: {song_id}")
+    for images, additional_features, labels in test_loader:
+        images = images.to(device)
+        additional_features = additional_features.to(device)
+        labels = labels.to(device)
 
-        # Filtrar fragmentos de la canción actual
-        data_cancion = data[data["Song ID"] == song_id].reset_index(drop=True)
-        test_dataset = CustomDataset_s(data_cancion, base_path, transform=test_transform)
-        test_loader = DataLoader(test_dataset, batch_size=1, collate_fn=collate_fn_s, shuffle=False)
+        outputs = model(images, additional_features)
+        preds = torch.argmax(outputs, dim=1)
+        labels_grouped = torch.argmax(labels, dim=1)
+        probabilities = torch.softmax(outputs, dim=1)
 
-        # Predicción por fragmento
-        for idx, (image, additional_features, label) in enumerate(test_loader):
-            image = image.to(device)
-            additional_features = additional_features.to(device)
-            label = label.to(device)
+        all_probabilities.extend(probabilities.cpu().numpy())
+        all_preds.extend(preds.cpu().numpy())
+        all_labels.extend(labels_grouped.cpu().numpy())
 
-            output = model(image, additional_features)
-            pred = torch.argmax(output, dim=1).cpu().item()
-            label_real = torch.argmax(label, dim=1).cpu().item()
-            probabilities = torch.softmax(output, dim=1).cpu().numpy().flatten()
+# Ahora creamos un DataFrame con las predicciones, etiquetas reales y probabilidades
+results = {
+    'Predicción': all_preds,
+    'Etiqueta Real': all_labels,
+    'Probabilidades': [prob.tolist() for prob in all_probabilities]  # Convertir las probabilidades en listas
+}
 
-            # Guardar resultados en CSV
-            print(f"\nLOGITS: {output}")
-            fragmento = f"fragmento_{idx}"
-            prob_str = ";".join([f"{p:.6f}" for p in probabilities])
-            with open(output_csv, "a") as f:
-                f.write(f"{song_id},{fragmento},{label_real},{pred},{prob_str}\n")
+df_results = pd.DataFrame(results)
 
-print("\n Predicciones guardadas en:", output_csv)
+# Guardar el DataFrame en un archivo CSV
+df_results.to_csv(output_csv_path, index=False)
+
+print(f"Predicciones guardadas en: {output_csv_path}")
