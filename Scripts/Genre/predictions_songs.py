@@ -78,7 +78,7 @@ with torch.no_grad():
 
             # Guardar resultados en CSV
             fragmento = f"fragmento_{idx}"
-            prob_str = ";".join([str(p) for p in probabilities])
+            prob_str = ";".join([f"{p:.6f}" for p in probabilities])
             with open(output_csv, "a") as f:
                 f.write(f"{song_id},{fragmento},{label_real},{pred},{prob_str}\n")
 
