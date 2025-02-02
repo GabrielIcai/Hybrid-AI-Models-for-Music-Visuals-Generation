@@ -21,7 +21,7 @@ print(f"Usando dispositivo: {device}")
 # Rutas
 base_path = "/content/drive/MyDrive/TFG/data/"
 model_path = "/content/drive/MyDrive/TFG/models/best_cnn_lstm_genre.pth"
-csv_path = "/content/drive/MyDrive/TFG/data/espectrogramas_salida_test/dataset_genero_test.csv"
+csv_path = "/content/drive/MyDrive/TFG/data/espectrogramas_salida_test/dataset_test.csv"
 output_csv = "/content/drive/MyDrive/TFG/predicciones_canciones_LSTM.csv"
 
 # Normalización
