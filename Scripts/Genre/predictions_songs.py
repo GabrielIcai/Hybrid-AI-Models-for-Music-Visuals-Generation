@@ -10,8 +10,8 @@ if repo_path not in sys.path:
 import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix, classification_report
 from torch.utils.data import DataLoader
-from src.preprocessing import CustomDataset, normalize_columns, load_data, c_transform
-from src.training import collate_fn
+from src.preprocessing import CustomDataset_s, normalize_columns, load_data, c_transform
+from src.training import collate_fn_s
 from src.models.genre_model import CRNN, CNN_LSTM_genre
 
 # Configuración de dispositivo
@@ -62,8 +62,8 @@ with torch.no_grad():
 
         # Filtrar fragmentos de la canción actual
         data_cancion = data[data["Song ID"] == song_id].reset_index(drop=True)
-        test_dataset = CustomDataset(data_cancion, base_path, transform=test_transform)
-        test_loader = DataLoader(test_dataset, batch_size=1, collate_fn=collate_fn, shuffle=False)
+        test_dataset = CustomDataset_s(data_cancion, base_path, transform=test_transform)
+        test_loader = DataLoader(test_dataset, batch_size=1, collate_fn=collate_fn_s, shuffle=False)
 
         # Predicción por fragmento
         for idx, (image, additional_features, label) in enumerate(test_loader):
