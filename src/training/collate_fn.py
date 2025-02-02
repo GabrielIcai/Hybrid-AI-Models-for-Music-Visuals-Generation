@@ -88,22 +88,25 @@ def collate_fn_s(batch):
                 (
                     torch.zeros_like(fragments[0][0]),
                     torch.zeros_like(fragments[0][1]),
-                    fragments[0][2]  
+                    fragments[0][2]
                 )
             )
 
         for i in range(0, len(fragments), 3):
-            song_images = torch.stack([fragments[i+j][0] for j in range(3)], dim=0)  
-            song_additional_features = torch.stack([fragments[i+j][1] for j in range(3)], dim=0)  
-            song_label = fragments[i][2]  
+            song_images = torch.stack([fragments[i+j][0] for j in range(3)], dim=0)
+            song_additional_features = torch.stack([fragments[i+j][1] for j in range(3)], dim=0)
+            song_label = fragments[i][2]
 
             images.append(song_images)
             additional_features.append(song_additional_features)
             labels.append(song_label)
 
-    images = torch.stack(images, dim=0)  
-    additional_features = torch.stack(additional_features, dim=0)  
-    labels = torch.stack(labels, dim=0)  
+    images = torch.stack(images, dim=0)
+    additional_features = torch.stack(additional_features, dim=0)
+    labels = torch.stack(labels, dim=0)
 
-    return images, additional_features, labels
+    print("collate_fn_s devuelve:", len(images), "elementos")  # <-- Verificación
+
+    return images, additional_features, labels 
+
 
