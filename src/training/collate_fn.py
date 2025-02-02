@@ -72,11 +72,6 @@ def collate_fn(batch):
 
     return images, additional_features, labels
 
-from collections import defaultdict
-import torch
-
-from collections import defaultdict
-import torch
 
 def collate_fn_s(batch):
     grouped_by_song = defaultdict(list)

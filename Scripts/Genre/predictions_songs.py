@@ -4,121 +4,78 @@ import numpy as np
 import os
 import seaborn as sns
 import sys
-import torch
-from collections import Counter, defaultdict
-import re
-from scipy import stats
-
-repo_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"))
-if repo_path not in sys.path:
-    sys.path.append(repo_path)
 import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix, classification_report
 from torch.utils.data import DataLoader
-from src.preprocessing import CustomDataset_s, normalize_columns, load_data, c_transform
-from src.training import collate_fn_s, extract_song_name
+from src.preprocessing import CustomDataset, normalize_columns, load_data, c_transform
+from src.training import collate_fn
 from src.models.genre_model import CNN_LSTM_genre
 
-# Configuración inicial
+# Configuración de dispositivo
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Usando dispositivo: {device}")
 
-# Parámetros
+# Rutas
 base_path = "/content/drive/MyDrive/TFG/data/"
 model_path = "/content/drive/MyDrive/TFG/models/best_cnn_lstm_genre.pth"
-csv_path = "/content/drive/MyDrive/TFG/data/espectrogramas_salida_test/dataset_test.csv"
+csv_path = "/content/drive/MyDrive/TFG/data/espectrogramas_salida_test/dataset_genero_test.csv"
+output_csv = "/content/drive/MyDrive/TFG/predicciones_canciones_LSTM.csv"
+
+# Normalización
 mean = [0.676956295967102, 0.2529653012752533, 0.4388839304447174]
 std = [0.21755781769752502, 0.15407244861125946, 0.07557372003793716]
-columns_to_normalize = ["Spectral Centroid", "Spectral Bandwidth", "Spectral Roll-off"]
+columns = ["Spectral Centroid", "Spectral Bandwidth", "Spectral Roll-off"]
+num_classes = 6
 class_names = ["Afro House", "Ambient", "Deep House", "Techno", "Trance", "Progressive House"]
 
-
-data = load_data(csv_path)
-pd.set_option("display.max_columns", None)
-print(data.head())
-
-# Verifico Song ID
-assert "Song ID" in data.columns, "El CSV tiene 'Song ID'"
-
-# Preprocesamiento
-data["Ruta"] = data["Ruta"].str.replace("\\", "/")
-data["Ruta"] = base_path + data["Ruta"]
-normalize_columns(data, columns_to_normalize)
-
-# Cargar modelo
-model = CNN_LSTM_genre(num_classes=len(class_names), additional_features_dim=12, hidden_size=256)
+model = CNN_LSTM_genre(num_classes=num_classes, additional_features_dim=12, hidden_size=256)
 model.load_state_dict(torch.load(model_path, map_location=device))
 model.to(device)
 model.eval()
 
-# Dataset y DataLoader
+# Cargar dataset
+data = load_data(csv_path)
+data["Ruta"] = data["Ruta"].str.replace("\\", "/")
+data["Ruta"] = base_path + data["Ruta"]
+data=data.head(100)
+normalize_columns(data, columns)
+
+# Agrupar por "song_ID"
+canciones_unicas = data["song_ID"].unique()
+
+# Transformación
 test_transform = c_transform(mean, std)
-test_dataset = CustomDataset_s(data, base_path, transform=test_transform)
-test_loader = DataLoader(
-    test_dataset, 
-    batch_size=128, 
-    collate_fn=collate_fn_s,
-    shuffle=False,
-    num_workers=2,
-    pin_memory=True
-)
 
-all_preds = {}
-all_labels = {}
-all_probabilities = {}
+# Archivo CSV donde guardaremos los resultados
+csv_headers = ["song_ID", "fragmento", "etiqueta_real", "prediccion", "probabilidades"]
+with open(output_csv, "w") as f:
+    f.write(",".join(csv_headers) + "\n")
 
+# Inferencia por canción
 with torch.no_grad():
-    for images, additional_features, labels, song_ids in test_loader:
-        batch_size = len(song_ids)  # Número de canciones en este batch
-        
-        for i in range(batch_size):
-            song_images = images[i].to(device)  # Todos los fragmentos de una canción
-            song_add_feats = additional_features[i].to(device)
-            song_label = labels[i].to(device)
-            song_id = song_ids[i]
+    for song_id in canciones_unicas:
+        print(f"\nProcesando canción ID: {song_id}")
 
-            outputs = model(song_images, song_add_feats)  # Predicción para todos los fragmentos
-            probabilities = torch.softmax(outputs, dim=1)
-            preds = torch.argmax(outputs, dim=1)  # Predicción para cada fragmento
-            
-            # Guardar predicciones
-            if song_id not in all_preds:
-                all_preds[song_id] = []
-                all_probabilities[song_id] = []
-                all_labels[song_id] = song_label.cpu().numpy()  # Etiqueta real
+        # Filtrar fragmentos de la canción actual
+        data_cancion = data[data["song_ID"] == song_id].reset_index(drop=True)
+        test_dataset = CustomDataset(data_cancion, base_path, transform=test_transform)
+        test_loader = DataLoader(test_dataset, batch_size=1, collate_fn=collate_fn, shuffle=False)
 
-            all_preds[song_id].extend(preds.cpu().numpy())
-            all_probabilities[song_id].extend(probabilities.cpu().numpy())
+        # Predicción por fragmento
+        for idx, (image, additional_features, label) in enumerate(test_loader):
+            image = image.to(device)
+            additional_features = additional_features.to(device)
+            label = label.to(device)
 
-# Consolidar predicciones por canción
-final_preds = []
-final_labels = []
+            output = model(image, additional_features)
+            pred = torch.argmax(output, dim=1).cpu().item()
+            label_real = torch.argmax(label, dim=1).cpu().item()
+            probabilities = torch.softmax(output, dim=1).cpu().numpy().flatten()
 
-for song_id in all_preds:
-    most_common_pred = Counter(all_preds[song_id]).most_common(1)[0][0]
-    
-    avg_probabilities = np.mean(all_probabilities[song_id], axis=0)
-    best_pred = np.argmax(avg_probabilities)
+            # Guardar resultados en CSV
+            fragmento = f"fragmento_{idx}"
+            prob_str = ";".join([str(p) for p in probabilities])
+            with open(output_csv, "a") as f:
+                f.write(f"{song_id},{fragmento},{label_real},{pred},{prob_str}\n")
 
-    final_pred = best_pred  # Se elige el promedio de probabilidades
-    # final_pred = most_common_pred  # Si prefieres la moda
-
-    final_preds.append(final_pred)
-    final_labels.append(all_labels[song_id])
-
-# Matriz de confusión y métricas
-conf_matrix = confusion_matrix(final_labels, final_preds)
-print("\nMatriz de confusión:")
-print(conf_matrix)
-
-print("\nReporte de clasificación:")
-print(classification_report(final_labels, final_preds))
-
-plt.figure(figsize=(10, 8))
-sns.heatmap(conf_matrix, annot=True, fmt="d", cmap="Blues", xticklabels=class_names, yticklabels=class_names)
-plt.xlabel("Predicciones")
-plt.ylabel("Etiquetas Reales")
-plt.title("Matriz de Confusión por Canción")
-
-image_path = "/content/drive/MyDrive/TFG/matriz_confusion_canciones.png"
-plt.savefig(image_path)
+print("\n Predicciones guardadas en:", output_csv)
