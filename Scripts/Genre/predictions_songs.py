@@ -64,7 +64,7 @@ test_loader = DataLoader(
 )
 
 all_preds = defaultdict(list)
-all_labels = defaultdict(list)
+all_labels = {}
 all_probabilities = defaultdict(list)
 
 with torch.no_grad():
@@ -80,20 +80,27 @@ with torch.no_grad():
 
         for song_id, pred, label, prob in zip(song_ids, preds.cpu().numpy(), labels_grouped.cpu().numpy(), probabilities.cpu().numpy()):
             all_preds[song_id].append(pred)
-            all_labels[song_id].append(label)
             all_probabilities[song_id].append(prob)
+            all_labels[song_id] = label  # Guardamos solo una vez la etiqueta real
 
-# Decidir la predicción final para cada canción
+# Consolidar predicciones para cada canción
 final_preds = []
 final_labels = []
 
 for song_id in all_preds:
-    # Obtener la predicción más común
+    # Opción 1: Predicción más frecuente
     most_common_pred = Counter(all_preds[song_id]).most_common(1)[0][0]
-    final_preds.append(most_common_pred)
+    
+    # Opción 2: Promedio de probabilidades
+    avg_probabilities = np.mean(all_probabilities[song_id], axis=0)
+    best_pred = np.argmax(avg_probabilities)
 
-    # Tomar la etiqueta real (asumimos que es la misma para todos los fragmentos)
-    final_labels.append(all_labels[song_id][0])
+    # Elegimos el método (aquí puedes cambiar entre moda y promedio)
+    final_pred = most_common_pred  # Opción 1
+    # final_pred = best_pred       # Opción 2
+
+    final_preds.append(final_pred)
+    final_labels.append(all_labels[song_id])
 
 # Generar matriz de confusión
 conf_matrix = confusion_matrix(final_labels, final_preds)
