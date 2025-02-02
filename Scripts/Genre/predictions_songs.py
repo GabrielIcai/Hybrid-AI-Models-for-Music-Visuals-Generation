@@ -63,55 +63,57 @@ test_loader = DataLoader(
     pin_memory=True
 )
 
-all_preds = defaultdict(list)
+all_preds = {}
 all_labels = {}
-all_probabilities = defaultdict(list)
+all_probabilities = {}
 
 with torch.no_grad():
     for images, additional_features, labels, song_ids in test_loader:
-        images = images.to(device)
-        additional_features = additional_features.to(device)
-        labels = labels.to(device)
+        batch_size = len(song_ids)  # Número de canciones en este batch
+        
+        for i in range(batch_size):
+            song_images = images[i].to(device)  # Todos los fragmentos de una canción
+            song_add_feats = additional_features[i].to(device)
+            song_label = labels[i].to(device)
+            song_id = song_ids[i]
 
-        outputs = model(images, additional_features)
-        probabilities = torch.softmax(outputs, dim=1)
-        preds = torch.argmax(outputs, dim=1)
-        labels_grouped = torch.argmax(labels, dim=1)
+            outputs = model(song_images, song_add_feats)  # Predicción para todos los fragmentos
+            probabilities = torch.softmax(outputs, dim=1)
+            preds = torch.argmax(outputs, dim=1)  # Predicción para cada fragmento
+            
+            # Guardar predicciones
+            if song_id not in all_preds:
+                all_preds[song_id] = []
+                all_probabilities[song_id] = []
+                all_labels[song_id] = song_label.cpu().numpy()  # Etiqueta real
 
-        for song_id, pred, label, prob in zip(song_ids, preds.cpu().numpy(), labels_grouped.cpu().numpy(), probabilities.cpu().numpy()):
-            all_preds[song_id].append(pred)
-            all_probabilities[song_id].append(prob)
-            all_labels[song_id] = label  # Guardamos solo una vez la etiqueta real
+            all_preds[song_id].extend(preds.cpu().numpy())
+            all_probabilities[song_id].extend(probabilities.cpu().numpy())
 
-# Consolidar predicciones para cada canción
+# Consolidar predicciones por canción
 final_preds = []
 final_labels = []
 
 for song_id in all_preds:
-    # Opción 1: Predicción más frecuente
     most_common_pred = Counter(all_preds[song_id]).most_common(1)[0][0]
     
-    # Opción 2: Promedio de probabilidades
     avg_probabilities = np.mean(all_probabilities[song_id], axis=0)
     best_pred = np.argmax(avg_probabilities)
 
-    # Elegimos el método (aquí puedes cambiar entre moda y promedio)
-    final_pred = most_common_pred  # Opción 1
-    # final_pred = best_pred       # Opción 2
+    final_pred = best_pred  # Se elige el promedio de probabilidades
+    # final_pred = most_common_pred  # Si prefieres la moda
 
     final_preds.append(final_pred)
     final_labels.append(all_labels[song_id])
 
-# Generar matriz de confusión
+# Matriz de confusión y métricas
 conf_matrix = confusion_matrix(final_labels, final_preds)
 print("\nMatriz de confusión:")
 print(conf_matrix)
 
-# Reporte de clasificación
 print("\nReporte de clasificación:")
 print(classification_report(final_labels, final_preds))
 
-# Visualizar matriz de confusión
 plt.figure(figsize=(10, 8))
 sns.heatmap(conf_matrix, annot=True, fmt="d", cmap="Blues", xticklabels=class_names, yticklabels=class_names)
 plt.xlabel("Predicciones")
@@ -120,4 +122,3 @@ plt.title("Matriz de Confusión por Canción")
 
 image_path = "/content/drive/MyDrive/TFG/matriz_confusion_canciones.png"
 plt.savefig(image_path)
-plt.close()
