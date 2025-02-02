@@ -83,7 +83,7 @@ class CustomDataset_s(torch.utils.data.Dataset):
     def __len__(self):
         return len(self.data)
 
-    def __getitem__(self, idx):
+    def __getitem__(self, idx): 
         if idx < 0 or idx >= len(self.data):
             raise IndexError(f"Índice {idx} fuera de rango")
 
@@ -126,8 +126,6 @@ class CustomDataset_s(torch.utils.data.Dataset):
             print("En custom dataset")
             print(song_id)
 
-            return image, additional_features, labels, img_path  # <-- Devuelve SIEMPRE img_path
+            return image, additional_features, labels, img_path 
         except Exception as e:
-            raise RuntimeError(
-            f"Error procesando el índice {idx}, archivo {img_path}: {e}"
-        )
+            raise RuntimeError(f"Error procesando el índice {idx}, archivo {img_path}: {e}")
