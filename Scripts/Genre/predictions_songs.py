@@ -42,6 +42,7 @@ data["Ruta"] = data["Ruta"].str.replace("\\", "/")
 data["Ruta"] = base_path + data["Ruta"]
 data=data.head(100)
 normalize_columns(data, columns)
+print(data.head(20))
 
 # Agrupar por "song_ID"
 canciones_unicas = data["Song ID"].unique()
