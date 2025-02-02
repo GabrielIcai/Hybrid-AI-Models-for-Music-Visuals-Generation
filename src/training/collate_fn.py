@@ -109,7 +109,7 @@ def collate_fn_s(batch):
 
     if len(images) == 0:
         print("Advertencia: No se han creado imágenes para este lote")
-
+    print(images)
     images = torch.stack(images, dim=0)
     additional_features = torch.stack(additional_features, dim=0)
     labels = torch.stack(labels, dim=0)
