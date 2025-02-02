@@ -127,8 +127,11 @@ class CustomDataset_s(torch.utils.data.Dataset):
                 row[label_columns].values.astype(int), dtype=torch.long
             )
 
-            return image, additional_features, labels 
+            # Aquí suponemos que "Song_ID" es el nombre de la columna en tu DataFrame
+            song_id = row["Song ID"]  # Asegúrate de que "Song_ID" exista en tu dataset
+
+            return image, additional_features, labels, song_id 
 
         except Exception as e:
             print(f"Error al cargar la imagen {img_path}: {e}")
-            return None, None, None  # Si hay un error al cargar la imagen, devolvemos valores vacíos
+            return None, None, None, None  # Devolvemos también None para song_id si hay error
