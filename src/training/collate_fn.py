@@ -6,12 +6,12 @@ import os
 
 def extract_song_name(image_path):
     filename = os.path.basename(image_path)
+    # Cambiar el patrón para que sea más flexible y permita caracteres especiales
     match = re.match(r"(.+)_fragmento_\d+\.png", filename)
-    print(filename)
-    print(match)
     if match:
         return match.group(1)
     else:
+        print(f"Fragmento con nombre inválido: {filename}")
         return None
 
 
