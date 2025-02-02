@@ -77,25 +77,24 @@ import torch
 def collate_fn_s(batch):
     grouped_by_song = defaultdict(list)
 
-    # Agrupar fragmentos por canción
     for images, add_feats, label in batch:
-        song_id = label[0].item()
-        grouped_by_song[song_id].append((images, add_feats, label))
-        print(grouped_by_song)
-    # Preparar las listas para devolver
+        if images is not None:
+            song_id = label[0].item()  # Asegúrate de identificar la canción correctamente
+            grouped_by_song[song_id].append((images, add_feats, label))
+
     images, additional_features, labels = [], [], []
 
     for song_id, fragments in grouped_by_song.items():
-        # Si el número de fragmentos no es múltiplo de 3, completamos con fragmentos vacíos
+        if len(fragments) == 0:
+            print(f"Advertencia: No hay fragmentos para la canción {song_id}")
+            continue
+
         while len(fragments) % 3 != 0:
-            # Añadir un fragmento vacío (con ceros)
             empty_image = torch.zeros_like(fragments[0][0])
             empty_additional_features = torch.zeros_like(fragments[0][1])
-            empty_label = fragments[0][2]  # Mantener la etiqueta del primer fragmento
-
+            empty_label = fragments[0][2]
             fragments.append((empty_image, empty_additional_features, empty_label))
 
-        # Crear bloques de tres fragmentos
         for i in range(0, len(fragments), 3):
             song_images = torch.stack([fragments[i+j][0] for j in range(3)], dim=0)
             song_additional_features = torch.stack([fragments[i+j][1] for j in range(3)], dim=0)
@@ -105,13 +104,11 @@ def collate_fn_s(batch):
             additional_features.append(song_additional_features)
             labels.append(song_label)
 
-    # Devolver los lotes
+    if len(images) == 0:
+        print("Advertencia: No se han creado imágenes para este lote")
+
     images = torch.stack(images, dim=0)
     additional_features = torch.stack(additional_features, dim=0)
     labels = torch.stack(labels, dim=0)
 
-    print("collate_fn_s devuelve:", len(images), "elementos")
-
     return images, additional_features, labels
-
-
