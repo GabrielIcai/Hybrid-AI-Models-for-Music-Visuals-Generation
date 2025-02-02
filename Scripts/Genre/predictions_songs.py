@@ -77,6 +77,7 @@ with torch.no_grad():
             probabilities = torch.softmax(output, dim=1).cpu().numpy().flatten()
 
             # Guardar resultados en CSV
+            print(f"\nLOGITS: {output}")
             fragmento = f"fragmento_{idx}"
             prob_str = ";".join([f"{p:.6f}" for p in probabilities])
             with open(output_csv, "a") as f:
