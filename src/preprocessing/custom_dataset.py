@@ -127,9 +127,9 @@ class CustomDataset_s(torch.utils.data.Dataset):
                 row[label_columns].values.astype(int), dtype=torch.long
             )
 
-            # Aquí suponemos que "Song_ID" es el nombre de la columna en tu DataFrame
-            song_id = row["Song ID"]  # Asegúrate de que "Song_ID" exista en tu dataset
-
+            
+            song_id = row["Song ID"]
+            print(song_id)
             return image, additional_features, labels, song_id 
 
         except Exception as e:

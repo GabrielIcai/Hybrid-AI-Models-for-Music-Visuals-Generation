@@ -5,7 +5,7 @@ import re
 import os
 
 def extract_song_name(image_path):
-    filename = os.path.basename(image_path)  # Obtiene solo el nombre del archivo
+    filename = os.path.basename(image_path)
     match = re.match(r"(.+)_fragmento_\d+\.png", filename)
     print(filename)
     print(match)
