@@ -98,7 +98,7 @@ class CustomDataset_s(torch.utils.data.Dataset):
             # Verificar si la imagen existe antes de cargarla
             if not os.path.exists(img_path):
                 print(f"Error: La imagen no existe en {img_path}")
-                return None, None, None  # Si no existe, devolvemos valores vacíos
+                return None, None, None, None  # También devolvemos `None` para el `song_id`
 
             print(f"Cargando imagen desde: {img_path}")
             image = Image.open(img_path).convert("RGB")
@@ -127,11 +127,10 @@ class CustomDataset_s(torch.utils.data.Dataset):
                 row[label_columns].values.astype(int), dtype=torch.long
             )
 
-            
-            song_id = row["Song ID"]
-            print(song_id)
+            # Aquí devolvemos el song_id también
+            song_id = row["song_id"]  # Asegúrate de que el campo song_id esté presente en tu dataset
             return image, additional_features, labels, song_id 
 
         except Exception as e:
             print(f"Error al cargar la imagen {img_path}: {e}")
-            return None, None, None, None  # Devolvemos también None para song_id si hay error
+            return None, None, None, None  # Si hay un error al cargar la imagen, devolvemos valores vacíos

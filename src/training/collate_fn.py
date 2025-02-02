@@ -80,13 +80,15 @@ def collate_fn_s(batch):
 
     grouped_by_song = defaultdict(list)
 
-    # Agrupar por ID de canción (ahora lo obtenemos de la tupla)
+    # Agrupar por ID de canción (song_id)
     for image, add_feats, label, song_id in batch:
         grouped_by_song[song_id].append((image, add_feats, label))
 
     images, additional_features, labels = [], [], []
 
     for song_id, fragments in grouped_by_song.items():
+        print(f"Procesando canción {song_id} con {len(fragments)} fragmentos")
+        
         # Si no hay suficientes fragmentos, se omite la canción
         if len(fragments) < 3:
             print(f"Advertencia: No hay suficientes fragmentos para la canción {song_id}, se omite")
@@ -108,9 +110,12 @@ def collate_fn_s(batch):
 
     if len(images) == 0:
         print("Advertencia: No se han creado imágenes para este lote")
+    else:
+        print(f"Se han creado {len(images)} imágenes")
 
-    images = torch.stack(images, dim=0)
-    additional_features = torch.stack(additional_features, dim=0)
-    labels = torch.stack(labels, dim=0)
+    if len(images) > 0:
+        images = torch.stack(images, dim=0)
+        additional_features = torch.stack(additional_features, dim=0)
+        labels = torch.stack(labels, dim=0)
 
     return images, additional_features, labels
