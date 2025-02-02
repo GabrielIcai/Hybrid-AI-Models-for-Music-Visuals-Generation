@@ -79,9 +79,9 @@ def collate_fn_s(batch):
 
     # Agrupar fragmentos por canción
     for images, add_feats, label in batch:
-        song_id = label[0].item()  # Asegúrate de identificar la canción correctamente
+        song_id = label[0].item()
         grouped_by_song[song_id].append((images, add_feats, label))
-
+        print(grouped_by_song)
     # Preparar las listas para devolver
     images, additional_features, labels = [], [], []
 
@@ -99,7 +99,7 @@ def collate_fn_s(batch):
         for i in range(0, len(fragments), 3):
             song_images = torch.stack([fragments[i+j][0] for j in range(3)], dim=0)
             song_additional_features = torch.stack([fragments[i+j][1] for j in range(3)], dim=0)
-            song_label = fragments[i][2]  # Etiqueta del primer fragmento del bloque
+            song_label = fragments[i][2]
 
             images.append(song_images)
             additional_features.append(song_additional_features)
