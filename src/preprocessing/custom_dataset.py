@@ -74,56 +74,61 @@ class CustomDataset(torch.utils.data.Dataset):
 
 
 #PRUEBAS CANCIONES
+from PIL import Image
+import os
+
 class CustomDataset_s(torch.utils.data.Dataset):
-    def __init__(self, data, base_path, transform, seq_length=3):
+    def __init__(self, data, base_path, transform):
         self.data = data.reset_index(drop=True)
         self.base_path = base_path
         self.transform = transform
-        self.seq_length = seq_length  # Definimos la longitud del bloque (3 fragmentos)
-        self.song_ids = data["Song ID"].unique()  # Asegúrate de que cada canción esté separada
 
     def __len__(self):
-        # Cambiamos para que calcule la cantidad de bloques de 3 fragmentos
-        return len(self.data) // self.seq_length
+        return len(self.data)
 
-    def __getitem__(self, idx):
-        start_idx = idx * self.seq_length
-        end_idx = (idx + 1) * self.seq_length
+    def __getitem__(self, idx): 
+        if idx < 0 or idx >= len(self.data):
+            raise IndexError(f"Índice {idx} fuera de rango")
 
-        # Aseguramos que obtenemos 3 fragmentos consecutivos
-        fragments = self.data.iloc[start_idx:end_idx]
-        images = []
-        additional_features = []
-        labels = []
+        row = self.data.iloc[idx]
+        img_path = os.path.join(self.base_path, row["Ruta"])
+        print(f"Procesando imagen desde: {img_path}")
 
-        for _, row in fragments.iterrows():
-            img_path = os.path.join(self.base_path, row["Ruta"])
+        try:
+            # Verificar si la imagen existe antes de cargarla
+            if not os.path.exists(img_path):
+                print(f"Error: La imagen no existe en {img_path}")
+                return None, None, None  # Si no existe, devolvemos valores vacíos
 
-            try:
-                image = Image.open(img_path).convert("RGB")
-                if self.transform:
-                    image = self.transform(image)
+            print(f"Cargando imagen desde: {img_path}")
+            image = Image.open(img_path).convert("RGB")
+            if self.transform:
+                image = self.transform(image)
 
-                required_columns = [
-                    "RMS", "ZCR", "Mean Absolute Amplitude", "Crest Factor",
-                    "Standard Deviation of Amplitude", "Spectral Centroid",
-                    "Spectral Bandwidth", "Spectral Roll-off", "Spectral Flux",
-                    "VAD", "Spectral Variation", "Tempo",
-                ]
-                additional_features.append(torch.tensor(row[required_columns].values.astype(float), dtype=torch.float32))
+            required_columns = [
+                "RMS", "ZCR", "Mean Absolute Amplitude", "Crest Factor",
+                "Standard Deviation of Amplitude", "Spectral Centroid",
+                "Spectral Bandwidth", "Spectral Roll-off", "Spectral Flux",
+                "VAD", "Spectral Variation", "Tempo",
+            ]
+            missing_columns = [col for col in required_columns if col not in row]
+            if missing_columns:
+                raise ValueError(f"Faltan columnas: {', '.join(missing_columns)}")
 
-                label_columns = [
-                    "Afro House", "Ambient", "Deep House",
-                    "Techno", "Trance", "Progressive House",
-                ]
-                labels.append(torch.tensor(row[label_columns].values.astype(int), dtype=torch.long))
+            additional_features = torch.tensor(
+                row[required_columns].values.astype(float), dtype=torch.float32
+            )
 
-            except Exception as e:
-                raise RuntimeError(f"Error procesando el índice {idx}, archivo {img_path}: {e}")
+            label_columns = [
+                "Afro House", "Ambient", "Deep House",
+                "Techno", "Trance", "Progressive House",
+            ]
+            labels = torch.tensor(
+                row[label_columns].values.astype(int), dtype=torch.long
+            )
 
-        # Devolver 3 fragmentos agrupados
-        images = torch.stack(images)
-        additional_features = torch.stack(additional_features)
-        labels = torch.stack(labels)
+            return image, additional_features, labels 
 
-        return images, additional_features, labels
+        except Exception as e:
+            print(f"Error al cargar la imagen {img_path}: {e}")
+            return None, None, None  # Si hay un error al cargar la imagen, devolvemos valores vacíos
