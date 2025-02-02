@@ -63,37 +63,54 @@ test_loader = DataLoader(
     pin_memory=True
 )
 
-all_preds = []
-all_labels = []
-all_probabilities = []
-song_group_predictions = defaultdict(list)
+all_preds = defaultdict(list)
+all_labels = defaultdict(list)
+all_probabilities = defaultdict(list)
 
 with torch.no_grad():
-    for images, additional_features, labels, image_paths in test_loader:
+    for images, additional_features, labels, song_ids in test_loader:
         images = images.to(device)
         additional_features = additional_features.to(device)
         labels = labels.to(device)
 
         outputs = model(images, additional_features)
+        probabilities = torch.softmax(outputs, dim=1)
         preds = torch.argmax(outputs, dim=1)
         labels_grouped = torch.argmax(labels, dim=1)
-        probabilities = torch.softmax(outputs, dim=1)
 
-        for i, image_path in enumerate(image_paths):
-            song_name = extract_song_name(image_path)
-            if song_name:
-                song_group_predictions[song_name].append(preds[i].item())
+        for song_id, pred, label, prob in zip(song_ids, preds.cpu().numpy(), labels_grouped.cpu().numpy(), probabilities.cpu().numpy()):
+            all_preds[song_id].append(pred)
+            all_labels[song_id].append(label)
+            all_probabilities[song_id].append(prob)
 
-        all_probabilities.extend(probabilities.cpu().numpy())
-        all_preds.extend(preds.cpu().numpy())
-        all_labels.extend(labels_grouped.cpu().numpy())
+# Decidir la predicción final para cada canción
+final_preds = []
+final_labels = []
 
-final_song_predictions = {}
-for song_name, preds_list in song_group_predictions.items():
+for song_id in all_preds:
+    # Obtener la predicción más común
+    most_common_pred = Counter(all_preds[song_id]).most_common(1)[0][0]
+    final_preds.append(most_common_pred)
 
-    most_common_pred = stats.mode(preds_list)[0][0]
-    final_song_predictions[song_name] = most_common_pred
-print(f"Song group predictions: {song_group_predictions}")
-print("\nPredicciones finales por canción:")
-for song_name, pred in final_song_predictions.items():
-    print(f"Canción: {song_name}, Predicción más común: {class_names[pred]}")
+    # Tomar la etiqueta real (asumimos que es la misma para todos los fragmentos)
+    final_labels.append(all_labels[song_id][0])
+
+# Generar matriz de confusión
+conf_matrix = confusion_matrix(final_labels, final_preds)
+print("\nMatriz de confusión:")
+print(conf_matrix)
+
+# Reporte de clasificación
+print("\nReporte de clasificación:")
+print(classification_report(final_labels, final_preds))
+
+# Visualizar matriz de confusión
+plt.figure(figsize=(10, 8))
+sns.heatmap(conf_matrix, annot=True, fmt="d", cmap="Blues", xticklabels=class_names, yticklabels=class_names)
+plt.xlabel("Predicciones")
+plt.ylabel("Etiquetas Reales")
+plt.title("Matriz de Confusión por Canción")
+
+image_path = "/content/drive/MyDrive/TFG/matriz_confusion_canciones.png"
+plt.savefig(image_path)
+plt.close()

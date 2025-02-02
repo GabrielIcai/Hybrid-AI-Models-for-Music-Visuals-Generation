@@ -14,8 +14,7 @@ def mel_spectrogram_augmentation(spectrogram):
         transforms.RandomRotation(7),
         transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.2),
         transforms.RandomResizedCrop(128, scale=(0.8, 1.0)),
-        transforms.RandomAffine(degrees=0, translate=(0.1, 0.1)),
-    ])
+        transforms.RandomAffine(degrees=0, translate=(0.1, 0.1)) ])
 
     augmented_spectrogram = transform(spectrogram)
     augmented_spectrogram = np.array(augmented_spectrogram)
