@@ -4,12 +4,15 @@ import numpy as np
 import os
 import seaborn as sns
 import sys
+repo_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"))
+if repo_path not in sys.path:
+    sys.path.append(repo_path)
 import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix, classification_report
 from torch.utils.data import DataLoader
 from src.preprocessing import CustomDataset, normalize_columns, load_data, c_transform
 from src.training import collate_fn
-from src.models.genre_model import CNN_LSTM_genre
+from src.models.genre_model import CRNN, CNN_LSTM_genre
 
 # Configuración de dispositivo
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
