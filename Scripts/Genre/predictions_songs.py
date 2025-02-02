@@ -44,13 +44,13 @@ data=data.head(100)
 normalize_columns(data, columns)
 
 # Agrupar por "song_ID"
-canciones_unicas = data["song_ID"].unique()
+canciones_unicas = data["Song ID"].unique()
 
 # Transformación
 test_transform = c_transform(mean, std)
 
 # Archivo CSV donde guardaremos los resultados
-csv_headers = ["song_ID", "fragmento", "etiqueta_real", "prediccion", "probabilidades"]
+csv_headers = ["Song ID", "fragmento", "etiqueta_real", "prediccion", "probabilidades"]
 with open(output_csv, "w") as f:
     f.write(",".join(csv_headers) + "\n")
 
@@ -60,7 +60,7 @@ with torch.no_grad():
         print(f"\nProcesando canción ID: {song_id}")
 
         # Filtrar fragmentos de la canción actual
-        data_cancion = data[data["song_ID"] == song_id].reset_index(drop=True)
+        data_cancion = data[data["Song ID"] == song_id].reset_index(drop=True)
         test_dataset = CustomDataset(data_cancion, base_path, transform=test_transform)
         test_loader = DataLoader(test_dataset, batch_size=1, collate_fn=collate_fn, shuffle=False)
 
