@@ -75,57 +75,55 @@ class CustomDataset(torch.utils.data.Dataset):
 
 #PRUEBAS CANCIONES
 class CustomDataset_s(torch.utils.data.Dataset):
-    def __init__(self, data, base_path, transform):
+    def __init__(self, data, base_path, transform, seq_length=3):
         self.data = data.reset_index(drop=True)
         self.base_path = base_path
         self.transform = transform
+        self.seq_length = seq_length  # Definimos la longitud del bloque (3 fragmentos)
+        self.song_ids = data["Song ID"].unique()  # Asegúrate de que cada canción esté separada
 
     def __len__(self):
-        return len(self.data)
+        # Cambiamos para que calcule la cantidad de bloques de 3 fragmentos
+        return len(self.data) // self.seq_length
 
-    def __getitem__(self, idx): 
-        if idx < 0 or idx >= len(self.data):
-            raise IndexError(f"Índice {idx} fuera de rango")
+    def __getitem__(self, idx):
+        start_idx = idx * self.seq_length
+        end_idx = (idx + 1) * self.seq_length
 
-        row = self.data.iloc[idx]
-        img_path = os.path.join(self.base_path, row["Ruta"])
-        print("EN custom dataset")
-        print(img_path)
+        # Aseguramos que obtenemos 3 fragmentos consecutivos
+        fragments = self.data.iloc[start_idx:end_idx]
+        images = []
+        additional_features = []
+        labels = []
 
-        try:
-            print(f"Cargando imagen desde: {img_path}")
-            image = Image.open(img_path).convert("RGB")
-            if self.transform:
-                image = self.transform(image)
+        for _, row in fragments.iterrows():
+            img_path = os.path.join(self.base_path, row["Ruta"])
 
-            required_columns = [
-                "RMS", "ZCR", "Mean Absolute Amplitude", "Crest Factor",
-                "Standard Deviation of Amplitude", "Spectral Centroid",
-                "Spectral Bandwidth", "Spectral Roll-off", "Spectral Flux",
-                "VAD", "Spectral Variation", "Tempo",
-            ]
-            missing_columns = [col for col in required_columns if col not in row]
-            if missing_columns:
-                raise ValueError(f"Faltan columnas: {', '.join(missing_columns)}")
+            try:
+                image = Image.open(img_path).convert("RGB")
+                if self.transform:
+                    image = self.transform(image)
 
-            additional_features = torch.tensor(
-                row[required_columns].values.astype(float), dtype=torch.float32
-            )
+                required_columns = [
+                    "RMS", "ZCR", "Mean Absolute Amplitude", "Crest Factor",
+                    "Standard Deviation of Amplitude", "Spectral Centroid",
+                    "Spectral Bandwidth", "Spectral Roll-off", "Spectral Flux",
+                    "VAD", "Spectral Variation", "Tempo",
+                ]
+                additional_features.append(torch.tensor(row[required_columns].values.astype(float), dtype=torch.float32))
 
-            label_columns = [
-                "Afro House", "Ambient", "Deep House",
-                "Techno", "Trance", "Progressive House",
-            ]
-            labels = torch.tensor(
-                row[label_columns].values.astype(int), dtype=torch.long
-            )
+                label_columns = [
+                    "Afro House", "Ambient", "Deep House",
+                    "Techno", "Trance", "Progressive House",
+                ]
+                labels.append(torch.tensor(row[label_columns].values.astype(int), dtype=torch.long))
 
-            # SONG ID ES OPCIONAL, pero siempre devolvemos 4 valores
-            song_id = row["Song ID"] if "Song ID" in row else None
+            except Exception as e:
+                raise RuntimeError(f"Error procesando el índice {idx}, archivo {img_path}: {e}")
 
-            print("En custom dataset")
-            print(song_id)
+        # Devolver 3 fragmentos agrupados
+        images = torch.stack(images)
+        additional_features = torch.stack(additional_features)
+        labels = torch.stack(labels)
 
-            return image, additional_features, labels, img_path 
-        except Exception as e:
-            raise RuntimeError(f"Error procesando el índice {idx}, archivo {img_path}: {e}")
+        return images, additional_features, labels
