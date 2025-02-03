@@ -44,6 +44,7 @@ data["Ruta"] = base_path + data["Ruta"]
 normalize_columns(data, columns)
 class_counts = data[["Afro House", "Ambient", "Deep House", "Techno", "Trance", "Progressive House"]].sum()
 class_names = ["Afro House", "Ambient", "Deep House", "Techno", "Trance", "Progressive House"]
+data=data[data["Song ID"]=="song1"]
 
 # Mostrar el conteo por clase
 print("Distribución de clases en el conjunto de datos:")
@@ -88,7 +89,7 @@ all_song_ids = all_song_ids[:len(all_preds)]  # Ajustar longitud en caso de padd
 
 # Crear un DataFrame con los resultados
 results_df = pd.DataFrame({
-    'Song ID': all_song_ids,  # Agregar Song ID
+    'Song ID': all_song_ids,
     'Real Label': all_labels,
     'Predicted Label': all_preds,
     'Probabilities': all_probabilities
