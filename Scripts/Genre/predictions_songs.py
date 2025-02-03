@@ -44,7 +44,7 @@ data["Ruta"] = base_path + data["Ruta"]
 normalize_columns(data, columns)
 class_counts = data[["Afro House", "Ambient", "Deep House", "Techno", "Trance", "Progressive House"]].sum()
 class_names = ["Afro House", "Ambient", "Deep House", "Techno", "Trance", "Progressive House"]
-data=data[data["Song ID"]=="song1"]
+data=data[data["Song ID"]=="song2"]
 
 # Mostrar el conteo por clase
 print("Distribución de clases en el conjunto de datos:")
@@ -100,7 +100,7 @@ results_df['Real Label'] = results_df['Real Label'].apply(lambda x: class_names[
 results_df['Predicted Label'] = results_df['Predicted Label'].apply(lambda x: class_names[x])
 
 # Guardar en CSV
-results_df.to_csv(output_csv_path, index=False)
+results_df.to_csv(output_csv_path, mode='a', header=not os.path.exists(output_csv_path), index=False)
 
 # Mostrar las primeras filas
 print(results_df.head())
