@@ -45,7 +45,7 @@ normalize_columns(data, columns)
 class_counts = data[["Afro House", "Ambient", "Deep House", "Techno", "Trance", "Progressive House"]].sum()
 class_names = ["Afro House", "Ambient", "Deep House", "Techno", "Trance", "Progressive House"]
 
-for i in range (3,51):
+for i in range (3,52):
     data = data[data["Song ID"] == f"song{i}"]
 
     # Mostrar el conteo por clase
