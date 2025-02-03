@@ -2,35 +2,27 @@ import torch
 from collections import defaultdict
 import torch
 import re
-import os
+
 
 def extract_song_name(image_path):
-    filename = os.path.basename(image_path)
-    # Cambiar el patrón para que sea más flexible y permita caracteres especiales
-    match = re.match(r"(.+)_fragmento_\d+\.png", filename)
+    match = re.match(r"(.*)_fragmento_\d+\.png", image_path)
     if match:
         return match.group(1)
     else:
-        print(f"Fragmento con nombre inválido: {filename}")
         return None
 
 
-# Para genero necesito agrupar fragmentos de las mismas cnciones en un batch que no puedo hacer con un dataset normal. Con collate proceso y agrupo varios
+# Para genero necesito agrupar fragmentos de las mismas canciones en un batch que no puedo hacer con un dataset normal. Con collate proceso y agrupo varios
 # elementos individuales
 def collate_fn(batch):
     grouped_by_song = defaultdict(list)
 
-    # Agrupo los fragmentos por canción
+    # Agrupar los fragmentos por canción
     for img, add_feats, label, image_path in batch:
         if img is not None:
             song_name = extract_song_name(image_path)
-            print(f"Extraído: {song_name} de {image_path}")
             if song_name:
                 grouped_by_song[song_name].append((img, add_feats, label))
-            else:
-                print(f"Fragmento con nombre de canción inválido: {image_path}")
-        else:
-            print(f"Imagen no válida: {image_path}")
 
     images = []
     additional_features = []
@@ -46,33 +38,33 @@ def collate_fn(batch):
                     torch.zeros_like(fragments[0][2]),
                 )
             )
-        # 3 fragmentos por canción
+        # Crear ventanas de 3 fragmentos consecutivos
         for i in range(0, len(fragments), 3):
             song_images = []
             song_additional_features = []
             song_labels = []
 
-            # Cojo 3 fragmentos
+            # Coger 3 fragmentos
             for j in range(3):
-                img, add_feats, label = fragments[i+j]
+                img, add_feats, label = fragments[i + j]
                 song_images.append(img)
                 song_additional_features.append(add_feats)
                 song_labels.append(label)
             
-            song_labels = song_labels[0]
+            song_labels = song_labels[0]  # Uso la etiqueta del primer fragmento
             labels.append(song_labels)
-
-            # Convierto listas en tensores  
+            # Convertir las listas de fragmentos en tensores
             images.append(torch.stack(song_images, dim=0))
             additional_features.append(torch.stack(song_additional_features, dim=0))
 
-    images = torch.stack(images, dim=0)  #(batch_size, 3, canales, altura, anchura)
-    additional_features = torch.stack(additional_features, dim=0)  # (batch_size, 3, num_features)
-    labels = torch.stack(labels, dim=0)  # (batch_size, num_labels)
+    # Convertir las listas en un solo tensor
+    images = torch.stack(images, dim=0)  # (batch_size, 3, canales, altura, anchura)
+    additional_features = torch.stack(
+        additional_features, dim=0
+    )  # (batch_size, 3, num_features)
+    labels = torch.stack(labels, dim=0)  # (batch_size, 3, num_labels)
 
     return images, additional_features, labels
-from collections import defaultdict
-import torch
 
 def collate_fn_s(batch):
     # Filtrar los datos vacíos (None)

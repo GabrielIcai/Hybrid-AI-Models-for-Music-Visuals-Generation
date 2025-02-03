@@ -22,6 +22,7 @@ def c_transform(mean, std):
 # additional_features: Tensor de forma (num_features,)
 # labels: Tensor de forma (num_labels,)
 
+
 class CustomDataset(torch.utils.data.Dataset):
     def __init__(self, data, base_path, transform):
         self.data = data
@@ -45,9 +46,20 @@ class CustomDataset(torch.utils.data.Dataset):
             if self.transform:
                 image = self.transform(image)
 
-            required_columns = ["RMS","ZCR","Mean Absolute Amplitude","Crest Factor","Standard Deviation of Amplitude",
-                "Spectral Centroid","Spectral Bandwidth","Spectral Roll-off","Spectral Flux","VAD","Spectral Variation",
-                "Tempo"]
+            required_columns = [
+                "RMS",
+                "ZCR",
+                "Mean Absolute Amplitude",
+                "Crest Factor",
+                "Standard Deviation of Amplitude",
+                "Spectral Centroid",
+                "Spectral Bandwidth",
+                "Spectral Roll-off",
+                "Spectral Flux",
+                "VAD",
+                "Spectral Variation",
+                "Tempo",
+            ]
             for col in required_columns:
                 if col not in row:
                     raise ValueError(f"Columna {col} no encontrada en el DataFrame.")
@@ -55,22 +67,21 @@ class CustomDataset(torch.utils.data.Dataset):
             additional_features = row[required_columns].values.astype(float)
             additional_features = torch.tensor(additional_features, dtype=torch.float32)
             #Selecciono 
-            label_columns = ["Afro House","Ambient","Deep House","Techno","Trance","Progressive House"]
+            label_columns = [
+            "Afro House",
+            "Ambient",
+            "Deep House",
+            "Techno",
+            "Trance",
+            "Progressive House"]
             labels = torch.tensor(row[label_columns].values.astype(int),dtype=torch.long
         )
-            song_id = self.data.iloc[idx]["Song ID"] if "Song ID" in self.data.columns else None
-
-            if song_id is not None:
-                return image, additional_features, labels, song_id
-            else:
-                return image, additional_features, labels
+            return image, additional_features, labels, img_path
 
         except Exception as e:
             raise RuntimeError(
                 f"Error procesando el índice {idx}, archivo {img_path}: {e}"
             )
-
-
 
 
 #PRUEBAS CANCIONES
