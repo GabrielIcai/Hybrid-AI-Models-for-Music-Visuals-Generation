@@ -19,8 +19,8 @@ from src.models.genre_model import CRNN, CNN_LSTM_genre
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Usando dispositivo: {device}")
 base_path = "/content/drive/MyDrive/TFG/data/"
-model_path = "/content/drive/MyDrive/TFG/models/best_cnn_lstm_genre.pth"
-csv_path = "/content/drive/MyDrive/TFG/data/espectrogramas_salida_test/dataset_genero_test.csv"
+model_path = "/content/drive/MyDrive/TFG/models/best_cnn_lstm_genre_error.pth"
+csv_path = "/content/drive/MyDrive/TFG/data/espectrogramas_salida_test/datase_test.csv"
 mean = [0.676956295967102, 0.2529653012752533, 0.4388839304447174]
 std = [0.21755781769752502, 0.15407244861125946, 0.07557372003793716]
 columns = ["Spectral Centroid", "Spectral Bandwidth", "Spectral Roll-off"]
@@ -37,7 +37,7 @@ data = load_data(csv_path)
 data["Ruta"] = data["Ruta"].str.replace("\\", "/")
 data["Ruta"] = base_path + data["Ruta"]
 normalize_columns(data, columns)
-
+data=data.head(300)
 class_counts = data[["Afro House", "Ambient", "Deep House", "Techno", "Trance","Progressive House"]].sum()
 class_names = ["Afro House", "Ambient", "Deep House", "Techno", "Trance", "Progressive House"]
 
@@ -104,7 +104,7 @@ plt.xlabel("Predicciones")
 plt.ylabel("Etiquetas Reales")
 plt.title("Matriz de Confusión")
 
-image_path = "/content/drive/MyDrive/TFG/matriz_confusion_generos_lstm.png"
+image_path = "/content/drive/MyDrive/TFG/matriz_confusion_generos_lstm_error.png"
 plt.savefig(image_path)
 plt.close()
 
