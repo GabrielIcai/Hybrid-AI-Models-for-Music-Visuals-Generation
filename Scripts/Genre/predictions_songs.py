@@ -44,7 +44,7 @@ data["Ruta"] = base_path + data["Ruta"]
 normalize_columns(data, columns)
 class_counts = data[["Afro House", "Ambient", "Deep House", "Techno", "Trance", "Progressive House"]].sum()
 class_names = ["Afro House", "Ambient", "Deep House", "Techno", "Trance", "Progressive House"]
-data=data[data["Song ID"]=="song2"]
+data=data[data["Song ID"]=="song3"]
 
 # Mostrar el conteo por clase
 print("Distribución de clases en el conjunto de datos:")
