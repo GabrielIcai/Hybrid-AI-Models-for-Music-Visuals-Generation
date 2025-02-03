@@ -19,7 +19,7 @@ from src.models.genre_model import CRNN, CNN_LSTM_genre
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Usando dispositivo: {device}")
 base_path = "/content/drive/MyDrive/TFG/data/"
-model_path = "/content/drive/MyDrive/TFG/models/best_cnn_lstm_genre_error.pth"
+model_path = "/content/drive/MyDrive/TFG/models/best_cnn_lstm_genre.pth"
 csv_path = "/content/drive/MyDrive/TFG/data/espectrogramas_salida_test/datase_test.csv"
 mean = [0.676956295967102, 0.2529653012752533, 0.4388839304447174]
 std = [0.21755781769752502, 0.15407244861125946, 0.07557372003793716]
