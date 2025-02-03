@@ -21,9 +21,9 @@ print(f"Usando dispositivo: {device}")
 for i in range (3,52):
     # Rutas
     base_path = "/content/drive/MyDrive/TFG/data/"
-    model_path = "/content/drive/MyDrive/TFG/models/best_cnn_lstm_genre.pth"
+    model_path = "/content/drive/MyDrive/TFG/models/best_crnn_genre.pth"
     csv_path = "/content/drive/MyDrive/TFG/data/espectrogramas_salida_test/dataset_test.csv"
-    output_csv_path = "/content/drive/MyDrive/TFG/predicciones_canciones_LSTM.csv"
+    output_csv_path = "/content/drive/MyDrive/TFG/predicciones_canciones_CRNN.csv"
 
     # Normalización
     mean = [0.676956295967102, 0.2529653012752533, 0.4388839304447174]
@@ -32,7 +32,7 @@ for i in range (3,52):
     num_classes = 6
     class_names = ["Afro House", "Ambient", "Deep House", "Techno", "Trance", "Progressive House"]
 
-    model = CNN_LSTM_genre(num_classes=num_classes, additional_features_dim=12, hidden_size=256)
+    model = CRNN(num_classes=num_classes, additional_features_dim=12, hidden_size=256)
     model.load_state_dict(torch.load(model_path, map_location=device))
     model.to(device)
     model.eval()
