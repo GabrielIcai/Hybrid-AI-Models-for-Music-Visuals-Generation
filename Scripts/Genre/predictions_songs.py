@@ -14,6 +14,7 @@ from src.preprocessing import CustomDataset_s, normalize_columns, load_data, c_t
 from src.training import collate_fn_s,collate_fn
 from src.models.genre_model import CRNN, CNN_LSTM_genre
 
+#F
 # Configuración de dispositivo
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Usando dispositivo: {device}")
