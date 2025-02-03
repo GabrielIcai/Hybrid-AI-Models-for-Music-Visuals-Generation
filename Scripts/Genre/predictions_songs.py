@@ -68,7 +68,7 @@ all_song_ids = []
 
 # Realizar la inferencia
 with torch.no_grad():
-    for images, additional_features, labels, song_ids in test_loader:
+    for images, additional_features, labels in test_loader:
         images = images.to(device)
         additional_features = additional_features.to(device)
         labels = labels.to(device)
@@ -81,11 +81,9 @@ with torch.no_grad():
         all_probabilities.extend(probabilities.cpu().numpy())
         all_preds.extend(preds.cpu().numpy())
         all_labels.extend(labels_grouped.cpu().numpy())
-        all_song_ids.extend(song_ids)
 
 # Crear un DataFrame con los resultados
 results_df = pd.DataFrame({
-    'Song ID': all_song_ids,
     'Real Label': all_labels,
     'Predicted Label': all_preds,
     'Probabilities': all_probabilities
