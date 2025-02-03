@@ -41,8 +41,9 @@ data = load_data(csv_path)
 data["Ruta"] = data["Ruta"].str.replace("\\", "/")
 data["Ruta"] = base_path + data["Ruta"]
 normalize_columns(data, columns)
-data = data.head(300)
+data = data[data["Song ID"]=="song1"]
 class_counts = data[["Afro House", "Ambient", "Deep House", "Techno", "Trance", "Progressive House"]].sum()
+class_names = ["Afro House", "Ambient", "Deep House", "Techno", "Trance", "Progressive House"]
 
 # Mostrar el conteo por clase
 print("Distribución de clases en el conjunto de datos:")
@@ -55,11 +56,10 @@ for img_path in data["Ruta"]:
 
 test_transform = c_transform(mean, std)
 
-# Crear el dataset y el dataloader
+# Asegúrate de que el CustomDataset incluya el Song ID
 test_dataset = CustomDataset(data, base_path, transform=test_transform)
 test_loader = DataLoader(test_dataset, batch_size=128, collate_fn=collate_fn, shuffle=False, num_workers=2, pin_memory=True)
 
-# Listas para almacenar los resultados
 # Listas para almacenar los resultados
 all_preds = []
 all_labels = []
@@ -81,7 +81,7 @@ with torch.no_grad():
         all_probabilities.extend(probabilities.cpu().numpy())
         all_preds.extend(preds.cpu().numpy())
         all_labels.extend(labels_grouped.cpu().numpy())
-        all_song_ids.extend(song_ids.cpu().numpy())
+        all_song_ids.extend(song_ids)
 
 # Crear un DataFrame con los resultados
 results_df = pd.DataFrame({
