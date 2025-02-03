@@ -39,6 +39,7 @@ class CustomDataset(torch.utils.data.Dataset):
         row = self.data.iloc[idx]
         ruta=row["Ruta"]
         img_path = os.path.join(self.base_path, ruta)
+        song_id=row["Song ID"]
 
         try:
             image = Image.open(img_path).convert("RGB")
@@ -76,7 +77,7 @@ class CustomDataset(torch.utils.data.Dataset):
             "Progressive House"]
             labels = torch.tensor(row[label_columns].values.astype(int),dtype=torch.long
         )
-            return image, additional_features, labels, img_path
+            return image, additional_features, labels, img_path, song_id
 
         except Exception as e:
             raise RuntimeError(

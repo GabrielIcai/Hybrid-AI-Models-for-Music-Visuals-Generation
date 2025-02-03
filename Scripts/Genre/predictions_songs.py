@@ -43,7 +43,6 @@ data["Ruta"] = base_path + data["Ruta"]
 normalize_columns(data, columns)
 data = data.head(300)
 class_counts = data[["Afro House", "Ambient", "Deep House", "Techno", "Trance", "Progressive House"]].sum()
-class_names = ["Afro House", "Ambient", "Deep House", "Techno", "Trance", "Progressive House"]
 
 # Mostrar el conteo por clase
 print("Distribución de clases en el conjunto de datos:")
@@ -56,7 +55,7 @@ for img_path in data["Ruta"]:
 
 test_transform = c_transform(mean, std)
 
-# Asegúrate de que el CustomDataset incluya el Song ID
+# Crear el dataset y el dataloader
 test_dataset = CustomDataset(data, base_path, transform=test_transform)
 test_loader = DataLoader(test_dataset, batch_size=128, collate_fn=collate_fn, shuffle=False, num_workers=2, pin_memory=True)
 
@@ -110,5 +109,6 @@ for i, class_name in enumerate(class_names):
     print(f"  Etiquetas reales: {real_counts[i]}")
     print(f"  Predicciones: {pred_counts[i]}")
 
-data2=pd.read_csv(output_csv_path)
-print=data2.head()
+# Mostrar las primeras filas del archivo CSV generado
+data2 = pd.read_csv(output_csv_path)
+print(data2.head())
