@@ -60,6 +60,7 @@ test_dataset = CustomDataset(data, base_path, transform=test_transform)
 test_loader = DataLoader(test_dataset, batch_size=128, collate_fn=collate_fn, shuffle=False, num_workers=2, pin_memory=True)
 
 # Listas para almacenar los resultados
+# Listas para almacenar los resultados
 all_preds = []
 all_labels = []
 all_probabilities = []
@@ -80,7 +81,7 @@ with torch.no_grad():
         all_probabilities.extend(probabilities.cpu().numpy())
         all_preds.extend(preds.cpu().numpy())
         all_labels.extend(labels_grouped.cpu().numpy())
-        all_song_ids.extend(song_ids)
+        all_song_ids.extend(song_ids.cpu().numpy())
 
 # Crear un DataFrame con los resultados
 results_df = pd.DataFrame({

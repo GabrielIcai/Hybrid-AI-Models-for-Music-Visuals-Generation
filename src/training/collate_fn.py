@@ -3,7 +3,6 @@ from collections import defaultdict
 import torch
 import re
 
-
 def extract_song_name(image_path):
     match = re.match(r"(.*)_fragmento_\d+\.png", image_path)
     if match:
@@ -11,24 +10,20 @@ def extract_song_name(image_path):
     else:
         return None
 
-
-# Para genero necesito agrupar fragmentos de las mismas canciones en un batch que no puedo hacer con un dataset normal. Con collate proceso y agrupo varios
-# elementos individuales
 def collate_fn(batch):
     grouped_by_song = defaultdict(list)
 
-    # Agrupar los fragmentos por canción
-    for img, add_feats, label, image_path in batch:
+    # Agrupar los fragmentos por canción usando song_id
+    for img, add_feats, label, image_path, song_id in batch:
         if img is not None:
-            song_name = extract_song_name(image_path)
-            if song_name:
-                grouped_by_song[song_name].append((img, add_feats, label))
+            grouped_by_song[song_id].append((img, add_feats, label))
 
     images = []
     additional_features = []
     labels = []
+    song_ids = []
 
-    for song_name, fragments in grouped_by_song.items():
+    for song_id, fragments in grouped_by_song.items():
         # Padding
         while len(fragments) % 3 != 0:
             fragments.append(
@@ -53,6 +48,7 @@ def collate_fn(batch):
             
             song_labels = song_labels[0]  # Uso la etiqueta del primer fragmento
             labels.append(song_labels)
+            song_ids.append(song_id)
             # Convertir las listas de fragmentos en tensores
             images.append(torch.stack(song_images, dim=0))
             additional_features.append(torch.stack(song_additional_features, dim=0))
@@ -63,8 +59,9 @@ def collate_fn(batch):
         additional_features, dim=0
     )  # (batch_size, 3, num_features)
     labels = torch.stack(labels, dim=0)  # (batch_size, 3, num_labels)
+    song_ids = torch.tensor(song_ids, dtype=torch.long)  # Convertir song_ids a tensor
 
-    return images, additional_features, labels
+    return images, additional_features, labels, song_ids
 
 def collate_fn_s(batch):
     # Filtrar los datos vacíos (None)
