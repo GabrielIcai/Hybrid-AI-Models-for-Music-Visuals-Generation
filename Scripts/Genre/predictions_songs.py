@@ -109,3 +109,6 @@ for i, class_name in enumerate(class_names):
     print(f"Clase '{class_name}':")
     print(f"  Etiquetas reales: {real_counts[i]}")
     print(f"  Predicciones: {pred_counts[i]}")
+
+data2=pd.read_csv(output_csv_path)
+print=data2.head()
