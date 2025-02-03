@@ -44,63 +44,65 @@ data["Ruta"] = base_path + data["Ruta"]
 normalize_columns(data, columns)
 class_counts = data[["Afro House", "Ambient", "Deep House", "Techno", "Trance", "Progressive House"]].sum()
 class_names = ["Afro House", "Ambient", "Deep House", "Techno", "Trance", "Progressive House"]
-data=data[data["Song ID"]=="song3"]
 
-# Mostrar el conteo por clase
-print("Distribución de clases en el conjunto de datos:")
-print(class_counts)
+for i in range (3,51):
+    data = data[data["Song ID"] == f"song{i}"]
 
-# Verificar rutas
-for img_path in data["Ruta"]:
-    if not os.path.exists(img_path):
-        print(f"Ruta no encontrada: {img_path}")
+    # Mostrar el conteo por clase
+    print("Distribución de clases en el conjunto de datos:")
+    print(class_counts)
 
-test_transform = c_transform(mean, std)
+    # Verificar rutas
+    for img_path in data["Ruta"]:
+        if not os.path.exists(img_path):
+            print(f"Ruta no encontrada: {img_path}")
 
-# Asegúrate de que el CustomDataset incluya el Song ID
-test_dataset = CustomDataset(data, base_path, transform=test_transform)
-test_loader = DataLoader(test_dataset, batch_size=128, collate_fn=collate_fn, shuffle=False, num_workers=2, pin_memory=True)
+    test_transform = c_transform(mean, std)
 
-all_song_ids = np.repeat(data["Song ID"].values, 1)  # Repetir 3 veces para cada fragmento
+    # Asegúrate de que el CustomDataset incluya el Song ID
+    test_dataset = CustomDataset(data, base_path, transform=test_transform)
+    test_loader = DataLoader(test_dataset, batch_size=128, collate_fn=collate_fn, shuffle=False, num_workers=2, pin_memory=True)
 
-# Listas para almacenar los resultados
-all_preds = []
-all_labels = []
-all_probabilities = []
+    all_song_ids = np.repeat(data["Song ID"].values, 1)  # Repetir 3 veces para cada fragmento
 
-# Realizar la inferencia
-with torch.no_grad():
-    for i, (images, additional_features, labels) in enumerate(test_loader):
-        images = images.to(device)
-        additional_features = additional_features.to(device)
-        labels = labels.to(device)
+    # Listas para almacenar los resultados
+    all_preds = []
+    all_labels = []
+    all_probabilities = []
 
-        outputs = model(images, additional_features)
-        preds = torch.argmax(outputs, dim=1)
-        labels_grouped = torch.argmax(labels, dim=1)
-        probabilities = torch.softmax(outputs, dim=1)
+    # Realizar la inferencia
+    with torch.no_grad():
+        for i, (images, additional_features, labels) in enumerate(test_loader):
+            images = images.to(device)
+            additional_features = additional_features.to(device)
+            labels = labels.to(device)
 
-        all_probabilities.extend(probabilities.cpu().numpy())
-        all_preds.extend(preds.cpu().numpy())
-        all_labels.extend(labels_grouped.cpu().numpy())
+            outputs = model(images, additional_features)
+            preds = torch.argmax(outputs, dim=1)
+            labels_grouped = torch.argmax(labels, dim=1)
+            probabilities = torch.softmax(outputs, dim=1)
 
-# Emparejar Song ID con las predicciones
-all_song_ids = all_song_ids[:len(all_preds)]  # Ajustar longitud en caso de padding
+            all_probabilities.extend(probabilities.cpu().numpy())
+            all_preds.extend(preds.cpu().numpy())
+            all_labels.extend(labels_grouped.cpu().numpy())
 
-# Crear un DataFrame con los resultados
-results_df = pd.DataFrame({
-    'Song ID': all_song_ids,
-    'Real Label': all_labels,
-    'Predicted Label': all_preds,
-    'Probabilities': all_probabilities
-})
+    # Emparejar Song ID con las predicciones
+    all_song_ids = all_song_ids[:len(all_preds)]  # Ajustar longitud en caso de padding
 
-# Convertir etiquetas numéricas a nombres de clases
-results_df['Real Label'] = results_df['Real Label'].apply(lambda x: class_names[x])
-results_df['Predicted Label'] = results_df['Predicted Label'].apply(lambda x: class_names[x])
+    # Crear un DataFrame con los resultados
+    results_df = pd.DataFrame({
+        'Song ID': all_song_ids,
+        'Real Label': all_labels,
+        'Predicted Label': all_preds,
+        'Probabilities': all_probabilities
+    })
 
-# Guardar en CSV
-results_df.to_csv(output_csv_path, mode='a', header=not os.path.exists(output_csv_path), index=False)
+    # Convertir etiquetas numéricas a nombres de clases
+    results_df['Real Label'] = results_df['Real Label'].apply(lambda x: class_names[x])
+    results_df['Predicted Label'] = results_df['Predicted Label'].apply(lambda x: class_names[x])
 
-# Mostrar las primeras filas
-print(results_df.head())
+    # Guardar en CSV
+    results_df.to_csv(output_csv_path, mode='a', header=not os.path.exists(output_csv_path), index=False)
+
+    # Mostrar las primeras filas
+    print(results_df.head())
