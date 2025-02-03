@@ -61,15 +61,16 @@ test_transform = c_transform(mean, std)
 test_dataset = CustomDataset(data, base_path, transform=test_transform)
 test_loader = DataLoader(test_dataset, batch_size=128, collate_fn=collate_fn, shuffle=False, num_workers=2, pin_memory=True)
 
+all_song_ids = np.repeat(data["Song ID"].values, 3)  # Repetir 3 veces para cada fragmento
+
 # Listas para almacenar los resultados
 all_preds = []
 all_labels = []
 all_probabilities = []
-all_song_ids = []
 
 # Realizar la inferencia
 with torch.no_grad():
-    for images, additional_features, labels in test_loader:
+    for i, (images, additional_features, labels) in enumerate(test_loader):
         images = images.to(device)
         additional_features = additional_features.to(device)
         labels = labels.to(device)
@@ -83,32 +84,23 @@ with torch.no_grad():
         all_preds.extend(preds.cpu().numpy())
         all_labels.extend(labels_grouped.cpu().numpy())
 
+# Emparejar Song ID con las predicciones
+all_song_ids = all_song_ids[:len(all_preds)]  # Ajustar longitud en caso de padding
+
 # Crear un DataFrame con los resultados
 results_df = pd.DataFrame({
+    'Song ID': all_song_ids,  # Agregar Song ID
     'Real Label': all_labels,
     'Predicted Label': all_preds,
     'Probabilities': all_probabilities
 })
 
-# Convertir las etiquetas numéricas a nombres de clases
+# Convertir etiquetas numéricas a nombres de clases
 results_df['Real Label'] = results_df['Real Label'].apply(lambda x: class_names[x])
 results_df['Predicted Label'] = results_df['Predicted Label'].apply(lambda x: class_names[x])
 
-# Guardar el DataFrame en un archivo CSV
+# Guardar en CSV
 results_df.to_csv(output_csv_path, index=False)
 
-print("\nAnálisis de distribución de etiquetas reales y predicciones:")
-real_counts = pd.Series(all_labels).value_counts()
-pred_counts = pd.Series(all_preds).value_counts()
-
-real_counts = real_counts.reindex(range(num_classes), fill_value=0)
-pred_counts = pred_counts.reindex(range(num_classes), fill_value=0)
-
-for i, class_name in enumerate(class_names):
-    print(f"Clase '{class_name}':")
-    print(f"  Etiquetas reales: {real_counts[i]}")
-    print(f"  Predicciones: {pred_counts[i]}")
-
-# Mostrar las primeras filas del archivo CSV generado
-data2 = pd.read_csv(output_csv_path)
-print(data2.head())
+# Mostrar las primeras filas
+print(results_df.head())
