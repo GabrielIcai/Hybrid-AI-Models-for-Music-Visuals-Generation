@@ -60,7 +60,7 @@ test_transform = c_transform(mean, std)
 test_dataset = CustomDataset(data, base_path, transform=test_transform)
 test_loader = DataLoader(test_dataset, batch_size=128, collate_fn=collate_fn, shuffle=False, num_workers=2, pin_memory=True)
 
-all_song_ids = np.repeat(data["Song ID"].values, 3)  # Repetir 3 veces para cada fragmento
+all_song_ids = np.repeat(data["Song ID"].values, 1)  # Repetir 3 veces para cada fragmento
 
 # Listas para almacenar los resultados
 all_preds = []
