@@ -18,34 +18,33 @@ from src.models.genre_model import CRNN, CNN_LSTM_genre
 # Configuración de dispositivo
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Usando dispositivo: {device}")
-
-# Rutas
-base_path = "/content/drive/MyDrive/TFG/data/"
-model_path = "/content/drive/MyDrive/TFG/models/best_cnn_lstm_genre.pth"
-csv_path = "/content/drive/MyDrive/TFG/data/espectrogramas_salida_test/dataset_test.csv"
-output_csv_path = "/content/drive/MyDrive/TFG/predicciones_canciones_LSTM.csv"
-
-# Normalización
-mean = [0.676956295967102, 0.2529653012752533, 0.4388839304447174]
-std = [0.21755781769752502, 0.15407244861125946, 0.07557372003793716]
-columns = ["Spectral Centroid", "Spectral Bandwidth", "Spectral Roll-off"]
-num_classes = 6
-class_names = ["Afro House", "Ambient", "Deep House", "Techno", "Trance", "Progressive House"]
-
-model = CNN_LSTM_genre(num_classes=num_classes, additional_features_dim=12, hidden_size=256)
-model.load_state_dict(torch.load(model_path, map_location=device))
-model.to(device)
-model.eval()
-
-# Cargar los datos
-data = load_data(csv_path)
-data["Ruta"] = data["Ruta"].str.replace("\\", "/")
-data["Ruta"] = base_path + data["Ruta"]
-normalize_columns(data, columns)
-class_counts = data[["Afro House", "Ambient", "Deep House", "Techno", "Trance", "Progressive House"]].sum()
-class_names = ["Afro House", "Ambient", "Deep House", "Techno", "Trance", "Progressive House"]
-
 for i in range (3,52):
+    # Rutas
+    base_path = "/content/drive/MyDrive/TFG/data/"
+    model_path = "/content/drive/MyDrive/TFG/models/best_cnn_lstm_genre.pth"
+    csv_path = "/content/drive/MyDrive/TFG/data/espectrogramas_salida_test/dataset_test.csv"
+    output_csv_path = "/content/drive/MyDrive/TFG/predicciones_canciones_LSTM.csv"
+
+    # Normalización
+    mean = [0.676956295967102, 0.2529653012752533, 0.4388839304447174]
+    std = [0.21755781769752502, 0.15407244861125946, 0.07557372003793716]
+    columns = ["Spectral Centroid", "Spectral Bandwidth", "Spectral Roll-off"]
+    num_classes = 6
+    class_names = ["Afro House", "Ambient", "Deep House", "Techno", "Trance", "Progressive House"]
+
+    model = CNN_LSTM_genre(num_classes=num_classes, additional_features_dim=12, hidden_size=256)
+    model.load_state_dict(torch.load(model_path, map_location=device))
+    model.to(device)
+    model.eval()
+
+    # Cargar los datos
+    data = load_data(csv_path)
+    data["Ruta"] = data["Ruta"].str.replace("\\", "/")
+    data["Ruta"] = base_path + data["Ruta"]
+    normalize_columns(data, columns)
+    class_counts = data[["Afro House", "Ambient", "Deep House", "Techno", "Trance", "Progressive House"]].sum()
+    class_names = ["Afro House", "Ambient", "Deep House", "Techno", "Trance", "Progressive House"]
+
     data = data[data["Song ID"] == f"song{i}"]
 
     # Mostrar el conteo por clase
