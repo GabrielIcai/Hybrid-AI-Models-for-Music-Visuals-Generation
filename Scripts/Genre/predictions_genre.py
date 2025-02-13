@@ -34,6 +34,7 @@ model.to(device)
 model.eval()
 
 data = load_data(csv_path)
+print(data.head(120))
 data["Ruta"] = data["Ruta"].str.replace("\\", "/")
 data["Ruta"] = base_path + data["Ruta"]
 normalize_columns(data, columns)
