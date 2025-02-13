@@ -38,7 +38,6 @@ print(data.head(120))
 data["Ruta"] = data["Ruta"].str.replace("\\", "/")
 data["Ruta"] = base_path + data["Ruta"]
 normalize_columns(data, columns)
-data=data.head(300)
 class_counts = data[[ "Ambient", "Deep House", "Techno", "Trance","Progressive House"]].sum()
 class_names = ["Ambient", "Deep House", "Techno", "Trance", "Progressive House"]
 
