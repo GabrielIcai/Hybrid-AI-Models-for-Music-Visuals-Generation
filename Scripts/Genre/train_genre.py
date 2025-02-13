@@ -36,7 +36,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Usando dispositivo: {device}")
 columns = ["Spectral Centroid", "Spectral Bandwidth", "Spectral Roll-off"]
 #Cargo las imagenes desde drive
-data_path = "/content/drive/MyDrive/TFG/images/espectrogramas_normalizados/dataset_genero_completo.csv"
+data_path = "/content/drive/MyDrive/TFG/images/espectrogramas_normalizados/dataset_genero_completo_5_generos.csv"
 base_path = "/content/drive/MyDrive/TFG/images/"
 mean=[0.676956295967102, 0.2529653012752533, 0.4388839304447174]
 std=[0.21755781769752502, 0.15407244861125946, 0.07557372003793716]
@@ -105,7 +105,7 @@ def main():
     print("DataLoaders creados")
 
     # Modelo
-    model = CNN_LSTM_genre(num_classes, additional_features_dim, hidden_size).to(device)
+    model = CRNN(num_classes, additional_features_dim, hidden_size).to(device)
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
 
@@ -156,7 +156,7 @@ def main():
             early_stop_counter = 0
 
             # Guarda el mejor modelo
-            model_save_path = "/content/drive/MyDrive/TFG/models/best_cnn_lstm_genre.pth"
+            model_save_path = "/content/drive/MyDrive/TFG/models/best_CRNN_genre_5.pth"
             torch.save(model.state_dict(), model_save_path)
             print(f"Mejor modelo guardado en {model_save_path}")
         else:
@@ -178,10 +178,10 @@ def main():
     'Val Recall': val_recalls,
 })
     #Guardo Métricas
-    metrics_df.to_csv("/content/drive/MyDrive/TFG/models/training_metrics_genre.csv", index=False)
+    metrics_df.to_csv("/content/drive/MyDrive/TFG/models/training_metrics_genre_5_CRNN.csv", index=False)
 
     # Guardo el modelo
-    model_save_path = "/content/drive/MyDrive/TFG/models/cnn_lstm__genre.pth"
+    model_save_path = "/content/drive/MyDrive/TFG/models/CRNN_5_genre.pth"
     torch.save(model.state_dict(), model_save_path)
     print(f"Modelo guardado en {model_save_path}")
 

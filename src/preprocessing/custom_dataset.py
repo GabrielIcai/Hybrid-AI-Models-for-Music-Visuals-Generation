@@ -68,7 +68,6 @@ class CustomDataset(torch.utils.data.Dataset):
             additional_features = torch.tensor(additional_features, dtype=torch.float32)
             #Selecciono 
             label_columns = [
-            "Afro House",
             "Ambient",
             "Deep House",
             "Techno",

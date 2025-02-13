@@ -9,8 +9,6 @@ def mel_spectrogram_augmentation(spectrogram):
     spectrogram = Image.fromarray(spectrogram)
 
     transform = transforms.Compose([
-        transforms.RandomHorizontalFlip(4),  
-        transforms.RandomVerticalFlip(4),
         transforms.RandomRotation(7),
         transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.2),
         transforms.RandomResizedCrop(128, scale=(0.8, 1.0)),

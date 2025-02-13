@@ -9,7 +9,7 @@ class ResNetCRNNEmotionModel(nn.Module):
         #RESNET-18
         resnet = models.resnet18(pretrained=True)
         
-        #Ultima capa de resnet no nos vale
+        #Ultima capa de resnet no nos vale(ya que utilizamos LSTM al final)
         self.resnet = nn.Sequential(*list(resnet.children())[:-1])
         
         #LSTM
@@ -23,7 +23,6 @@ class ResNetCRNNEmotionModel(nn.Module):
         #Necesito dos salidas: valencia y arousal
         self.fc_valencia = nn.Linear(hidden_size * 2, num_valencia_classes)
         self.fc_arousal = nn.Linear(hidden_size * 2, num_arousal_classes)
-
         self.relu = nn.ReLU()
 
     def forward(self, x):
@@ -36,3 +35,5 @@ class ResNetCRNNEmotionModel(nn.Module):
         arousal_output = self.fc_arousal(lstm_out)
         
         return valencia_output, arousal_output
+
+
