@@ -28,7 +28,7 @@ hidden_size = 256
 additional_features_dim = 12
 num_classes = 6
 
-model = CNN_LSTM_genre(num_classes=num_classes, additional_features_dim=12, hidden_size=256)
+model = CRNN(num_classes=num_classes, additional_features_dim=12, hidden_size=256)
 model.load_state_dict(torch.load(model_path, map_location=device))
 model.to(device)
 model.eval()
