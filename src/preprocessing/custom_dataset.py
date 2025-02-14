@@ -130,7 +130,7 @@ class CustomDataset_s(torch.utils.data.Dataset):
             )
 
             label_columns = [
-                "Afro House", "Ambient", "Deep House",
+                 "Ambient", "Deep House",
                 "Techno", "Trance", "Progressive House",
             ]
             labels = torch.tensor(
@@ -144,3 +144,62 @@ class CustomDataset_s(torch.utils.data.Dataset):
         except Exception as e:
             print(f"Error al cargar la imagen {img_path}: {e}")
             return None, None, None, None  # Si hay un error al cargar la imagen, devolvemos valores vacíos
+
+#CUSTOM DATASET EMOCIONES
+class CustomDataset_emociones(torch.utils.data.Dataset):
+    def __init__(self, data,base_path,transform):
+        self.data = data.reset_index(drop=True)
+        self.base_path = base_path
+        self.transform = transform
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, idx): 
+        if idx < 0 or idx >= len(self.data):
+            raise IndexError(f"Índice {idx} fuera de rango")
+
+        row = self.data.iloc[idx]
+        img_path = os.path.join(self.base_path, row["Ruta"])
+        print(f"Procesando imagen desde: {img_path}")
+
+        try:
+            # Verificar si la imagen existe antes de cargarla
+            if not os.path.exists(img_path):
+                print(f"Error: La imagen no existe en {img_path}")
+                return None, None, None, None  # También devolvemos `None` para el `song_id`
+
+            print(f"Cargando imagen desde: {img_path}")
+            image = Image.open(img_path).convert("RGB")
+            if self.transform:
+                image = self.transform(image)
+
+            required_columns = [
+                "RMS", "ZCR", "Crest Factor",
+                "Standard Deviation of Amplitude", "Spectral Centroid",
+                "Spectral Bandwidth", "Spectral Roll-off", "Spectral Flux",
+                "VAD", "Spectral Variation",
+            ]
+            missing_columns = [col for col in required_columns if col not in row]
+            if missing_columns:
+                raise ValueError(f"Faltan columnas: {', '.join(missing_columns)}")
+
+            additional_features = torch.tensor(
+                row[required_columns].values.astype(float), dtype=torch.float32
+            )
+
+            label_columns = [
+                "Afro House", "Ambient", "Deep House",
+                "Techno", "Trance", "Progressive House",
+            ]
+            labels = torch.tensor(
+                row[label_columns].values.astype(int), dtype=torch.long
+            )
+
+            # Aquí devolvemos el song_id también
+            song_id = row["song_id"]  # Asegúrate de que el campo song_id esté presente en tu dataset
+            return image, additional_features, labels, song_id 
+
+        except Exception as e:
+            print(f"Error al cargar la imagen {img_path}: {e}")
+            return None, None, None, None 

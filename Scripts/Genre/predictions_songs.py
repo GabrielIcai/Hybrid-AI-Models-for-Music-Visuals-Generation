@@ -21,16 +21,16 @@ print(f"Usando dispositivo: {device}")
 for i in range (3,52):
     # Rutas
     base_path = "/content/drive/MyDrive/TFG/data/"
-    model_path = "/content/drive/MyDrive/TFG/models/best_crnn_genre.pth"
+    model_path = "/content/drive/MyDrive/TFG/models/best_crnn_genre_5.pth"
     csv_path = "/content/drive/MyDrive/TFG/data/espectrogramas_salida_test/dataset_test.csv"
-    output_csv_path = "/content/drive/MyDrive/TFG/predicciones_canciones_CRNN.csv"
+    output_csv_path = "/content/drive/MyDrive/TFG/predicciones_canciones_CRNN_5_generos.csv"
 
     # Normalización
     mean = [0.676956295967102, 0.2529653012752533, 0.4388839304447174]
     std = [0.21755781769752502, 0.15407244861125946, 0.07557372003793716]
     columns = ["Spectral Centroid", "Spectral Bandwidth", "Spectral Roll-off"]
-    num_classes = 6
-    class_names = ["Afro House", "Ambient", "Deep House", "Techno", "Trance", "Progressive House"]
+    num_classes = 5
+    class_names = [ "Ambient", "Deep House", "Techno", "Trance", "Progressive House"]
 
     model = CRNN(num_classes=num_classes, additional_features_dim=12, hidden_size=256)
     model.load_state_dict(torch.load(model_path, map_location=device))
@@ -42,8 +42,8 @@ for i in range (3,52):
     data["Ruta"] = data["Ruta"].str.replace("\\", "/")
     data["Ruta"] = base_path + data["Ruta"]
     normalize_columns(data, columns)
-    class_counts = data[["Afro House", "Ambient", "Deep House", "Techno", "Trance", "Progressive House"]].sum()
-    class_names = ["Afro House", "Ambient", "Deep House", "Techno", "Trance", "Progressive House"]
+    class_counts = data[[ "Ambient", "Deep House", "Techno", "Trance", "Progressive House"]].sum()
+    class_names = ["Ambient", "Deep House", "Techno", "Trance", "Progressive House"]
 
     data = data[data["Song ID"] == f"song{i}"]
 
