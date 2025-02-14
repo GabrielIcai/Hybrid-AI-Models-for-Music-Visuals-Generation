@@ -21,7 +21,7 @@ print(f"Usando dispositivo: {device}")
 for i in range (3,52):
     # Rutas
     base_path = "/content/drive/MyDrive/TFG/data/"
-    model_path = "/content/drive/MyDrive/TFG/models/best_crnn_genre_5.pth"
+    model_path = "/content/drive/MyDrive/TFG/models/best_CRNN_genre_5.pth"
     csv_path = "/content/drive/MyDrive/TFG/data/espectrogramas_salida_test/dataset_test.csv"
     output_csv_path = "/content/drive/MyDrive/TFG/predicciones_canciones_CRNN_5_generos.csv"
 
