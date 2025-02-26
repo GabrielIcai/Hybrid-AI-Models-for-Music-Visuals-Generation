@@ -20,7 +20,7 @@ def mel_spectrogram_augmentation(spectrogram):
     return augmented_spectrogram
 
 def augment_dataframe(df, columns_to_augment):
-    augmented_data = []
+    augmented_data = [] 
     
     for index, row in df.iterrows():
         augmented_row = row.copy()

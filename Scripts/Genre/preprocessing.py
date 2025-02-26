@@ -18,9 +18,9 @@ print(f"Usando dispositivo: {device}")
 columns = ["Spectral Centroid", "Spectral Bandwidth", "Spectral Roll-off"]
 
 #Cargo las imagenes desde drive
-data_path = "/content/drive/MyDrive/TFG/data/espectrogramas_salida_secciones_2/dataset_emociones_secciones.csv"
+data_path = "/content/drive/MyDrive/TFG/data/espectrogramas_salida1/dataset_genero_completo.csv"
 base_path = "/content/drive/MyDrive/TFG/data/"
-normalized_folder = "/content/drive/MyDrive/TFG/images/espectrogramas_normalizados_emociones_estructura/"
+normalized_folder = "/content/drive/MyDrive/TFG/images/espectrogramas_normalizados/"
 
 def main():
     # Preprocesado

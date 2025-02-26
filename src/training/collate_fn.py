@@ -80,12 +80,10 @@ def collate_fn(batch):
 
 
 def collate_fn_s(batch):
-    # Filtrar los datos vacíos (None)
     batch = [item for item in batch if item[0] is not None]
 
     grouped_by_song = defaultdict(list)
 
-    # Agrupar por ID de canción (song_id)
     for image, add_feats, label, song_id in batch:
         grouped_by_song[song_id].append((image, add_feats, label))
 
@@ -94,16 +92,13 @@ def collate_fn_s(batch):
     for song_id, fragments in grouped_by_song.items():
         print(f"Procesando canción {song_id} con {len(fragments)} fragmentos")
         
-        # Si no hay suficientes fragmentos, se omite la canción
         if len(fragments) < 3:
             print(f"Advertencia: No hay suficientes fragmentos para la canción {song_id}, se omite")
             continue
 
-        # Asegurarnos de que el número de fragmentos sea múltiplo de 3
         while len(fragments) % 3 != 0:
-            fragments.pop()  # Eliminar fragmentos sobrantes en lugar de agregar ceros
+            fragments.pop() 
 
-        # Crear grupos de 3 fragmentos
         for i in range(0, len(fragments), 3):
             song_images = torch.stack([fragments[i+j][0] for j in range(3)], dim=0)
             song_additional_features = torch.stack([fragments[i+j][1] for j in range(3)], dim=0)
@@ -124,3 +119,20 @@ def collate_fn_s(batch):
         labels = torch.stack(labels, dim=0)
 
     return images, additional_features, labels
+
+###########################################EMOCIONES########################################################
+def collate_fn_emotions(batch):
+    batch = [b for b in batch if b[0] is not None]
+    if len(batch) == 0:
+        return None
+
+    images, additional_features, valencia_labels, arousal_labels = zip(*batch)
+
+    images = torch.stack(images)
+    additional_features = torch.stack(additional_features)
+
+    valencia_labels = torch.tensor(valencia_labels, dtype=torch.long)
+    arousal_labels = torch.tensor(arousal_labels, dtype=torch.long)
+
+    return images, additional_features, valencia_labels, arousal_labels
+

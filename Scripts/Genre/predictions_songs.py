@@ -29,7 +29,7 @@ for i in range (3,52):
     mean = [0.676956295967102, 0.2529653012752533, 0.4388839304447174]
     std = [0.21755781769752502, 0.15407244861125946, 0.07557372003793716]
     columns = ["Spectral Centroid", "Spectral Bandwidth", "Spectral Roll-off"]
-    num_classes = 6
+    num_classes = 5
     class_names = [ "Ambient", "Deep House", "Techno", "Trance", "Progressive House"]
 
     model = CRNN(num_classes=num_classes, additional_features_dim=12, hidden_size=256)

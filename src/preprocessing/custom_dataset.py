@@ -3,6 +3,7 @@ from torchvision import transforms
 from torch.utils.data import Dataset
 import os
 from PIL import Image
+import pandas as pd
 
 
 # Definir las transformaciones
@@ -105,10 +106,9 @@ class CustomDataset_s(torch.utils.data.Dataset):
         print(f"Procesando imagen desde: {img_path}")
 
         try:
-            # Verificar si la imagen existe antes de cargarla
             if not os.path.exists(img_path):
                 print(f"Error: La imagen no existe en {img_path}")
-                return None, None, None, None  # También devolvemos `None` para el `song_id`
+                return None, None, None, None 
 
             print(f"Cargando imagen desde: {img_path}")
             image = Image.open(img_path).convert("RGB")
@@ -136,18 +136,18 @@ class CustomDataset_s(torch.utils.data.Dataset):
             labels = torch.tensor(
                 row[label_columns].values.astype(int), dtype=torch.long
             )
-
-            # Aquí devolvemos el song_id también
-            song_id = row["song_id"]  # Asegúrate de que el campo song_id esté presente en tu dataset
+            song_id = row["song_id"]
             return image, additional_features, labels, song_id 
 
         except Exception as e:
             print(f"Error al cargar la imagen {img_path}: {e}")
-            return None, None, None, None  # Si hay un error al cargar la imagen, devolvemos valores vacíos
+            return None, None, None, None 
+        
 
-#CUSTOM DATASET EMOCIONES
-class CustomDataset_emociones(torch.utils.data.Dataset):
-    def __init__(self, data,base_path,transform):
+##################################################CUSTOM DATASET EMOCIONES##################################################
+
+class EmotionDataset(Dataset):
+    def __init__(self, data, base_path, transform=None):
         self.data = data.reset_index(drop=True)
         self.base_path = base_path
         self.transform = transform
@@ -160,46 +160,39 @@ class CustomDataset_emociones(torch.utils.data.Dataset):
             raise IndexError(f"Índice {idx} fuera de rango")
 
         row = self.data.iloc[idx]
-        img_path = os.path.join(self.base_path, row["Ruta"])
-        print(f"Procesando imagen desde: {img_path}")
+        img_path = os.path.join(self.base_path, row["Ruta"]) 
 
         try:
             # Verificar si la imagen existe antes de cargarla
             if not os.path.exists(img_path):
                 print(f"Error: La imagen no existe en {img_path}")
-                return None, None, None, None  # También devolvemos `None` para el `song_id`
+                return None, None, None, None
 
-            print(f"Cargando imagen desde: {img_path}")
+            # Cargar imagen
             image = Image.open(img_path).convert("RGB")
             if self.transform:
                 image = self.transform(image)
 
-            required_columns = [
+            # Características adicionales
+            required_features = [
                 "RMS", "ZCR", "Crest Factor",
                 "Standard Deviation of Amplitude", "Spectral Centroid",
                 "Spectral Bandwidth", "Spectral Roll-off", "Spectral Flux",
                 "VAD", "Spectral Variation",
             ]
-            missing_columns = [col for col in required_columns if col not in row]
-            if missing_columns:
-                raise ValueError(f"Faltan columnas: {', '.join(missing_columns)}")
-
             additional_features = torch.tensor(
-                row[required_columns].values.astype(float), dtype=torch.float32
+                row[required_features].values.astype(float), dtype=torch.float32
             )
 
-            label_columns = [
-                "Afro House", "Ambient", "Deep House",
-                "Techno", "Trance", "Progressive House",
-            ]
-            labels = torch.tensor(
-                row[label_columns].values.astype(int), dtype=torch.long
-            )
+            # Etiquetas de valencia y arousal en one-hot encoding 
+            valencia_cols = [f"Valencia_{i/10:.1f}" for i in range(11)]
+            arousal_cols = [f"Arousal_{i/10:.1f}" for i in range(11)]
+            
+            valencia_label = torch.tensor(row[valencia_cols].values.argmax(), dtype=torch.long)
+            arousal_label = torch.tensor(row[arousal_cols].values.argmax(), dtype=torch.long)
 
-            # Aquí devolvemos el song_id también
-            song_id = row["song_id"]  # Asegúrate de que el campo song_id esté presente en tu dataset
-            return image, additional_features, labels, song_id 
+            return image, additional_features, valencia_label, arousal_label  
 
         except Exception as e:
             print(f"Error al cargar la imagen {img_path}: {e}")
-            return None, None, None, None 
+            return None, None, None, None
