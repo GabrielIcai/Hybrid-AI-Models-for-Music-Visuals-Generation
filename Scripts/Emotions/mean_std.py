@@ -19,10 +19,9 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Usando dispositivo: {device}")
 columns = ["Spectral Centroid", "Spectral Bandwidth", "Spectral Roll-off"]
 
-####TENGO QUE CAMBIAR EL BASEPATH
-data_path = "/content/drive/MyDrive/TFG/images/espectrogramas_normalizados_emociones_estructura/dataset_emociones_secciones.csv"
+data_path = "/content/drive/MyDrive/TFG/images/espectrogramas_normalizados/dataset_genero_completo.csv"
 base_path = "/content/drive/MyDrive/TFG/images/"
-output_path = "/content/drive/MyDrive/TFG/mean_std_emotions.json"
+output_path = "/content/drive/MyDrive/TFG/mean_std.json"
 
 columns = ["Spectral Centroid", "Spectral Bandwidth", "Spectral Roll-off"]
 
@@ -30,10 +29,10 @@ def main():
     data = load_data(data_path)
     data["Ruta"] = data["Ruta"].str.replace("\\", "/")
     data["Ruta"] = base_path + data["Ruta"]
-    data["Ruta"] = data["Ruta"].str.replace("espectrogramas_salida_secciones_2", "espectrogramas_normalizados_emociones_estructura")
+    data["Ruta"] = data["Ruta"].str.replace("espectrogramas_salida1", "espectrogramas_normalizados")
 
     print("Primeras filas del dataset:")
-    data=data.head(30)
+    print(data.head(10))
     normalize_columns(data, columns)
     print("Primeras filas después de normalización:")
     print(data.head(4))
