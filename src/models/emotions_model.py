@@ -31,9 +31,6 @@ class ResNetCRNNEmotionModel(nn.Module):
         additional_features = additional_features.unsqueeze(1)
         x = torch.cat((x, additional_features), dim=-1)  
 
-        # Adaptamos para LSTM (batch_size, seq_len=1, feature_dim)
-        x = x.unsqueeze(1)
-
         #LSTM
         lstm_out, _ = self.lstm(x)
         lstm_out = lstm_out[:, -1, :]
