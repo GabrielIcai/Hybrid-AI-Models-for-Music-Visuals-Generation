@@ -1,6 +1,7 @@
 import os
 import sys
 import numpy as np
+import pandas as pd
 repo_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"))
 if repo_path not in sys.path:
     sys.path.append(repo_path)
@@ -175,20 +176,35 @@ def main():
     np.savetxt("/content/drive/MyDrive/TFG/models/confusion_matrix_valence_final.csv", cm_valence, delimiter=",", fmt="%d")
     print("Matrices de confusión finales guardadas.")
 
+    metrics_df = pd.DataFrame({
+    'Epoch': epochs_list,
+    'Train Loss': train_losses,
+    'Val Loss': val_losses,
+    'Train Accuracy Arousal': train_accuracies_ar,
+    'Train Accuracy Valence': train_accuracies_va,
+    'Val Accuracy Arousal': val_accuracies_ar,
+    'Val Accuracy Valence': val_accuracies_va,
+    'Val F1 Arousal': val_f1_scores_ar,
+    'Val F1 Valence': val_f1_scores_va,
+    'Val Precision Arousal': val_precisions_ar,
+    'Val Precision Valence': val_precisions_va,
+    'Val Recall Arousal': val_recalls_ar,
+    'Val Recall Valence': val_recalls_va,
+})
     plt.subplot(1, 2, 1)
     sns.heatmap(cm_arousal, annot=True, fmt="d", cmap="Blues")
     plt.xlabel("Predicciones")
     plt.ylabel("Valores reales")
     plt.title("Matriz de Confusión - Arousal")
     plt.savefig("/content/drive/MyDrive/TFG/models/confusion_matrix_arousal_final.png")
-    
+
     plt.subplot(1, 2, 2)
     sns.heatmap(cm_valence, annot=True, fmt="d", cmap="Oranges")
     plt.xlabel("Predicciones")
     plt.ylabel("Valores reales")
     plt.title("Matriz de Confusión - Valence")
     plt.savefig("/content/drive/MyDrive/TFG/models/confusion_matrix_valence_final.png")
-    
+
     plt.show()
 
 if __name__ == "__main__":
