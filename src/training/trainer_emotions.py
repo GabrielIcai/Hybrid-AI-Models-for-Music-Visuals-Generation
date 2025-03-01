@@ -4,7 +4,7 @@ def accuracy_with_tolerance(y_pred, y_true, tolerance=1):
     print("TAMAÑO DE Y_TRUE")
     print(y_true.shape)
     pred_index = torch.argmax(y_pred, dim=1)
-    true_index = torch.argmax(y_true, dim=1)
+    true_index = y_true
     
     val_range = torch.linspace(0, 1, steps=11, device=y_pred.device)
     pred_values = val_range[pred_index]
