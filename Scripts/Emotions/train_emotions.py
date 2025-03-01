@@ -95,16 +95,23 @@ def main():
 
         all_preds_ar.extend(val_preds_ar)
         all_preds_va.extend(val_preds_va)
-        all_labels_ar.extend(val_labels_ar.argmax(axis=1)) 
-        all_labels_va.extend(val_labels_va.argmax(axis=1))
 
         # ETIQUETAS A ÍNDICES
-        val_labels_ar_idx = val_labels_ar.argmax(axis=1)
-        val_labels_val_idx = val_labels_va.argmax(axis=1)
+        val_labels_ar = np.array(val_labels_ar)
+        val_labels_va = np.array(val_labels_va)
+
+        if val_labels_ar.ndim > 1:
+            val_labels_ar = val_labels_ar.argmax(axis=1)
+
+        if val_labels_va.ndim > 1:
+            val_labels_val = val_labels_va.argmax(axis=1)
+        
+        all_labels_ar.extend(val_labels_ar) 
+        all_labels_va.extend(val_labels_val)
 
         # MATRICES DE CONFUSIÓN
-        cm_arousal = confusion_matrix(val_labels_ar_idx, val_preds_ar)
-        cm_valence = confusion_matrix(val_labels_val_idx, val_preds_va)
+        cm_arousal = confusion_matrix(val_labels_ar, val_preds_ar)
+        cm_valence = confusion_matrix(val_labels_val, val_preds_va)
 
         # Guardar matrices en CSV con nombres de columnas y filas
         np.savetxt(f"/content/drive/MyDrive/TFG/models/confusion_matrix_arousal_epoch_{epoch+1}.csv", cm_arousal, delimiter=",", fmt="%d")
@@ -121,12 +128,12 @@ def main():
         val_accuracies_va.append(val_acc_va)
 
         # Calcular métricas adicionales
-        val_f1_ar = f1_score(val_labels_ar_idx, val_preds_ar, average="weighted")
-        val_f1_va = f1_score(val_labels_val_idx, val_preds_va, average="weighted")
-        val_precision_ar = precision_score(val_labels_ar_idx, val_preds_ar, average="weighted")
-        val_precision_va = precision_score(val_labels_val_idx, val_preds_va, average="weighted")
-        val_recall_ar = recall_score(val_labels_ar_idx, val_preds_ar, average="weighted")
-        val_recall_va = recall_score(val_labels_val_idx, val_preds_va, average="weighted")
+        val_f1_ar = f1_score(val_labels_ar, val_preds_ar, average="weighted")
+        val_f1_va = f1_score(val_labels_val, val_preds_va, average="weighted")
+        val_precision_ar = precision_score(val_labels_ar, val_preds_ar, average="weighted")
+        val_precision_va = precision_score(val_labels_val, val_preds_va, average="weighted")
+        val_recall_ar = recall_score(val_labels_ar, val_preds_ar, average="weighted")
+        val_recall_va = recall_score(val_labels_val, val_preds_va, average="weighted")
 
         # Guardar métricas en listas
         val_f1_scores_ar.append(val_f1_ar)
