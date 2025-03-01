@@ -32,8 +32,8 @@ std=[0.21755781769752502, 0.15407244861125946, 0.07557372003793716]
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 learning_rate = 0.001
 weight_decay = 1e-4
-base_path = "/ruta/dataset"
-csv_path = "/ruta/dataset.csv"
+data_path = "/content/drive/MyDrive/TFG/images/espectrogramas_normalizados_emociones_estructura/dataset_emociones_secciones.csv"
+base_path = "/content/drive/MyDrive/TFG/images/"
 
 
 def main():
@@ -50,8 +50,13 @@ def main():
     val_precisions_ar, val_precisions_va = [], []
     val_recalls_ar, val_recalls_va = [], []
 
-    # Cargar dataset
-    data = load_data(csv_path)
+    data = load_data(data_path)
+    data["Ruta"] = data["Ruta"].str.replace("\\", "/")
+    data["Ruta"] = base_path + data["Ruta"]
+    data["Ruta"] = data["Ruta"].str.replace("espectrogramas_salida_secciones_2", "espectrogramas_normalizados_emociones_estructura")
+
+    print("Primeras filas del dataset:")
+    data=data.head(30)
     train_data, test_data = split_dataset(data)
 
     # Transformaciones
@@ -82,8 +87,8 @@ def main():
             model, val_loader, criterion, device
         )
 
-        # Convertir etiquetas a índices
-        val_labels_idx = val_labels.argmax(axis=1)  # ⚠️ Convertir one-hot a índice
+        # ETIQUETAS A INDICES
+        val_labels_idx = val_labels.argmax(axis=1)
 
         # MATRICES DE CONFUSIÓN
         cm_arousal = confusion_matrix(val_labels_idx, val_preds_ar)

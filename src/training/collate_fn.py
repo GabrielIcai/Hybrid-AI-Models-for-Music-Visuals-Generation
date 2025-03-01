@@ -3,18 +3,6 @@ from collections import defaultdict
 import torch
 import re
 
-def extract_song_name(image_path):
-    match = re.match(r"(.*)_fragmento_\d+\.png", image_path)
-    if match:
-        return match.group(1)
-    else:
-        return None
-
-import torch
-from collections import defaultdict
-import torch
-import re
-
 
 def extract_song_name(image_path):
     match = re.match(r"(.*)_fragmento_\d+\.png", image_path)
@@ -22,7 +10,8 @@ def extract_song_name(image_path):
         return match.group(1)
     else:
         return None
-
+    
+######################################################################GÉNERO#########################################################################################
 
 # Para genero necesito agrupar fragmentos de las mismas canciones en un batch que no puedo hacer con un dataset normal. Con collate proceso y agrupo varios
 # elementos individuales
@@ -120,7 +109,8 @@ def collate_fn_s(batch):
 
     return images, additional_features, labels
 
-###########################################EMOCIONES########################################################
+########################################### EMOCIONES ################################################################################################
+
 def collate_fn_emotions(batch):
     batch = [b for b in batch if b[0] is not None]
     if len(batch) == 0:
