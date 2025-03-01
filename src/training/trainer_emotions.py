@@ -14,7 +14,7 @@ def accuracy_with_tolerance(y_pred, y_true, tolerance=1):
     return accuracy
 
 
-def train_emotions(model, train_loader, optimizer, criterion, device):
+def trainer_emotions(model, train_loader, optimizer, criterion, device):
     model.train()
     
     running_loss = 0.0
