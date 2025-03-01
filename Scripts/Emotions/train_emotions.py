@@ -21,7 +21,7 @@ import torch.optim as optim
 from torch.utils.data import DataLoader
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
 from src.preprocessing.custom_dataset import EmotionDataset
-from src.training.trainer_emotions import train_emotions, validate_emotions
+from src.training.trainer_emotions import trainer_emotions, validate_emotions
 import seaborn as sns
 import matplotlib.pyplot as plt
 
@@ -30,6 +30,7 @@ std=[0.21755781769752502, 0.15407244861125946, 0.07557372003793716]
 
 # Cargar datos
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+columns = ["Spectral Centroid", "Spectral Bandwidth", "Spectral Roll-off"]
 learning_rate = 0.001
 weight_decay = 1e-4
 data_path = "/content/drive/MyDrive/TFG/images/espectrogramas_normalizados_emociones_estructura/dataset_emociones_secciones.csv"
@@ -78,7 +79,7 @@ def main():
 
     for epoch in range(epochs):
         # ENTRENAMIENTO
-        train_loss, train_acc_ar, train_acc_va = train_emotions(
+        train_loss, train_acc_ar, train_acc_va = trainer_emotions(
             model, train_loader, optimizer, criterion, device
         )
 
