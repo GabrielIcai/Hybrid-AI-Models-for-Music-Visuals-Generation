@@ -50,6 +50,10 @@ def main():
     val_f1_scores_ar, val_f1_scores_va = [], []
     val_precisions_ar, val_precisions_va = [], []
     val_recalls_ar, val_recalls_va = [], []
+    all_preds_ar = []
+    all_preds_va = []
+    all_labels_ar = []
+    all_labels_va = []
 
     data = load_data(data_path)
     data["Ruta"] = data["Ruta"].str.replace("\\", "/")
@@ -84,21 +88,27 @@ def main():
         )
 
         # VALIDACIÓN
-        val_loss, val_acc_ar, val_acc_va, val_preds_ar, val_preds_va, val_labels, _, _ = validate_emotions(
+        val_loss, val_acc_ar, val_acc_va, val_preds_ar, val_preds_va, val_labels_ar, val_labels_va, val_probs_ar, val_probs_va = validate_emotions(
             model, val_loader, criterion, device
         )
 
-        # ETIQUETAS A INDICES
-        val_labels_idx = val_labels.argmax(axis=1)
+        all_preds_ar.extend(val_preds_ar)
+        all_preds_va.extend(val_preds_va)
+        all_labels_ar.extend(val_labels_ar.argmax(axis=1)) 
+        all_labels_va.extend(val_labels_va.argmax(axis=1))
+
+        # ETIQUETAS A ÍNDICES
+        val_labels_ar_idx = val_labels_ar.argmax(axis=1)
+        val_labels_val_idx = val_labels_va.argmax(axis=1)
 
         # MATRICES DE CONFUSIÓN
-        cm_arousal = confusion_matrix(val_labels_idx, val_preds_ar)
-        cm_valence = confusion_matrix(val_labels_idx, val_preds_va)
+        cm_arousal = confusion_matrix(val_labels_ar_idx, val_preds_ar)
+        cm_valence = confusion_matrix(val_labels_val_idx, val_preds_va)
 
         # Guardar matrices en CSV con nombres de columnas y filas
-        np.savetxt("/content/drive/MyDrive/TFG/models/confusion_matrix_arousal.csv", cm_arousal, delimiter=",", fmt="%d")
-        np.savetxt("/content/drive/MyDrive/TFG/models/confusion_matrix_valencia.csv", cm_valence, delimiter=",", fmt="%d")
-        print("Matrices de confusión guardadas.")
+        np.savetxt(f"/content/drive/MyDrive/TFG/models/confusion_matrix_arousal_epoch_{epoch+1}.csv", cm_arousal, delimiter=",", fmt="%d")
+        np.savetxt(f"/content/drive/MyDrive/TFG/models/confusion_matrix_valencia_epoch_{epoch+1}.csv", cm_valence, delimiter=",", fmt="%d")
+        print(f"Matrices de confusión guardadas para la época {epoch+1}.")
 
         # Guardar métricas de la época
         epochs_list.append(epoch + 1)
@@ -110,36 +120,20 @@ def main():
         val_accuracies_va.append(val_acc_va)
 
         # Calcular métricas adicionales
-        val_f1_ar = f1_score(val_labels_idx, val_preds_ar, average="weighted")
-        val_f1_va = f1_score(val_labels_idx, val_preds_va, average="weighted")
-        val_precision_ar = precision_score(val_labels_idx, val_preds_ar, average="weighted")
-        val_precision_va = precision_score(val_labels_idx, val_preds_va, average="weighted")
-        val_recall_ar = recall_score(val_labels_idx, val_preds_ar, average="weighted")
-        val_recall_va = recall_score(val_labels_idx, val_preds_va, average="weighted")
+        val_f1_ar = f1_score(val_labels_ar_idx, val_preds_ar, average="weighted")
+        val_f1_va = f1_score(val_labels_val_idx, val_preds_va, average="weighted")
+        val_precision_ar = precision_score(val_labels_ar_idx, val_preds_ar, average="weighted")
+        val_precision_va = precision_score(val_labels_val_idx, val_preds_va, average="weighted")
+        val_recall_ar = recall_score(val_labels_ar_idx, val_preds_ar, average="weighted")
+        val_recall_va = recall_score(val_labels_val_idx, val_preds_va, average="weighted")
 
+        # Guardar métricas en listas
         val_f1_scores_ar.append(val_f1_ar)
         val_f1_scores_va.append(val_f1_va)
         val_precisions_ar.append(val_precision_ar)
         val_precisions_va.append(val_precision_va)
         val_recalls_ar.append(val_recall_ar)
         val_recalls_va.append(val_recall_va)
-
-        # Visualizar matrices de confusión
-        plt.figure(figsize=(12, 5))
-
-        plt.subplot(1, 2, 1)
-        sns.heatmap(cm_arousal, annot=True, fmt="d", cmap="Blues")
-        plt.xlabel("Predicciones")
-        plt.ylabel("Valores reales")
-        plt.title("Matriz de Confusión - Arousal")
-
-        plt.subplot(1, 2, 2)
-        sns.heatmap(cm_valence, annot=True, fmt="d", cmap="Oranges")
-        plt.xlabel("Predicciones")
-        plt.ylabel("Valores reales")
-        plt.title("Matriz de Confusión - Valence")
-
-        plt.show()
 
         print(f"Epoch {epoch + 1}/{epochs}")
         print(
@@ -172,6 +166,30 @@ def main():
     torch.save(model.state_dict(), final_model_save_path)
     print(f"Modelo final guardado en {final_model_save_path}")
 
+    #MATRICES EN CSV
+    cm_arousal = confusion_matrix(all_labels_ar, all_preds_ar)
+    cm_valence = confusion_matrix(all_labels_va, all_preds_va)
+
+    # Guardar matrices en CSV
+    np.savetxt("/content/drive/MyDrive/TFG/models/confusion_matrix_arousal_final.csv", cm_arousal, delimiter=",", fmt="%d")
+    np.savetxt("/content/drive/MyDrive/TFG/models/confusion_matrix_valence_final.csv", cm_valence, delimiter=",", fmt="%d")
+    print("Matrices de confusión finales guardadas.")
+
+    plt.subplot(1, 2, 1)
+    sns.heatmap(cm_arousal, annot=True, fmt="d", cmap="Blues")
+    plt.xlabel("Predicciones")
+    plt.ylabel("Valores reales")
+    plt.title("Matriz de Confusión - Arousal")
+    plt.savefig("/content/drive/MyDrive/TFG/models/confusion_matrix_arousal_final.png")
+    
+    plt.subplot(1, 2, 2)
+    sns.heatmap(cm_valence, annot=True, fmt="d", cmap="Oranges")
+    plt.xlabel("Predicciones")
+    plt.ylabel("Valores reales")
+    plt.title("Matriz de Confusión - Valence")
+    plt.savefig("/content/drive/MyDrive/TFG/models/confusion_matrix_valence_final.png")
+    
+    plt.show()
 
 if __name__ == "__main__":
     main()
