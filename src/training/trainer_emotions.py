@@ -1,8 +1,8 @@
 import torch
+import numpy as np
 
 def accuracy_with_tolerance(y_pred, y_true, tolerance=1):
-    print("TAMAÑO DE Y_TRUE")
-    print(y_true.shape)
+
     pred_index = torch.argmax(y_pred, dim=1)
     true_index = y_true
     
@@ -131,5 +131,7 @@ def validate_emotions(model, val_loader, criterion, device):
     accuracy_va = 100 * correct_va / total
 
     return (running_loss / len(val_loader), accuracy_ar, accuracy_va, 
-            val_preds_ar, val_preds_va, val_labels_ar, val_labels_va, val_probs_ar, val_probs_va)
+        val_preds_ar, val_preds_va, 
+        np.array(val_labels_ar), np.array(val_labels_va),
+        val_probs_ar, val_probs_va)
 
