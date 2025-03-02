@@ -62,7 +62,7 @@ def main():
     data["Ruta"] = data["Ruta"].str.replace("espectrogramas_salida_secciones_2", "espectrogramas_normalizados_emociones_estructura")
 
     print(data.head(10))
-    data=data.head(20)
+    data=data.head(30)
     train_data, test_data = split_dataset(data)
 
     # Transformaciones
@@ -161,14 +161,12 @@ def main():
             break
     ##
 
-    import numpy as np
-
     print("Shape val_probs_ar:", val_probs_ar.shape)
     print("Shape val_probs_va:", val_probs_va.shape)
     val_probs_ar = np.array(val_probs_ar)
     print("Shape val_probs_ar:", val_probs_ar.shape)
     val_probs_va = np.array(val_probs_va)
-    
+
     # Convertir listas a numpy arrays para asegurarnos de que tienen la misma forma
     val_labels_ar = np.array(all_labels_ar).squeeze()
     val_labels_va = np.array(all_labels_va).squeeze()
