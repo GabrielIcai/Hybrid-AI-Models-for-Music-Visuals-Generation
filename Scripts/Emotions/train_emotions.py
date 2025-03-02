@@ -171,8 +171,9 @@ def main():
     val_preds_va = np.array(val_preds_va).squeeze()
 
     #MATRICES EN CSV
-    cm_arousal = confusion_matrix(all_labels_ar, all_preds_ar)
-    cm_valence = confusion_matrix(all_labels_va, all_preds_va)
+    cm_arousal = confusion_matrix(val_labels_ar, val_preds_ar)
+    cm_valence = confusion_matrix(val_labels_va, val_preds_va)
+
 
     # Guardar matrices en CSV
     np.savetxt("/content/drive/MyDrive/TFG/models/confusion_matrix_arousal_final.csv", cm_arousal, delimiter=",", fmt="%d")
