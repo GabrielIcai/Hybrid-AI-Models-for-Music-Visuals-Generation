@@ -202,20 +202,27 @@ def main():
 })
     metrics_df.to_csv("/content/drive/MyDrive/TFG/models/training_metrics_emotions.csv", index=False)
 
-    ##
-    val_probs_ar = np.array(val_probs_ar)
-    val_probs_va = np.array(val_probs_va)
-    print("Shape val_probs_ar:", val_probs_ar.shape)
-    print("Shape val_probs_va:", val_probs_va.shape)
-
-    # Convertir listas a numpy arrays para asegurarnos de que tienen la misma forma
+    # Convertir listas a numpy arrays
     val_labels_ar = np.array(all_labels_ar).squeeze()
     val_labels_va = np.array(all_labels_va).squeeze()
     val_preds_ar = np.array(all_preds_ar).squeeze()
     val_preds_va = np.array(all_preds_va).squeeze()
-   
+    val_probs_ar = np.array(val_probs_ar)
+    val_probs_va = np.array(val_probs_va)
 
-    # Crear un DataFrame con etiquetas reales y predicciones
+    # Asegurar que todas las variables tengan la misma cantidad de muestras
+    num_samples = val_labels_ar.shape[0]
+
+    if (
+        val_labels_va.shape[0] != num_samples or
+        val_preds_ar.shape[0] != num_samples or
+        val_preds_va.shape[0] != num_samples or
+        val_probs_ar.shape[0] != num_samples or
+        val_probs_va.shape[0] != num_samples
+    ):
+        raise ValueError("Las dimensiones de los arrays no coinciden. Revisa cómo se están acumulando los datos.")
+
+    # Crear el DataFrame
     df_predictions = pd.DataFrame({
         'True Arousal': val_labels_ar,
         'Pred Arousal': val_preds_ar,
@@ -229,6 +236,12 @@ def main():
 
     for i in range(val_probs_va.shape[1]):  # Para cada clase de valencia
         df_predictions[f'Prob Valence {i}'] = val_probs_va[:, i]
+
+    # Guardar a CSV
+    df_predictions.to_csv("predictions_probs.csv", index=False)
+
+    print("Predicciones guardadas en predictions.csv")
+
 
     # Guardar en CSV
     output_path = "/content/drive/MyDrive/TFG/models/predictions_emotions_probs.csv"
