@@ -53,8 +53,8 @@ def trainer_emotions(model, train_loader, optimizer, criterion, device):
         total += 1
 
 
-    accuracy_ar = 100 * correct_ar / total
-    accuracy_va = 100 * correct_va / total
+    accuracy_ar =correct_ar / total
+    accuracy_va = correct_va / total
 
     return running_loss / len(train_loader), accuracy_ar, accuracy_va
 
