@@ -190,6 +190,8 @@ class EmotionDataset(Dataset):
             
             valencia_label = torch.tensor(row[valencia_cols].values.argmax(), dtype=torch.long)
             arousal_label = torch.tensor(row[arousal_cols].values.argmax(), dtype=torch.long)
+            print("Valencia Row:", row[valencia_cols].values)
+            print("Arousal Row:", row[arousal_cols].values)
 
             return image, additional_features, valencia_label, arousal_label  
 

@@ -126,7 +126,9 @@ def validate_emotions(model, val_loader, criterion, device):
             correct_ar += accuracy_ar
             correct_va += accuracy_va
             total += 1
-
+            print("Shape de ar_output:", ar_output.shape)
+            print("Shape de val_output:", val_output.shape)
+            
     accuracy_ar = 100 * correct_ar / total
     accuracy_va = 100 * correct_va / total
 
