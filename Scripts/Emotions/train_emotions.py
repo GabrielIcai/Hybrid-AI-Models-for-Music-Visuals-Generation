@@ -161,16 +161,21 @@ def main():
             break
     ##
 
+    import numpy as np
 
+    print("Shape val_probs_ar:", val_probs_ar.shape)
+    print("Shape val_probs_va:", val_probs_va.shape)
+    val_probs_ar = np.array(val_probs_ar)
+    print("Shape val_probs_ar:", val_probs_ar.shape)
+    val_probs_va = np.array(val_probs_va)
+    
     # Convertir listas a numpy arrays para asegurarnos de que tienen la misma forma
     val_labels_ar = np.array(all_labels_ar).squeeze()
     val_labels_va = np.array(all_labels_va).squeeze()
     val_preds_ar = np.array(all_preds_ar).squeeze()
     val_preds_va = np.array(all_preds_va).squeeze()
-    print("Shape val_probs_ar:", val_probs_ar.shape)
-    print("Shape val_probs_va:", val_probs_va.shape)
-    val_probs_ar = np.array(val_probs_ar)
-    val_probs_va = np.array(val_probs_va)
+
+   
 
     # Crear un DataFrame con etiquetas reales y predicciones
     df_predictions = pd.DataFrame({
@@ -198,6 +203,7 @@ def main():
     torch.save(model.state_dict(), final_model_save_path)
     print(f"Modelo final guardado en {final_model_save_path}")
 
+    
     val_labels_ar = np.array(val_labels_ar).squeeze()
     val_labels_va = np.array(val_labels_va).squeeze()
     val_preds_ar = np.array(val_preds_ar).squeeze()
