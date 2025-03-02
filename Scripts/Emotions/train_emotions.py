@@ -169,9 +169,9 @@ def main():
     val_labels_va = np.array(val_labels_va).squeeze()
     val_preds_ar = np.array(val_preds_ar).squeeze()
     val_preds_va = np.array(val_preds_va).squeeze()
-    print("Valores reales de valencia:",val_labels_va.unique())
+    print("Valores reales de valencia:", set(val_labels_va))
     print("Valores predichos de valencia:", val_preds_va.unique())
-    print("Valores reales de arousal:", val_labels_ar.unique())
+    print("Valores reales de arousal:", set(val_labels_ar))
     print("Valores predichos de arousal:", val_preds_ar.unique())
 
     #MATRICES EN CSV
