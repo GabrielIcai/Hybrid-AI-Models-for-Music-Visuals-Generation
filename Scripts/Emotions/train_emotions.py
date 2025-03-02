@@ -136,8 +136,8 @@ def main():
 
         print(f"Epoch {epoch + 1}/{epochs}")
         print(
-            f"Train Loss: {train_loss:.4f} | Train Acc AR: {train_acc_ar:.4f} | Train Acc VA: {train_acc_va:.4f} \n"
-            f"Val Loss: {val_loss:.4f} | Val Acc AR: {val_acc_ar:.4f} | Val Acc VA: {val_acc_va:.4f} \n"
+            f"Train Loss: {train_loss:.4f} | Train Acc AR: {train_acc_ar:.4f}% | Train Acc VA: {train_acc_va:.4f}% \n"
+            f"Val Loss: {val_loss:.4f} | Val Acc AR: {val_acc_ar:.4f}% | Val Acc VA: {val_acc_va:.4f}% \n"
         )
 
         # EARLY STOPPING Y GUARDADO DEL MEJOR MODELO
