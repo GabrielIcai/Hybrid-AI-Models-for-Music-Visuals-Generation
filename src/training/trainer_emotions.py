@@ -33,12 +33,6 @@ def trainer_emotions(model, train_loader, optimizer, criterion, device):
         # Forward pass
         val_output, ar_output = model(images, additional_features)
 
-        if valencia_labels.dim() > 1:
-            valencia_labels = torch.argmax(valencia_labels, dim=1)
-        if arousal_labels.dim() > 1:
-            arousal_labels = torch.argmax(arousal_labels, dim=1)
-
-
         # Cálculo de pérdida
         perdida_ar = criterion(ar_output, arousal_labels)
         perdida_va = criterion(val_output, valencia_labels)
@@ -54,9 +48,10 @@ def trainer_emotions(model, train_loader, optimizer, criterion, device):
         accuracy_ar = accuracy_with_tolerance(ar_output, arousal_labels)
         accuracy_va = accuracy_with_tolerance(val_output, valencia_labels)
 
-        correct_ar += accuracy_ar
-        correct_va += accuracy_va
+        correct_ar += accuracy_ar  
+        correct_va += accuracy_va  
         total += 1
+
 
     accuracy_ar = 100 * correct_ar / total
     accuracy_va = 100 * correct_va / total
@@ -91,12 +86,6 @@ def validate_emotions(model, val_loader, criterion, device):
             # Forward pass
             val_output, ar_output = model(images, additional_features)
 
-            # One-hot encoding handling
-            if valencia_labels.dim() > 1:
-                valencia_labels = torch.argmax(valencia_labels, dim=1)
-            if arousal_labels.dim() > 1:
-                arousal_labels = torch.argmax(arousal_labels, dim=1)
-
             # Cálculo de pérdida (corregido)
             perdida_ar = criterion(ar_output, arousal_labels)
             perdida_va = criterion(val_output, valencia_labels)
@@ -126,14 +115,14 @@ def validate_emotions(model, val_loader, criterion, device):
             correct_ar += accuracy_ar
             correct_va += accuracy_va
             total += 1
+
             print("Shape de ar_output:", ar_output.shape)
             print("Shape de val_output:", val_output.shape)
-            
-    accuracy_ar = 100 * correct_ar / total
-    accuracy_va = 100 * correct_va / total
+
+    accuracy_ar =correct_ar / total
+    accuracy_va =correct_va / total
 
     return (running_loss / len(val_loader), accuracy_ar, accuracy_va, 
         val_preds_ar, val_preds_va, 
         np.array(val_labels_ar), np.array(val_labels_va),
         val_probs_ar, val_probs_va)
-
