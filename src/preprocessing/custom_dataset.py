@@ -187,12 +187,17 @@ class EmotionDataset(Dataset):
             # Etiquetas de valencia y arousal en one-hot encoding 
             valencia_cols = [f"Valencia_{i/10:.1f}" for i in range(11)]
             arousal_cols = [f"Arousal_{i/10:.1f}" for i in range(11)]
+            print("Valencia one-hot:", row[valencia_cols].values)
+            print("Arousal one-hot:", row[arousal_cols].values)
+            print("Argmax Valencia:", row[valencia_cols].values.argmax())
+            print("Argmax Arousal:", row[arousal_cols].values.argmax())
             
-            valencia_label = torch.tensor(row[valencia_cols].values.argmax(), dtype=torch.long)
-            arousal_label = torch.tensor(row[arousal_cols].values.argmax(), dtype=torch.long)
+            valencia_label = torch.tensor([row[valencia_cols].values.argmax()], dtype=torch.long)
+            arousal_label = torch.tensor([row[arousal_cols].values.argmax()], dtype=torch.long)
             print("Valencia Row:", row[valencia_cols].values)
             print("Arousal Row:", row[arousal_cols].values)
-
+            print(f"Valencia label (antes de devolver): {valencia_label.shape} -> {valencia_label}")
+            print(f"Arousal label (antes de devolver): {arousal_label.shape} -> {arousal_label}")
             return image, additional_features, valencia_label, arousal_label  
 
         except Exception as e:
