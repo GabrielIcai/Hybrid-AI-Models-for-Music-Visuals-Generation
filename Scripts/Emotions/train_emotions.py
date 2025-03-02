@@ -212,6 +212,13 @@ def main():
 
     # Asegurar que todas las variables tengan la misma cantidad de muestras
     num_samples = val_labels_ar.shape[0]
+    print("Número de muestras en cada array:")
+    print(f"val_labels_ar: {len(val_labels_ar)}")
+    print(f"val_labels_va: {len(val_labels_va)}")
+    print(f"val_preds_ar: {len(val_preds_ar)}")
+    print(f"val_preds_va: {len(val_preds_va)}")
+    print(f"val_probs_ar: {val_probs_ar.shape}")  # (n_samples, num_classes)
+    print(f"val_probs_va: {val_probs_va.shape}")  # (n_samples, num_classes)
 
     if (
         val_labels_va.shape[0] != num_samples or
