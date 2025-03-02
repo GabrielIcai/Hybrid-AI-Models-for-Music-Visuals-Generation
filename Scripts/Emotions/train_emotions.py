@@ -62,7 +62,7 @@ def main():
     data["Ruta"] = data["Ruta"].str.replace("espectrogramas_salida_secciones_2", "espectrogramas_normalizados_emociones_estructura")
 
     print(data.head(10))
-    data=data.head(100)
+    data=data.head(20)
     train_data, test_data = split_dataset(data)
 
     # Transformaciones
