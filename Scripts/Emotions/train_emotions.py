@@ -159,43 +159,7 @@ def main():
         if early_stop_counter >= patience:
             print("Early stopping activado")
             break
-    ##
 
-    print("Shape val_probs_ar:", val_probs_ar.shape)
-    print("Shape val_probs_va:", val_probs_va.shape)
-    val_probs_ar = np.array(val_probs_ar)
-    print("Shape val_probs_ar:", val_probs_ar.shape)
-    val_probs_va = np.array(val_probs_va)
-
-    # Convertir listas a numpy arrays para asegurarnos de que tienen la misma forma
-    val_labels_ar = np.array(all_labels_ar).squeeze()
-    val_labels_va = np.array(all_labels_va).squeeze()
-    val_preds_ar = np.array(all_preds_ar).squeeze()
-    val_preds_va = np.array(all_preds_va).squeeze()
-
-   
-
-    # Crear un DataFrame con etiquetas reales y predicciones
-    df_predictions = pd.DataFrame({
-        'True Arousal': val_labels_ar,
-        'Pred Arousal': val_preds_ar,
-        'True Valence': val_labels_va,
-        'Pred Valence': val_preds_va
-    })
-
-    # Agregar probabilidades de cada clase
-    for i in range(val_probs_ar.shape[1]):  # Para cada clase de arousal
-        df_predictions[f'Prob Arousal {i}'] = val_probs_ar[:, i]
-
-    for i in range(val_probs_va.shape[1]):  # Para cada clase de valencia
-        df_predictions[f'Prob Valence {i}'] = val_probs_va[:, i]
-
-    # Guardar en CSV
-    output_path = "/content/drive/MyDrive/TFG/models/predictions_emotions_probs.csv"
-    df_predictions.to_csv(output_path, index=False)
-    print(f"Predicciones y probabilidades guardadas en {output_path}")
-
-    ##
     # GUARDAR EL MODELO FINAL
     final_model_save_path = "/content/drive/MyDrive/TFG/models/CNN_LSTM_emotions.pth"
     torch.save(model.state_dict(), final_model_save_path)
@@ -237,21 +201,40 @@ def main():
     'Val Recall Valence': val_recalls_va,
 })
     metrics_df.to_csv("/content/drive/MyDrive/TFG/models/training_metrics_emotions.csv", index=False)
-    plt.subplot(1, 2, 1)
-    sns.heatmap(cm_arousal, annot=True, fmt="d", cmap="Blues")
-    plt.xlabel("Predicciones")
-    plt.ylabel("Valores reales")
-    plt.title("Matriz de Confusión - Arousal")
-    plt.savefig("/content/drive/MyDrive/TFG/models/confusion_matrix_arousal_final.png")
 
-    plt.subplot(1, 2, 2)
-    sns.heatmap(cm_valence, annot=True, fmt="d", cmap="Oranges")
-    plt.xlabel("Predicciones")
-    plt.ylabel("Valores reales")
-    plt.title("Matriz de Confusión - Valence")
-    plt.savefig("/content/drive/MyDrive/TFG/models/confusion_matrix_valence_final.png")
+    ##
+    val_probs_ar = np.array(val_probs_ar)
+    val_probs_va = np.array(val_probs_va)
+    print("Shape val_probs_ar:", val_probs_ar.shape)
+    print("Shape val_probs_va:", val_probs_va.shape)
 
-    plt.show()
+    # Convertir listas a numpy arrays para asegurarnos de que tienen la misma forma
+    val_labels_ar = np.array(all_labels_ar).squeeze()
+    val_labels_va = np.array(all_labels_va).squeeze()
+    val_preds_ar = np.array(all_preds_ar).squeeze()
+    val_preds_va = np.array(all_preds_va).squeeze()
+   
+
+    # Crear un DataFrame con etiquetas reales y predicciones
+    df_predictions = pd.DataFrame({
+        'True Arousal': val_labels_ar,
+        'Pred Arousal': val_preds_ar,
+        'True Valence': val_labels_va,
+        'Pred Valence': val_preds_va
+    })
+
+    # Agregar probabilidades de cada clase
+    for i in range(val_probs_ar.shape[1]):  # Para cada clase de arousal
+        df_predictions[f'Prob Arousal {i}'] = val_probs_ar[:, i]
+
+    for i in range(val_probs_va.shape[1]):  # Para cada clase de valencia
+        df_predictions[f'Prob Valence {i}'] = val_probs_va[:, i]
+
+    # Guardar en CSV
+    output_path = "/content/drive/MyDrive/TFG/models/predictions_emotions_probs.csv"
+    df_predictions.to_csv(output_path, index=False)
+    print(f"Predicciones y probabilidades guardadas en {output_path}")
+
 
 if __name__ == "__main__":
     main()
