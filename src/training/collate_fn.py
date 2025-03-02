@@ -120,9 +120,11 @@ def collate_fn_emotions(batch):
 
     images = torch.stack(images)
     additional_features = torch.stack(additional_features)
+
     print("Antes:", [v.shape for v in valencia_labels])
-    valencia_labels = torch.stack(valencia_labels)
-    arousal_labels = torch.stack(arousal_labels)
+
+    valencia_labels = torch.stack(valencia_labels).squeeze(1)
+    arousal_labels = torch.stack(arousal_labels).squeeze(1)
     print("Después:", valencia_labels.shape)
     print(f"Shape imágenes: {images.shape}")
     print(f"Shape características adicionales: {additional_features.shape}")
