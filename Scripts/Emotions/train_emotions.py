@@ -167,6 +167,8 @@ def main():
     val_labels_va = np.array(all_labels_va).squeeze()
     val_preds_ar = np.array(all_preds_ar).squeeze()
     val_preds_va = np.array(all_preds_va).squeeze()
+    print("Shape val_probs_ar:", val_probs_ar.shape)
+    print("Shape val_probs_va:", val_probs_va.shape)
     val_probs_ar = np.array(val_probs_ar)
     val_probs_va = np.array(val_probs_va)
 
