@@ -165,6 +165,11 @@ def main():
     torch.save(model.state_dict(), final_model_save_path)
     print(f"Modelo final guardado en {final_model_save_path}")
 
+    val_labels_ar = np.array(val_labels_ar).squeeze()
+    val_labels_va = np.array(val_labels_va).squeeze()
+    val_preds_ar = np.array(val_preds_ar).squeeze()
+    val_preds_va = np.array(val_preds_va).squeeze()
+
     #MATRICES EN CSV
     cm_arousal = confusion_matrix(all_labels_ar, all_preds_ar)
     cm_valence = confusion_matrix(all_labels_va, all_preds_va)
