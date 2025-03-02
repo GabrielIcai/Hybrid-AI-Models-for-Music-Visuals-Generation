@@ -109,15 +109,6 @@ def main():
         all_labels_ar.extend(val_labels_ar) 
         all_labels_va.extend(val_labels_va)
 
-        # MATRICES DE CONFUSIÓN
-        cm_arousal = confusion_matrix(val_labels_ar, val_preds_ar)
-        cm_valence = confusion_matrix(val_labels_va, val_preds_va)
-
-        # Guardar matrices en CSV con nombres de columnas y filas
-        np.savetxt(f"/content/drive/MyDrive/TFG/models/confusion_matrix_arousal_epoch_{epoch+1}.csv", cm_arousal, delimiter=",", fmt="%d")
-        np.savetxt(f"/content/drive/MyDrive/TFG/models/confusion_matrix_valencia_epoch_{epoch+1}.csv", cm_valence, delimiter=",", fmt="%d")
-        print(f"Matrices de confusión guardadas para la época {epoch+1}.")
-
         # Guardar métricas de la época
         epochs_list.append(epoch + 1)
         train_losses.append(train_loss)
@@ -198,6 +189,7 @@ def main():
     'Val Recall Arousal': val_recalls_ar,
     'Val Recall Valence': val_recalls_va,
 })
+    metrics_df.to_csv("/content/drive/MyDrive/TFG/models/training_metrics_emotions.csv", index=False)
     plt.subplot(1, 2, 1)
     sns.heatmap(cm_arousal, annot=True, fmt="d", cmap="Blues")
     plt.xlabel("Predicciones")
