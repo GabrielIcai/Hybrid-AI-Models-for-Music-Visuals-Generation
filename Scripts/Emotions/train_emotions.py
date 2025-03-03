@@ -82,6 +82,11 @@ def main():
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
 
+    print(f"Total datos: {len(data)}")
+    print(f"Train: {len(train_data)}, Test: {len(test_data)}")
+    print(f"Train dataset: {len(train_dataset)}")
+    print(f"Train loader batches: {len(train_loader)}")
+    
     for epoch in range(epochs):
         # ENTRENAMIENTO
         train_loss, train_acc_ar, train_acc_va = trainer_emotions(
@@ -210,15 +215,15 @@ def main():
     val_probs_ar = np.array(val_probs_ar)
     val_probs_va = np.array(val_probs_va)
 
-    # Asegurar que todas las variables tengan la misma cantidad de muestras
+    # variables tienen la misma cantidad de muestras
     num_samples = val_labels_ar.shape[0]
     print("Número de muestras en cada array:")
     print(f"val_labels_ar: {len(val_labels_ar)}")
     print(f"val_labels_va: {len(val_labels_va)}")
     print(f"val_preds_ar: {len(val_preds_ar)}")
     print(f"val_preds_va: {len(val_preds_va)}")
-    print(f"val_probs_ar: {val_probs_ar.shape}")  # (n_samples, num_classes)
-    print(f"val_probs_va: {val_probs_va.shape}")  # (n_samples, num_classes)
+    print(f"val_probs_ar: {val_probs_ar.shape}")
+    print(f"val_probs_va: {val_probs_va.shape}")
 
     if (
         val_labels_va.shape[0] != num_samples or
@@ -238,10 +243,10 @@ def main():
     })
 
     # Agregar probabilidades de cada clase
-    for i in range(val_probs_ar.shape[1]):  # Para cada clase de arousal
+    for i in range(val_probs_ar.shape[1]):
         df_predictions[f'Prob Arousal {i}'] = val_probs_ar[:, i]
 
-    for i in range(val_probs_va.shape[1]):  # Para cada clase de valencia
+    for i in range(val_probs_va.shape[1]):
         df_predictions[f'Prob Valence {i}'] = val_probs_va[:, i]
 
     # Guardar a CSV
