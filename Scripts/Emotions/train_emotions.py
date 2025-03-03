@@ -51,10 +51,6 @@ def main():
     val_f1_scores_ar, val_f1_scores_va = [], []
     val_precisions_ar, val_precisions_va = [], []
     val_recalls_ar, val_recalls_va = [], []
-    all_preds_ar = []
-    all_preds_va = []
-    all_labels_ar = []
-    all_labels_va = []
 
     data = load_data(data_path)
     data["Ruta"] = data["Ruta"].str.replace("\\", "/")
@@ -88,6 +84,10 @@ def main():
     print(f"Train loader batches: {len(train_loader)}")
 
     for epoch in range(epochs):
+        all_preds_ar = []
+        all_preds_va = []
+        all_labels_ar = []
+        all_labels_va = []
         # ENTRENAMIENTO
         train_loss, train_acc_ar, train_acc_va = trainer_emotions(
             model, train_loader, optimizer, criterion, device
