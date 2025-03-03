@@ -86,7 +86,7 @@ def main():
     print(f"Train: {len(train_data)}, Test: {len(test_data)}")
     print(f"Train dataset: {len(train_dataset)}")
     print(f"Train loader batches: {len(train_loader)}")
-    
+
     for epoch in range(epochs):
         # ENTRENAMIENTO
         train_loss, train_acc_ar, train_acc_va = trainer_emotions(
@@ -138,6 +138,9 @@ def main():
         val_precisions_va.append(val_precision_va)
         val_recalls_ar.append(val_recall_ar)
         val_recalls_va.append(val_recall_va)
+
+        print(f"Epoch {epoch + 1}: val_preds_ar {len(val_preds_ar)}, val_preds_va {len(val_preds_va)}")
+        print(f"Epoch {epoch + 1}: val_labels_ar {len(val_labels_ar)}, val_labels_va {len(val_labels_va)}")
 
         print(f"Epoch {epoch + 1}/{epochs}")
         print(
