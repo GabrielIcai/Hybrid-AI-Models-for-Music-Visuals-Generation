@@ -163,7 +163,6 @@ class EmotionDataset(Dataset):
         img_path = os.path.join(self.base_path, row["Ruta"]) 
 
         try:
-            # Verificar si la imagen existe antes de cargarla
             if not os.path.exists(img_path):
                 print(f"Error: La imagen no existe en {img_path}")
                 return None, None, None, None
@@ -187,17 +186,13 @@ class EmotionDataset(Dataset):
             # Etiquetas de valencia y arousal en one-hot encoding 
             valencia_cols = [f"Valencia_{i/10:.1f}" for i in range(11)]
             arousal_cols = [f"Arousal_{i/10:.1f}" for i in range(11)]
-            print("Valencia one-hot:", row[valencia_cols].values)
-            print("Arousal one-hot:", row[arousal_cols].values)
-            print("Argmax Valencia:", row[valencia_cols].values.argmax())
-            print("Argmax Arousal:", row[arousal_cols].values.argmax())
-            
-            valencia_label = torch.tensor([row[valencia_cols].values.argmax()], dtype=torch.long)
-            arousal_label = torch.tensor([row[arousal_cols].values.argmax()], dtype=torch.long)
-            print("Valencia Row:", row[valencia_cols].values)
-            print("Arousal Row:", row[arousal_cols].values)
-            print(f"Valencia label (antes de devolver): {valencia_label.shape} -> {valencia_label}")
-            print(f"Arousal label (antes de devolver): {arousal_label.shape} -> {arousal_label}")
+            valencia_index = row[valencia_cols].values.argmax()
+            arousal_index = row[arousal_cols].values.argmax()
+            valencia_value=valencia_index/10
+            arousal_value=arousal_index/10
+            valencia_label = torch.tensor([valencia_value], dtype=torch.long)
+            arousal_label = torch.tensor([arousal_value], dtype=torch.long)
+
             return image, additional_features, valencia_label, arousal_label  
 
         except Exception as e:

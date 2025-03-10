@@ -2,6 +2,7 @@ import os
 import sys
 import numpy as np
 import pandas as pd
+from sklearn.metrics import mean_squared_error,mean_absolute_error, r2_score
 repo_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"))
 if repo_path not in sys.path:
     sys.path.append(repo_path)
@@ -25,6 +26,7 @@ from src.preprocessing.custom_dataset import EmotionDataset
 from src.training.trainer_emotions import trainer_emotions, validate_emotions
 import seaborn as sns
 import matplotlib.pyplot as plt
+from src.utils import plot_scatter, plot_and_save_residuals
 
 mean=[0.676956295967102, 0.2529653012752533, 0.4388839304447174]
 std=[0.21755781769752502, 0.15407244861125946, 0.07557372003793716]
@@ -46,11 +48,11 @@ def main():
 
     epochs_list = []
     train_losses, val_losses = [], []
-    train_accuracies_ar, val_accuracies_ar = [], []
-    train_accuracies_va, val_accuracies_va = [], []
-    val_f1_scores_ar, val_f1_scores_va = [], []
+    val_maes_va,val_maes_ar = [], []
     val_precisions_ar, val_precisions_va = [], []
     val_recalls_ar, val_recalls_va = [], []
+    rmse_arousal, rmse_valence = [], []
+    r2_valence, r2_arousal = [], []
 
     data = load_data(data_path)
     data["Ruta"] = data["Ruta"].str.replace("\\", "/")
@@ -73,7 +75,7 @@ def main():
 
     # Modelo y optimización
     model = ResNetCRNNEmotionModel().to(device)
-    criterion = nn.CrossEntropyLoss()
+    criterion = nn.MSELoss()
     optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
 
     print(f"Total datos: {len(data)}")
@@ -82,17 +84,20 @@ def main():
     print(f"Train loader batches: {len(train_loader)}")
 
     for epoch in range(epochs):
+
         all_preds_ar = []
         all_preds_va = []
         all_labels_ar = []
         all_labels_va = []
+
+
         # ENTRENAMIENTO
-        train_loss, train_acc_ar, train_acc_va = trainer_emotions(
+        train_loss, train_rmse_ar, train_rmse_va = trainer_emotions(
             model, train_loader, optimizer, criterion, device
         )
 
         # VALIDACIÓN
-        val_loss, val_acc_ar, val_acc_va, val_preds_ar, val_preds_va, val_labels_ar, val_labels_va, val_probs_ar, val_probs_va = validate_emotions(
+        val_loss, val_rmse_ar, val_rmse_va, val_preds_ar, val_preds_va, val_labels_ar, val_labels_va, val_probs_ar, val_probs_va = validate_emotions(
             model, val_loader, criterion, device
         )
 
@@ -102,48 +107,41 @@ def main():
         # ETIQUETAS A ÍNDICES
         val_labels_ar = np.array(val_labels_ar)
         val_labels_va = np.array(val_labels_va)
-
-        if val_labels_ar.ndim > 1:
-            val_labels_ar = val_labels_ar.argmax(axis=1)
-
-        if val_labels_va.ndim > 1:
-            val_labels_va = val_labels_va.argmax(axis=1)
         
         all_labels_ar.extend(val_labels_ar) 
         all_labels_va.extend(val_labels_va)
 
+        #RMSE
+        val_rmse_ar = np.sqrt(mean_squared_error(val_labels_ar, val_preds_ar))
+        val_rmse_va = np.sqrt(mean_squared_error(val_labels_va, val_preds_va))
+        
         # Guardar métricas de la época
         epochs_list.append(epoch + 1)
         train_losses.append(train_loss)
         val_losses.append(val_loss)
-        train_accuracies_ar.append(train_acc_ar)
-        train_accuracies_va.append(train_acc_va)
-        val_accuracies_ar.append(val_acc_ar)
-        val_accuracies_va.append(val_acc_va)
+
 
         # Calcular métricas adicionales
-        val_f1_ar = f1_score(val_labels_ar, val_preds_ar, average="weighted")
-        val_f1_va = f1_score(val_labels_va, val_preds_va, average="weighted")
-        val_precision_ar = precision_score(val_labels_ar, val_preds_ar, average="weighted")
-        val_precision_va = precision_score(val_labels_va, val_preds_va, average="weighted")
-        val_recall_ar = recall_score(val_labels_ar, val_preds_ar, average="weighted")
-        val_recall_va = recall_score(val_labels_va, val_preds_va, average="weighted")
+        val_mae_ar = mean_absolute_error(val_labels_ar, val_preds_ar)
+        val_mae_va = mean_absolute_error(val_labels_va, val_preds_va)
+        val_r2_ar = r2_score(val_labels_ar, val_preds_ar)
+        val_r2_va = r2_score(val_labels_va, val_preds_va)
 
         # Guardar métricas en listas
-        val_f1_scores_ar.append(val_f1_ar)
-        val_f1_scores_va.append(val_f1_va)
-        val_precisions_ar.append(val_precision_ar)
-        val_precisions_va.append(val_precision_va)
-        val_recalls_ar.append(val_recall_ar)
-        val_recalls_va.append(val_recall_va)
+        rmse_arousal.append(val_rmse_ar)
+        r2_arousal.append(val_r2_ar)
+        r2_valence.append(val_r2_va)
+        rmse_valence.append(val_rmse_va)
+        val_maes_ar.append(val_mae_ar)
+        val_maes_va.append(val_mae_va)
 
         print(f"Epoch {epoch + 1}: val_preds_ar {len(val_preds_ar)}, val_preds_va {len(val_preds_va)}")
         print(f"Epoch {epoch + 1}: val_labels_ar {len(val_labels_ar)}, val_labels_va {len(val_labels_va)}")
 
         print(f"Epoch {epoch + 1}/{epochs}")
         print(
-            f"Train Loss: {train_loss:.4f} | Train Acc AR: {train_acc_ar:.4f}% | Train Acc VA: {train_acc_va:.4f}% \n"
-            f"Val Loss: {val_loss:.4f} | Val Acc AR: {val_acc_ar:.4f}% | Val Acc VA: {val_acc_va:.4f}% \n"
+            f"Train Loss: {train_loss:.4f} | Train RMSE AR: {train_rmse_ar:.4f}% | Train RMSE VA: {train_rmse_va:.4f}% \n"
+            f"Val Loss: {val_loss:.4f} | Val RMSE AR: {val_rmse_ar:.4f}% | Val RMSE VA: {val_rmse_va:.4f}% \n"
         )
 
         # EARLY STOPPING Y GUARDADO DEL MEJOR MODELO
@@ -152,7 +150,7 @@ def main():
             early_stop_counter = 0
 
             # MJEOR MODELO
-            model_save_path = "/content/drive/MyDrive/TFG/models/best_CNN_LSTM_emotions.pth"
+            model_save_path = "/content/drive/MyDrive/TFG/models/best_CNN_LSTM_emotions_reg.pth"
             torch.save({"model_state_dict": model.state_dict(),
                         "optimizer_state_dict": optimizer.state_dict(),
                         "epoch": epoch + 1,
@@ -167,7 +165,7 @@ def main():
             break
 
     # GUARDAR EL MODELO FINAL
-    final_model_save_path = "/content/drive/MyDrive/TFG/models/CNN_LSTM_emotions.pth"
+    final_model_save_path = "/content/drive/MyDrive/TFG/models/CNN_LSTM_emotions_reg.pth"
     torch.save(model.state_dict(), final_model_save_path)
     print(f"Modelo final guardado en {final_model_save_path}")
 
@@ -180,33 +178,30 @@ def main():
     print("Valores reales de valencia:", set(val_labels_va))  
     print("Valores reales de arousal:", set(val_labels_ar))
   
+    #Scatter Plot:
+    plot_scatter(val_labels_ar, val_preds_ar, "Predicciones vs. Valores reales (Arousal)", 
+             "/content/drive/MyDrive/TFG/models/scatter_arousal.png")
 
-    #MATRICES EN CSV
-    cm_arousal = confusion_matrix(val_labels_ar, val_preds_ar)
-    cm_valence = confusion_matrix(val_labels_va, val_preds_va)
+    plot_scatter(val_labels_va, val_preds_va, "Predicciones vs. Valores reales (Valence)", 
+             "/content/drive/MyDrive/TFG/models/scatter_valence.png")
 
+    #Residual Plot
+    plot_and_save_residuals(val_labels_ar, val_preds_ar, val_labels_va, val_preds_va, "/content/drive/MyDrive/TFG/models/residuals_emotions_reg.png")
 
-    # Guardar matrices en CSV
-    np.savetxt("/content/drive/MyDrive/TFG/models/confusion_matrix_arousal_final.csv", cm_arousal, delimiter=",", fmt="%d")
-    np.savetxt("/content/drive/MyDrive/TFG/models/confusion_matrix_valence_final.csv", cm_valence, delimiter=",", fmt="%d")
-    print("Matrices de confusión finales guardadas.")
-
+    #Guardamos Metricas
     metrics_df = pd.DataFrame({
     'Epoch': epochs_list,
     'Train Loss': train_losses,
     'Val Loss': val_losses,
-    'Train Accuracy Arousal': train_accuracies_ar,
-    'Train Accuracy Valence': train_accuracies_va,
-    'Val Accuracy Arousal': val_accuracies_ar,
-    'Val Accuracy Valence': val_accuracies_va,
-    'Val F1 Arousal': val_f1_scores_ar,
-    'Val F1 Valence': val_f1_scores_va,
-    'Val Precision Arousal': val_precisions_ar,
-    'Val Precision Valence': val_precisions_va,
-    'Val Recall Arousal': val_recalls_ar,
-    'Val Recall Valence': val_recalls_va,
+    'Val RMSE Arousal': rmse_arousal,
+    'Val RMSE Valence': rmse_valence,
+    'Val MAE Arousal': val_maes_ar,
+    'Val MAE Valence': val_maes_va,
+    'Val R2 Arousal': r2_arousal,
+    'Val R2 Valence': r2_valence
 })
-    metrics_df.to_csv("/content/drive/MyDrive/TFG/models/training_metrics_emotions.csv", index=False)
+
+    metrics_df.to_csv("/content/drive/MyDrive/TFG/models/training_metrics_emotions_reg.csv", index=False)
 
     # Convertir listas a numpy arrays
     val_labels_ar = np.array(all_labels_ar).squeeze()
@@ -218,13 +213,6 @@ def main():
 
     # variables tienen la misma cantidad de muestras
     num_samples = val_labels_ar.shape[0]
-    print("Número de muestras en cada array:")
-    print(f"val_labels_ar: {len(val_labels_ar)}")
-    print(f"val_labels_va: {len(val_labels_va)}")
-    print(f"val_preds_ar: {len(val_preds_ar)}")
-    print(f"val_preds_va: {len(val_preds_va)}")
-    print(f"val_probs_ar: {val_probs_ar.shape}")
-    print(f"val_probs_va: {val_probs_va.shape}")
 
     if (
         val_labels_va.shape[0] != num_samples or
@@ -251,13 +239,13 @@ def main():
         df_predictions[f'Prob Valence {i}'] = val_probs_va[:, i]
 
     # Guardar a CSV
-    df_predictions.to_csv("predictions_probs.csv", index=False)
+    df_predictions.to_csv("predictions_probs_reg.csv", index=False)
 
     print("Predicciones guardadas en predictions.csv")
 
 
     # Guardar en CSV
-    output_path = "/content/drive/MyDrive/TFG/models/predictions_emotions_probs.csv"
+    output_path = "/content/drive/MyDrive/TFG/models/predictions_emotions_probs_reg.csv"
     df_predictions.to_csv(output_path, index=False)
     print(f"Predicciones y probabilidades guardadas en {output_path}")
 

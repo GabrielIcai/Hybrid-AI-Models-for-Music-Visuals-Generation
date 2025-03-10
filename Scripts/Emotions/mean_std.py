@@ -19,9 +19,9 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Usando dispositivo: {device}")
 columns = ["Spectral Centroid", "Spectral Bandwidth", "Spectral Roll-off"]
 
-data_path = "/content/drive/MyDrive/TFG/images/espectrogramas_normalizados/dataset_genero_completo.csv"
+data_path = "/content/drive/MyDrive/TFG/images/espectrogramas_normalizados_emociones_estructura/dataset_emociones_secciones.csv"
 base_path = "/content/drive/MyDrive/TFG/images/"
-output_path = "/content/drive/MyDrive/TFG/mean_std.json"
+output_path = "/content/drive/MyDrive/TFG/mean_std_emotions.json"
 
 columns = ["Spectral Centroid", "Spectral Bandwidth", "Spectral Roll-off"]
 

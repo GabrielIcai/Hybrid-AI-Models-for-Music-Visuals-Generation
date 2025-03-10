@@ -1,20 +1,6 @@
 import torch
 import numpy as np
 
-def accuracy_with_tolerance(y_pred, y_true, tolerance=1):
-
-    pred_index = torch.argmax(y_pred, dim=1)
-    true_index = y_true
-    
-    val_range = torch.linspace(0, 1, steps=11, device=y_pred.device)
-    pred_values = val_range[pred_index]
-    true_values = val_range[true_index]
-
-    correct = (torch.abs(pred_values - true_values) <= 0.1).float()
-    accuracy = correct.mean().item() * 100
-    
-    return accuracy
-
 
 def trainer_emotions(model, train_loader, optimizer, criterion, device):
     model.train()
@@ -44,19 +30,19 @@ def trainer_emotions(model, train_loader, optimizer, criterion, device):
 
         running_loss += loss.item()
 
-        # TOLERANCIA
-        accuracy_ar = accuracy_with_tolerance(ar_output, arousal_labels)
-        accuracy_va = accuracy_with_tolerance(val_output, valencia_labels)
+        #RMSE
+        rmse_ar = np.sqrt(((ar_output - arousal_labels) ** 2).mean().item())
+        rmse_va = np.sqrt(((val_output - valencia_labels) ** 2).mean().item())
 
-        correct_ar += accuracy_ar  
-        correct_va += accuracy_va  
+        correct_ar += rmse_ar
+        correct_va += rmse_va
         total += 1
+        print(f"RMSE Arousal: {rmse_ar:.4f} | RMSE Valence: {rmse_va:.4f}")
 
+    avg_rmse_ar = correct_ar / total
+    avg_rmse_va = correct_va / total
 
-    accuracy_ar =correct_ar / total
-    accuracy_va = correct_va / total
-
-    return running_loss / len(train_loader), accuracy_ar, accuracy_va
+    return running_loss / len(train_loader), avg_rmse_ar, avg_rmse_va
 
 def validate_emotions(model, val_loader, criterion, device):
     model.eval()
@@ -68,8 +54,6 @@ def validate_emotions(model, val_loader, criterion, device):
 
     val_preds_ar = []
     val_preds_va = []
-    val_probs_ar = []
-    val_probs_va = []
     val_labels_va = []
     val_labels_ar = []
 
@@ -93,36 +77,32 @@ def validate_emotions(model, val_loader, criterion, device):
 
             running_loss += loss.item()
 
-            # Probabilidades y predicciones
-            probs_ar = torch.softmax(ar_output, dim=1)
-            probs_va = torch.softmax(val_output, dim=1)
-            preds_ar = torch.argmax(probs_ar, dim=1)
-            preds_va = torch.argmax(probs_va, dim=1)
-
-            val_probs_ar.extend(probs_ar.cpu().numpy())
-            val_probs_va.extend(probs_va.cpu().numpy())
-            val_preds_ar.extend(preds_ar.cpu().numpy())
-            val_preds_va.extend(preds_va.cpu().numpy())
+            # Guardamos las predicciones
+            val_preds_ar.extend(ar_output.cpu().numpy())
+            val_preds_va.extend(val_output.cpu().numpy())
 
             # Guardamos las etiquetas correctas
             val_labels_va.extend(valencia_labels.cpu().numpy())
             val_labels_ar.extend(arousal_labels.cpu().numpy())
 
             # Cálculo de accuracy con tolerancia (corregido)
-            accuracy_ar = accuracy_with_tolerance(ar_output, arousal_labels)
-            accuracy_va = accuracy_with_tolerance(val_output, valencia_labels)
+            rmse_ar = np.sqrt(((ar_output - arousal_labels) ** 2).mean().item())
+            rmse_va = np.sqrt(((val_output - valencia_labels) ** 2).mean().item())
 
-            correct_ar += accuracy_ar
-            correct_va += accuracy_va
+            correct_ar += rmse_ar
+            correct_va += rmse_va
             total += 1
 
-            print("Shape de ar_output:", ar_output.shape)
-            print("Shape de val_output:", val_output.shape)
+            print(f"Shape de ar_output: {ar_output.shape}")
+            print(f"Shape de val_output: {val_output.shape}")
+            print(f"RMSE Arousal: {rmse_ar:.4f} | RMSE Valence: {rmse_va:.4f}")
+            print(f"Shape de ar_output: {ar_output.shape}")
+            print(f"Shape de val_output: {val_output.shape}")
+            print(f"RMSE Arousal: {rmse_ar:.4f} | RMSE Valence: {rmse_va:.4f}")
 
-    accuracy_ar =correct_ar / total
-    accuracy_va =correct_va / total
+    avg_rmse_ar =correct_ar / total
+    avg_rmse_va =correct_va / total
 
-    return (running_loss / len(val_loader), accuracy_ar, accuracy_va, 
+    return (running_loss / len(val_loader), avg_rmse_ar, avg_rmse_va, 
         val_preds_ar, val_preds_va, 
-        np.array(val_labels_ar), np.array(val_labels_va),
-        val_probs_ar, val_probs_va)
+        np.array(val_labels_ar), np.array(val_labels_va))
