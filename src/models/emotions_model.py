@@ -37,8 +37,9 @@ class ResNetCRNNEmotionModel(nn.Module):
         valencia = (self.fc_valencia(lstm_out))
         arousal = (self.fc_arousal(lstm_out))
 
-        valencia_output = torch.sigmoid(valencia)
-        arousal_output= torch.sigmoid(arousal)
+        valencia_output = torch.Sigmoid(valencia)
+        arousal_output= torch.Sigmoid(arousal)
+
         return valencia_output, arousal_output
     
     def predict(self, image, additional_features):
