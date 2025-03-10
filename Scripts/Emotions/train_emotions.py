@@ -21,11 +21,8 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
 from src.preprocessing.custom_dataset import EmotionDataset
 from src.training.trainer_emotions import trainer_emotions, validate_emotions
-import seaborn as sns
-import matplotlib.pyplot as plt
 from src.utils import plot_scatter, plot_and_save_residuals
 
 mean=[0.676956295967102, 0.2529653012752533, 0.4388839304447174]
@@ -49,8 +46,6 @@ def main():
     epochs_list = []
     train_losses, val_losses = [], []
     val_maes_va,val_maes_ar = [], []
-    val_precisions_ar, val_precisions_va = [], []
-    val_recalls_ar, val_recalls_va = [], []
     rmse_arousal, rmse_valence = [], []
     r2_valence, r2_arousal = [], []
 
