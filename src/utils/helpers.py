@@ -39,21 +39,6 @@ def load_image_from_csv(csv_path, base_path, index):
         return None
 
 
-base_path = "data//"
-csv_path = "data/espectrogramas_salida1/dataset_genero_completo.csv"
-index = 5
-
-image = load_image_from_csv(csv_path, base_path, index)
-
-
-columns = ["Spectral Centroid", "Spectral Bandwidth", "Spectral Roll-off"]
-data_path = "data\espectrogramas_salida1\dataset_genero_completo.csv"
-base_path = "data\\"
-
-if image:
-    image.show()
-else:
-    print("No se pudo cargar la imagen.")
 
 import matplotlib.pyplot as plt
 import seaborn as sns
