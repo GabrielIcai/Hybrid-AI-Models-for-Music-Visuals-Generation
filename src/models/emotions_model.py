@@ -25,8 +25,6 @@ class ResNetCRNNEmotionModel(nn.Module):
         self.fc_valencia = nn.Linear(hidden_size * 2, num_valencia_classes)
         self.fc_arousal = nn.Linear(hidden_size * 2, num_arousal_classes)
 
-        self.sigmoid=nn.sigmoid()
-
     def forward(self, x, additional_features):
         x = self.resnet(x)
         x = x.view(x.size(0), 1, -1)
@@ -36,9 +34,11 @@ class ResNetCRNNEmotionModel(nn.Module):
         #LSTM
         lstm_out, _ = self.lstm(x)
         lstm_out = lstm_out[:, -1, :]
-        valencia_output = (self.fc_valencia(lstm_out))
-        arousal_output = (self.fc_arousal(lstm_out))
-        
+        valencia = (self.fc_valencia(lstm_out))
+        arousal = (self.fc_arousal(lstm_out))
+
+        valencia_output = torch.sigmoid(valencia)
+        arousal_output= torch.sigmoid(arousal)
         return valencia_output, arousal_output
     
     def predict(self, image, additional_features):
@@ -46,5 +46,5 @@ class ResNetCRNNEmotionModel(nn.Module):
         with torch.no_grad():
             valencia_output, arousal_output = self.forward(image, additional_features)
         return valencia_output.item(), arousal_output.item()
-        
+
 
