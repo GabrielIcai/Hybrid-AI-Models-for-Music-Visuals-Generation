@@ -92,7 +92,7 @@ def main():
         )
 
         # VALIDACIÓN
-        val_loss, val_rmse_ar, val_rmse_va, val_preds_ar, val_preds_va, val_labels_ar, val_labels_va, val_probs_ar, val_probs_va = validate_emotions(
+        val_loss, val_rmse_ar, val_rmse_va, val_preds_ar, val_preds_va, val_labels_ar, val_labels_va = validate_emotions(
             model, val_loader, criterion, device
         )
 
@@ -225,19 +225,6 @@ def main():
         'True Valence': val_labels_va,
         'Pred Valence': val_preds_va
     })
-
-    # Agregar probabilidades de cada clase
-    for i in range(val_probs_ar.shape[1]):
-        df_predictions[f'Prob Arousal {i}'] = val_probs_ar[:, i]
-
-    for i in range(val_probs_va.shape[1]):
-        df_predictions[f'Prob Valence {i}'] = val_probs_va[:, i]
-
-    # Guardar a CSV
-    df_predictions.to_csv("predictions_probs_reg.csv", index=False)
-
-    print("Predicciones guardadas en predictions.csv")
-
 
     # Guardar en CSV
     output_path = "/content/drive/MyDrive/TFG/models/predictions_emotions_probs_reg.csv"
