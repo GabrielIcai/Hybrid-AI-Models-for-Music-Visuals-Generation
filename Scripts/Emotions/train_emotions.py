@@ -105,10 +105,6 @@ def main():
         
         all_labels_ar.extend(val_labels_ar) 
         all_labels_va.extend(val_labels_va)
-
-        #RMSE
-        val_rmse_ar = np.sqrt(mean_squared_error(val_labels_ar, val_preds_ar))
-        val_rmse_va = np.sqrt(mean_squared_error(val_labels_va, val_preds_va))
         
         # Guardar métricas de la época
         epochs_list.append(epoch + 1)
