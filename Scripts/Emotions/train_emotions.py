@@ -32,7 +32,7 @@ std=[0.21755781769752502, 0.15407244861125946, 0.07557372003793716]
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 columns = ["Spectral Centroid", "Spectral Bandwidth", "Spectral Roll-off"]
 learning_rate = 0.001
-weight_decay = 1e-4
+weight_decay = 1e-5
 data_path = "/content/drive/MyDrive/TFG/images/espectrogramas_normalizados_emociones_estructura/dataset_emociones_secciones.csv"
 base_path = "/content/drive/MyDrive/TFG/images/"
 
@@ -70,7 +70,7 @@ def main():
 
     # Modelo y optimización
     model = ResNetCRNNEmotionModel().to(device)
-    criterion = nn.MSELoss()
+    criterion = nn.L1Loss()
     optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
 
     print(f"Total datos: {len(data)}")
@@ -106,19 +106,19 @@ def main():
         all_labels_ar.extend(val_labels_ar) 
         all_labels_va.extend(val_labels_va)
         
-        # Guardar métricas de la época
+        # Métricas de la epoca
         epochs_list.append(epoch + 1)
         train_losses.append(train_loss)
         val_losses.append(val_loss)
 
 
-        # Calcular métricas adicionales
+        # métricas adicionales
         val_mae_ar = mean_absolute_error(val_labels_ar, val_preds_ar)
         val_mae_va = mean_absolute_error(val_labels_va, val_preds_va)
         val_r2_ar = r2_score(val_labels_ar, val_preds_ar)
         val_r2_va = r2_score(val_labels_va, val_preds_va)
 
-        # Guardar métricas en listas
+        # Guardo métricas en listas
         rmse_arousal.append(val_rmse_ar)
         r2_arousal.append(val_r2_ar)
         r2_valence.append(val_r2_va)
