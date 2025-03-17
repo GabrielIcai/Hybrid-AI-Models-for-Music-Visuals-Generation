@@ -192,13 +192,6 @@ class EmotionDataset(Dataset):
             arousal_value=arousal_index/10
             valencia_label = torch.tensor([valencia_value], dtype=torch.float32)
             arousal_label = torch.tensor([arousal_value], dtype=torch.float32)
-            if idx < 5:  # Solo para las primeras 5 muestras
-                print(f"\nMuestra {idx}:")
-                print(f"  - Imagen: {img_path}")
-                print(f"  - Arousal One-Hot: {row[arousal_cols].values}")
-                print(f"  - Arousal Valor: {arousal_value}")
-                print(f"  - Valencia One-Hot: {row[valencia_cols].values}")
-                print(f"  - Valencia Valor: {valencia_value}")
 
             return image, additional_features, valencia_label, arousal_label  
 

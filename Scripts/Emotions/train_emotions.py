@@ -215,6 +215,16 @@ def main():
     ):
         raise ValueError("Las dimensiones de los arrays no coinciden.")
 
+    print(f"val_labels_ar shape: {val_labels_ar.shape}")
+    print(f"val_labels_va shape: {val_labels_va.shape}")
+    print(f"val_preds_ar shape: {val_preds_ar.shape}")
+    print(f"val_preds_va shape: {val_preds_va.shape}")
+    print(f"NaN en val_labels_ar: {np.isnan(val_labels_ar).sum()}")
+    print(f"NaN en val_labels_va: {np.isnan(val_labels_va).sum()}")
+    print(f"NaN en val_preds_ar: {np.isnan(val_preds_ar).sum()}")
+    print(f"NaN en val_preds_va: {np.isnan(val_preds_va).sum()}")
+
+
     # Crear el DataFrame
     df_predictions = pd.DataFrame({
         'True Arousal': val_labels_ar,
@@ -224,7 +234,7 @@ def main():
     })
 
     # Guardar en CSV
-    output_path = "/content/drive/MyDrive/TFG/models/predictions_emotions_probs_reg.csv"
+    output_path = "/content/drive/MyDrive/TFG/predictions_emotions_probs_reg.csv"
     df_predictions.to_csv(output_path, index=False)
     print(f"Predicciones y probabilidades guardadas en {output_path}")
 
