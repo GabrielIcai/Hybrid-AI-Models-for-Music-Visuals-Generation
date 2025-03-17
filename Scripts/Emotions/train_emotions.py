@@ -70,6 +70,7 @@ def main():
 
     # Modelo y optimización
     model = ResNetCRNNEmotionModel().to(device)
+    #MAE Loss
     criterion = nn.L1Loss()
     optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
 
@@ -212,7 +213,7 @@ def main():
         val_probs_ar.shape[0] != num_samples or
         val_probs_va.shape[0] != num_samples
     ):
-        raise ValueError("Las dimensiones de los arrays no coinciden. Revisa cómo se están acumulando los datos.")
+        raise ValueError("Las dimensiones de los arrays no coinciden.")
 
     # Crear el DataFrame
     df_predictions = pd.DataFrame({
