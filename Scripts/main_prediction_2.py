@@ -70,7 +70,7 @@ def predict_audio_genre(carpeta_canciones):
             print(f"No hay datos para {song_id}, saltando...")
             continue
 
-        dataset_pred = PredictionDataset(song_data, base_path, transform=transform)
+        dataset_pred = PredictionDatasetGenre(song_data, base_path, transform=transform)
         loader =DataLoader(dataset_pred,batch_size=128, collate_fn=collate_fn, shuffle=False, num_workers=2, pin_memory=True)
 
         with torch.no_grad():
