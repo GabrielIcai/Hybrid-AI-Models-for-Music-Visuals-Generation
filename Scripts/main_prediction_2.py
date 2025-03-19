@@ -7,7 +7,7 @@ import numpy as np
 from src.training import collate_fn
 import torch
 from src.models.genre_model import CRNN
-from src.preprocessing import normalize_columns, load_data, c_transform,CustomDataset
+from src.preprocessing import normalize_columns, load_data, c_transform, PredictionDatasetGenre
 import pandas as pd
 from torch.utils.data import DataLoader
 from Scripts.set_generator import generar_espectrograma
@@ -70,8 +70,8 @@ def predict_audio_genre(carpeta_canciones):
             print(f"No hay datos para {song_id}, saltando...")
             continue
 
-        dataset = CustomDataset(song_data, base_path, transform=transform)
-        loader = DataLoader(dataset, batch_size=128, collate_fn=collate_fn, shuffle=False, num_workers=2, pin_memory=True)
+        dataset_pred = PredictionDataset(song_data, base_path, transform=transform)
+        loader =DataLoader(dataset_pred,batch_size=128, collate_fn=collate_fn, shuffle=False, num_workers=2, pin_memory=True)
 
         with torch.no_grad():
             for images, additional_features in loader:
