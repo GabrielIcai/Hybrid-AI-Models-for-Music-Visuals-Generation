@@ -18,7 +18,7 @@ import numpy as np
 from torch.utils.data import DataLoader
 
 # Cargar el modelo
-model_path = "/content/drive/MyDrive/TFG/models/best_CRNN_genre_5.pth"
+model_path = "/content/drive/MyDrive/TFG/models/best_CRNN_genre_5_2.pth"
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model = CRNN(num_classes=5, additional_features_dim=12, hidden_size=256)
 model.load_state_dict(torch.load(model_path, map_location=device))
@@ -99,3 +99,32 @@ def predict_audio_genre(carpeta_canciones):
 # MAIN
 audios_path ="/content/drive/MyDrive/TFG/data/Playlist_prediccion/"
 predict_audio_genre(audios_path)
+
+
+#Comunicación con TOUCHDESIGNER
+#from pythonosc.udp_client import SimpleUDPClient
+#import pandas as pd
+#import time
+#
+#ip = "127.0.0.1"  # IP de TouchDesigner
+#port = 8000  # Puerto OSC en TouchDesigner
+#
+#client = SimpleUDPClient(ip, port)
+#
+#csv_path = "/content/drive/MyDrive/TFG/predicciones_canciones_playlist.csv"
+#data = pd.read_csv(csv_path)
+#
+#class_names = ["Ambient", "Deep House", "Techno", "Trance", "Progressive House"]
+#
+#for _, row in data.iterrows():
+#    fragment = row["Fragment"]
+#    probabilities = eval(row["Probabilities"])  # Convertir string a lista
+#
+#    # Enviar las probabilidades de cada género por separado
+#    for i, genre in enumerate(class_names):
+#        client.send_message(f"/genre/{genre.lower().replace(' ', '_')}", probabilities[i])
+#
+#    print(f"Fragment {fragment} enviado con probabilidades: {probabilities}")
+#
+#    time.sleep(0.1)  # Evita saturar TouchDesigner
+

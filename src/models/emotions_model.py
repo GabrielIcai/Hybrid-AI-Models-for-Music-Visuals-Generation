@@ -44,8 +44,11 @@ class ResNetCRNNEmotionModel(nn.Module):
     
     def predict(self, image, additional_features):
         self.eval()
+
         with torch.no_grad():
             valencia_output, arousal_output = self.forward(image, additional_features)
+
         return valencia_output.item(), arousal_output.item()
 
 
+#################### Prueba Random Forest ########################ç
