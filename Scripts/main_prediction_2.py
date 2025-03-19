@@ -6,7 +6,7 @@ if repo_path not in sys.path:
 import numpy as np
 from src.training import collate_fn
 import torch
-from src.models.emotions_model import CRNN
+from src.models.genre_model import CRNN
 from src.preprocessing import normalize_columns, load_data, c_transform,CustomDataset
 import pandas as pd
 from torch.utils.data import DataLoader
