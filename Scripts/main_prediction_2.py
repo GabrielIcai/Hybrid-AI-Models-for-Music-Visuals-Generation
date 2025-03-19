@@ -36,11 +36,6 @@ base_path = "/content/drive/MyDrive/TFG/data/"
 csv_path = "/content/drive/MyDrive/TFG/data/Playlist_prediccion/dataset_prediccion_playlist.csv"
 output_csv_path = "/content/drive/MyDrive/TFG/predicciones_canciones_playlist.csv"
 
-import pandas as pd
-import numpy as np
-import torch
-from collections import defaultdict
-
 def predict_audio_genre(carpeta_canciones):
     predictions_by_song = defaultdict(list)
     probabilities_by_song = defaultdict(list)
