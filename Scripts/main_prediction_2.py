@@ -4,7 +4,7 @@ repo_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../"))
 if repo_path not in sys.path:
     sys.path.append(repo_path)
 import numpy as np
-from src.training import collate_fn
+from src.training import collate_fn_prediction
 import torch
 from src.models.genre_model import CRNN
 from src.preprocessing import normalize_columns, load_data, c_transform, PredictionDatasetGenre
@@ -71,7 +71,7 @@ def predict_audio_genre(carpeta_canciones):
             continue
 
         dataset_pred = PredictionDatasetGenre(song_data, base_path, transform=transform)
-        loader =DataLoader(dataset_pred,batch_size=128, collate_fn=collate_fn, shuffle=False, num_workers=2, pin_memory=True)
+        loader =DataLoader(dataset_pred,batch_size=128, collate_fn=collate_fn_prediction, shuffle=False, num_workers=2, pin_memory=True)
 
         with torch.no_grad():
             for images, additional_features in loader:

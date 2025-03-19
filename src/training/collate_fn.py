@@ -109,6 +109,53 @@ def collate_fn_s(batch):
 
     return images, additional_features, labels
 
+def collate_fn_prediction(batch):
+    grouped_by_song = defaultdict(list)
+
+    # Agrupar los fragmentos por canción
+    for img, add_feats, image_path in batch:
+        if img is not None:
+            song_name = extract_song_name(image_path)
+            if song_name:
+                grouped_by_song[song_name].append((img, add_feats))
+
+    images = []
+    additional_features = []
+    song_names = []
+
+    for song_name, fragments in grouped_by_song.items():
+        # Padding para hacer múltiplos de 3
+        while len(fragments) % 3 != 0:
+            fragments.append(
+                (
+                    torch.zeros_like(fragments[0][0]),  # Imagen vacía
+                    torch.zeros_like(fragments[0][1]),  # Características vacías
+                )
+            )
+
+        # Crear ventanas de 3 fragmentos consecutivos
+        for i in range(0, len(fragments), 3):
+            song_images = []
+            song_additional_features = []
+
+            # Coger 3 fragmentos
+            for j in range(3):
+                img, add_feats = fragments[i + j]
+                song_images.append(img)
+                song_additional_features.append(add_feats)
+
+            # Guardar info de la canción
+            song_names.append(song_name)
+            images.append(torch.stack(song_images, dim=0))
+            additional_features.append(torch.stack(song_additional_features, dim=0))
+
+    # Convertir las listas en un solo tensor
+    images = torch.stack(images, dim=0)  # (batch_size, 3, canales, altura, anchura)
+    additional_features = torch.stack(
+        additional_features, dim=0
+    )  # (batch_size, 3, num_features)
+
+    return images, additional_features, song_names
 ########################################### EMOCIONES ################################################################################################
 
 def collate_fn_emotions(batch):
