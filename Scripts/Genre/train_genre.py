@@ -42,7 +42,7 @@ mean=[0.676956295967102, 0.2529653012752533, 0.4388839304447174]
 std=[0.21755781769752502, 0.15407244861125946, 0.07557372003793716]
 hidden_size = 256
 additional_features_dim = 12
-num_classes = 6
+num_classes = 5
 learning_rate = 0.008
 epochs = 50
 weight_decay= 1e-4
@@ -156,7 +156,7 @@ def main():
             early_stop_counter = 0
 
             # Guarda el mejor modelo
-            model_save_path = "/content/drive/MyDrive/TFG/models/best_CRNN_genre_5.pth"
+            model_save_path = "/content/drive/MyDrive/TFG/models/best_CRNN_genre_5_2.pth"
             torch.save(model.state_dict(), model_save_path)
             print(f"Mejor modelo guardado en {model_save_path}")
         else:
@@ -178,10 +178,10 @@ def main():
     'Val Recall': val_recalls,
 })
     #Guardo Métricas
-    metrics_df.to_csv("/content/drive/MyDrive/TFG/models/training_metrics_genre_5_CRNN.csv", index=False)
+    metrics_df.to_csv("/content/drive/MyDrive/TFG/models/training_metrics_genre_5_CRNN_2.csv", index=False)
 
     # Guardo el modelo
-    model_save_path = "/content/drive/MyDrive/TFG/models/CRNN_5_genre.pth"
+    model_save_path = "/content/drive/MyDrive/TFG/models/CRNN_5_genre_2.pth"
     torch.save(model.state_dict(), model_save_path)
     print(f"Modelo guardado en {model_save_path}")
 

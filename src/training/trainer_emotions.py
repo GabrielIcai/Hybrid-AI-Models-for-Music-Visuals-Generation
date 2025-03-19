@@ -90,13 +90,6 @@ def validate_emotions(model, val_loader, criterion, device):
             val_labels_va.extend(valencia_labels.cpu().numpy())
             val_labels_ar.extend(arousal_labels.cpu().numpy())
 
-            print(f"Shape de ar_output: {ar_output.shape}")
-            print(f"Shape de val_output: {val_output.shape}")
-            print(f"RMSE Arousal: {mse_ar:.4f} | MSE Valence: {mse_va:.4f}")
-            print(f"Shape de ar_output: {ar_output.shape}")
-            print(f"Shape de val_output: {val_output.shape}")
-            print(f"RMSE Arousal: {mse_ar:.4f} | MSE Valence: {mse_va:.4f}")
-
     avg_mse_ar = mse_ar / total
     avg_mse_va = mse_va / total
     avg_rmse_ar = np.sqrt(avg_mse_ar)
