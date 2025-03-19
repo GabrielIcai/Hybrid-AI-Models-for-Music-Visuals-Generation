@@ -74,7 +74,7 @@ def predict_audio_genre(carpeta_canciones):
         loader =DataLoader(dataset_pred,batch_size=128, collate_fn=collate_fn_prediction, shuffle=False, num_workers=2, pin_memory=True)
 
         with torch.no_grad():
-            for images, additional_features in loader:
+            for images, additional_features, song_names in loader:
                 images = images.to(device)
                 additional_features = additional_features.to(device)
                 outputs = model(images, additional_features)
