@@ -1,31 +1,16 @@
-import time
 import os
 import sys
-import queue
 repo_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../"))
 if repo_path not in sys.path:
     sys.path.append(repo_path)
 import numpy as np
-import librosa
-import librosa.display
-import matplotlib.pyplot as plt
-import sounddevice as sd
-from scipy.ndimage import zoom
-from torchvision import transforms
 from src.training import collate_fn
 import torch
-import cv2
-import collections
-from PIL import Image
 from src.models.emotions_model import CRNN
-from src.preprocessing import CustomDataset_s, normalize_columns, load_data, c_transform,CustomDataset
+from src.preprocessing import normalize_columns, load_data, c_transform,CustomDataset
 import pandas as pd
-import matplotlib.pyplot as plt
-import librosa.display
-from torchvision import transforms
-from torch.utils.data import DataLoader, Dataset
-from Scripts.set_generator import generar_espectrograma, generar_fila_csv
-
+from torch.utils.data import DataLoader
+from Scripts.set_generator import generar_espectrograma
 import os
 import torch
 import pandas as pd
@@ -103,7 +88,7 @@ def predict_audio_genre(carpeta_canciones):
     results_df = pd.DataFrame({
         'Fragment': range(len(predictions)),
         'Predicted Label': [class_names[p] for p in predictions],
-        'Probabilities': list(map(list, probabilities))  # Convertir array a lista
+        'Probabilities': list(map(list, probabilities))
     })
 
     results_df.to_csv(output_csv_path, index=False, mode='a', header=not os.path.exists(output_csv_path))
