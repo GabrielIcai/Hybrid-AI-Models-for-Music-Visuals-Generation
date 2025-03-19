@@ -17,6 +17,7 @@ import pandas as pd
 import numpy as np
 from torch.utils.data import DataLoader
 from collections import defaultdict
+
 # Cargar el modelo
 model_path = "/content/drive/MyDrive/TFG/models/best_CRNN_genre_5_2.pth"
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -34,6 +35,11 @@ class_names = ["Ambient", "Deep House", "Techno", "Trance", "Progressive House"]
 base_path = "/content/drive/MyDrive/TFG/data/"
 csv_path = "/content/drive/MyDrive/TFG/data/Playlist_prediccion/dataset_prediccion_playlist.csv"
 output_csv_path = "/content/drive/MyDrive/TFG/predicciones_canciones_playlist.csv"
+
+import pandas as pd
+import numpy as np
+import torch
+from collections import defaultdict
 
 def predict_audio_genre(carpeta_canciones):
     predictions_by_song = defaultdict(list)
@@ -53,61 +59,48 @@ def predict_audio_genre(carpeta_canciones):
     data = load_data(csv_path)
     data["Ruta"] = data["Ruta"].str.replace("\\", "/")
 
-    # Verificar rutas de imágenes
-    for img_path in data["Ruta"]:
-        if not os.path.exists(img_path):
-            print(f"Ruta no encontrada: {img_path}")
-
     transform = c_transform(mean, std)
     normalize_columns(data, columns)
 
-    # Filtrar por `song_id` únicos
-    unique_song_ids = data["Song ID"].unique()
-
-    for song_id in unique_song_ids:
+    # Procesar cada canción
+    for song_id in data["Song ID"].unique():
         song_data = data[data["Song ID"] == song_id]
         if song_data.empty:
             print(f"No hay datos para {song_id}, saltando...")
             continue
 
         dataset_pred = PredictionDatasetGenre(song_data, base_path, transform=transform)
-        loader =DataLoader(dataset_pred,batch_size=128, collate_fn=collate_fn_prediction, shuffle=False, num_workers=2, pin_memory=True)
+        loader = DataLoader(dataset_pred, batch_size=128, collate_fn=collate_fn_prediction, shuffle=False, num_workers=2, pin_memory=True)
 
         with torch.no_grad():
-            for images, additional_features, song_names in loader:
+            for images, additional_features, _ in loader:
                 images = images.to(device)
                 additional_features = additional_features.to(device)
                 outputs = model(images, additional_features)
-                preds = torch.argmax(outputs, dim=1).cpu().numpy()
+                
                 probs = torch.softmax(outputs, dim=1).cpu().numpy()
-
-                predictions_by_song[song_id].extend(preds)
                 probabilities_by_song[song_id].extend(probs)
 
-    song_predictions = []
-    song_probabilities = []
-
-    for song_id, preds in predictions_by_song.items():
-        probs = np.array(probabilities_by_song[song_id])
-
-        # **Método 1: Votación Mayoritaria**
-        final_prediction = np.bincount(preds).argmax()
-
-        # **Método 2: Promedio de Probabilidades**
-        avg_probs = probs.mean(axis=0)
-        final_prediction_prob = np.argmax(avg_probs)
-
-        song_predictions.append((song_id, class_names[final_prediction], class_names[final_prediction_prob]))
-
-        song_probabilities.append((song_id, avg_probs.tolist()))
-
-    # **Guardar predicciones**
-    results_df = pd.DataFrame(song_predictions, columns=['Song ID', 'Majority Vote', 'Avg Probability'])
-    results_df.to_csv(output_csv_path, index=False, mode='a', header=not os.path.exists(output_csv_path))
-
-    print(f"Predicciones globales guardadas en {output_csv_path}")
+    # **Generar predicción final por canción**
+    song_results = []
     
+    for song_id, probs in probabilities_by_song.items():
+        probs = np.array(probs).mean(axis=0)  # Promediar probabilidades
+        final_genre = class_names[np.argmax(probs)]  # Género con mayor probabilidad
+
+        # Guardar resultado
+        song_results.append([song_id, final_genre] + probs.tolist())
+
+    # **Crear DataFrame con probabilidades**
+    columns = ["Song ID", "Predicted Genre"] + class_names
+    results_df = pd.DataFrame(song_results, columns=columns)
+
+    # **Guardar CSV**
+    results_df.to_csv(output_csv_path, index=False)
+    print(f"Predicciones guardadas en {output_csv_path}")
+
     return results_df
+
 
 # MAIN
 audios_path ="/content/drive/MyDrive/TFG/data/Playlist_prediccion/"
