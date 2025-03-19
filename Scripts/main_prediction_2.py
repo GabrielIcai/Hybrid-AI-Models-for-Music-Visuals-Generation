@@ -16,7 +16,7 @@ import torch
 import pandas as pd
 import numpy as np
 from torch.utils.data import DataLoader
-
+from collections import defaultdict
 # Cargar el modelo
 model_path = "/content/drive/MyDrive/TFG/models/best_CRNN_genre_5_2.pth"
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -36,8 +36,8 @@ csv_path = "/content/drive/MyDrive/TFG/data/Playlist_prediccion/dataset_predicci
 output_csv_path = "/content/drive/MyDrive/TFG/predicciones_canciones_playlist.csv"
 
 def predict_audio_genre(carpeta_canciones):
-    predictions = []
-    probabilities = []
+    predictions_by_song = defaultdict(list)
+    probabilities_by_song = defaultdict(list)
 
     # Generar espectrogramas
     for archivo in os.listdir(carpeta_canciones):
@@ -81,19 +81,32 @@ def predict_audio_genre(carpeta_canciones):
                 preds = torch.argmax(outputs, dim=1).cpu().numpy()
                 probs = torch.softmax(outputs, dim=1).cpu().numpy()
 
-                predictions.extend(preds)
-                probabilities.extend(probs)
+                predictions_by_song[song_id].extend(preds)
+                probabilities_by_song[song_id].extend(probs)
 
-    # Guardar predicciones
-    results_df = pd.DataFrame({
-        'Fragment': range(len(predictions)),
-        'Predicted Label': [class_names[p] for p in predictions],
-        'Probabilities': list(map(list, probabilities))
-    })
+    song_predictions = []
+    song_probabilities = []
 
+    for song_id, preds in predictions_by_song.items():
+        probs = np.array(probabilities_by_song[song_id])
+
+        # **Método 1: Votación Mayoritaria**
+        final_prediction = np.bincount(preds).argmax()
+
+        # **Método 2: Promedio de Probabilidades**
+        avg_probs = probs.mean(axis=0)
+        final_prediction_prob = np.argmax(avg_probs)
+
+        song_predictions.append((song_id, class_names[final_prediction], class_names[final_prediction_prob]))
+
+        song_probabilities.append((song_id, avg_probs.tolist()))
+
+    # **Guardar predicciones**
+    results_df = pd.DataFrame(song_predictions, columns=['Song ID', 'Majority Vote', 'Avg Probability'])
     results_df.to_csv(output_csv_path, index=False, mode='a', header=not os.path.exists(output_csv_path))
-    print(f"Predicciones guardadas en {output_csv_path}")
 
+    print(f"Predicciones globales guardadas en {output_csv_path}")
+    
     return results_df
 
 # MAIN
