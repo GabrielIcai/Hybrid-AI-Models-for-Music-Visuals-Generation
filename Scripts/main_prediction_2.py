@@ -29,7 +29,6 @@ model.eval()
 # Transformaciones
 mean = [0.676956295967102, 0.2529653012752533, 0.4388839304447174]
 std = [0.21755781769752502, 0.15407244861125946, 0.07557372003793716]
-columns = ["Spectral Centroid", "Spectral Bandwidth", "Spectral Roll-off"]
 class_names = ["Ambient", "Deep House", "Techno", "Trance", "Progressive House"]
 
 base_path = "/content/drive/MyDrive/TFG/data/"
@@ -39,7 +38,7 @@ output_csv_path = "/content/drive/MyDrive/TFG/predicciones_canciones_playlist.cs
 def predict_audio_genre(carpeta_canciones):
     predictions_by_song = defaultdict(list)
     probabilities_by_song = defaultdict(list)
-
+    columns = ["Spectral Centroid", "Spectral Bandwidth", "Spectral Roll-off"]
     # Generar espectrogramas
     for archivo in os.listdir(carpeta_canciones):
         if archivo.endswith(".mp3") or archivo.endswith(".wav"):
