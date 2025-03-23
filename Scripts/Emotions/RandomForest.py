@@ -4,8 +4,8 @@ import torch.nn as nn
 import torchvision.models as models
 from torch.utils.data import DataLoader
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.metrics import mean_absolute_error, r2_score
 import matplotlib.pyplot as plt
+from sklearn.metrics import mean_squared_error, r2_score
 import joblib
 import os
 import sys
@@ -87,12 +87,31 @@ def train_random_forest(X_train, y_train):
     return rf_valence, rf_arousal
 
 # Evaluar modelo
-def evaluate_model(model, X_test, y_test, label):
+def evaluate_model(model, X_test, y_test, label, results_list):
+    """Evalúa el modelo usando MSE y R² Score y guarda los resultados."""
+
     y_pred = model.predict(X_test)
-    mae = mean_absolute_error(y_test, y_pred)
+    mse = mean_squared_error(y_test, y_pred)
     r2 = r2_score(y_test, y_pred)
-    print(f'{label} - MAE: {mae:.4f}, R2: {r2:.4f}')
-    return mae, r2
+
+    print(f"📊 Evaluación del modelo para {label}:")
+    print(f"   - MSE: {mse:.4f}")
+    print(f"   - R² Score: {r2:.4f}")
+    print("-" * 40)
+
+    # Guardar métricas en la lista de resultados
+    results_list.append({"Modelo": label, "MSE": mse, "R² Score": r2})
+
+    # Evaluar modelos después del entrenamiento
+    results = []
+    print("Evaluando modelos...")
+    evaluate_model(rf_valence, X_test, y_test[:, 0], "Valencia", results)
+    evaluate_model(rf_arousal, X_test, y_test[:, 1], "Arousal", results)
+
+    # Guardar las métricas en un archivo CSV
+    results_df = pd.DataFrame(results)
+    results_df.to_csv("metricas_random_forest.csv", index=False)
+    print("📁 Métricas guardadas en 'metricas_random_forest.csv' exitosamente.")
 
 # Main
 if __name__ == "__main__":
