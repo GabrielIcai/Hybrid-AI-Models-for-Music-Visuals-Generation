@@ -62,19 +62,26 @@ def get_resnet18_feature_extractor():
 
 # Extraer características con ResNet-18
 def extract_features(model, dataloader, device):
-    features, labels = [], []
-    model.to(device)
-    with torch.no_grad():
-        for batch in dataloader:
-            images, valence, arousal = batch
-            images = images.to(device)
-            feature_vector = model(images)
-            feature_vector = feature_vector.view(feature_vector.size(0), -1).cpu().numpy()
-            
-            features.append(feature_vector)
-            labels.append(np.column_stack((valence.numpy(), arousal.numpy())))
-    
-    return np.vstack(features), np.vstack(labels)
+    features_list = []
+    valence_list = []
+    arousal_list = []
+
+    for batch in dataloader:
+        images, additional_features, valence, arousal = batch  # Ahora descomponemos 4 valores correctamente
+
+        # Concatenar características de imagen y adicionales
+        combined_features = torch.cat((images, additional_features), dim=1)
+
+        features_list.append(combined_features)
+        valence_list.append(valence)
+        arousal_list.append(arousal)
+
+    X = torch.cat(features_list).cpu().numpy()
+    y_valence = torch.cat(valence_list).cpu().numpy()
+    y_arousal = torch.cat(arousal_list).cpu().numpy()
+
+    return X, y_valence, y_arousal  
+
 
 # Entrenar modelo de Random Forest
 def train_random_forest(X_train, y_train):
