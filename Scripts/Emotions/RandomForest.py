@@ -53,55 +53,6 @@ class ResNetFeatureExtractor(nn.Module):
         x = x.view(x.size(0), -1)
         x = torch.cat((x, additional_features), dim=-1)
         return x
-
-
-# 🔹 Dataset personalizado
-class EmotionDataset_RF(Dataset):
-    def __init__(self, data, base_path, transform=None):
-        self.data = data.reset_index(drop=True)
-        self.base_path = base_path
-        self.transform = transform if transform else transforms.Compose([
-            transforms.Resize((224, 224)),
-            transforms.ToTensor(),
-        ])
-    
-    def __len__(self):
-        return len(self.data)
-
-    def __getitem__(self, idx):
-        row = self.data.iloc[idx]
-        img_path = os.path.join(self.base_path, row["Ruta"])
-
-        # Verificar si la imagen existe
-        if not os.path.exists(img_path):
-            print(f"Error: La imagen no existe en {img_path}")
-            return None 
-
-        try:
-            image = Image.open(img_path).convert("RGB")
-            image = self.transform(image)
-        except Exception as e:
-            print(f"Error cargando imagen {img_path}: {e}")
-            return None  
-
-        # Extraer características adicionales
-        required_features = [
-            "RMS", "ZCR", "Crest Factor", "Standard Deviation of Amplitude", 
-            "Spectral Centroid", "Spectral Bandwidth", "Spectral Roll-off", 
-            "Spectral Flux", "VAD", "Spectral Variation"
-        ]
-
-        additional_features = torch.tensor(
-            row[required_features].values.astype(float), dtype=torch.float32
-        )
-
-        # Obtener etiquetas (Valencia y Arousal)
-        valencia_cols = [f"Valencia_{i/10:.1f}" for i in range(11)]
-        arousal_cols = [f"Arousal_{i/10:.1f}" for i in range(11)]
-        valencia_value = row[valencia_cols].values.argmax() / 10
-        arousal_value = row[arousal_cols].values.argmax() / 10
-
-        return image, additional_features, valencia_value, arousal_value
     
 def collate_fn(batch):
     batch = [item for item in batch if item is not None]  # Filtra `None`
