@@ -109,6 +109,8 @@ def collate_fn_s(batch):
 
     return images, additional_features, labels
 
+#PARA PREDICCIÓN#
+
 def collate_fn_prediction(batch):
     grouped_by_song = defaultdict(list)
 
@@ -124,12 +126,11 @@ def collate_fn_prediction(batch):
     song_names = []
 
     for song_name, fragments in grouped_by_song.items():
-        # Padding para hacer múltiplos de 3
         while len(fragments) % 3 != 0:
             fragments.append(
                 (
-                    torch.zeros_like(fragments[0][0]),  # Imagen vacía
-                    torch.zeros_like(fragments[0][1]),  # Características vacías
+                    torch.zeros_like(fragments[0][0]),  
+                    torch.zeros_like(fragments[0][1]), 
                 )
             )
 
@@ -156,6 +157,7 @@ def collate_fn_prediction(batch):
     )  # (batch_size, 3, num_features)
 
     return images, additional_features, song_names
+
 ########################################### EMOCIONES ################################################################################################
 
 def collate_fn_emotions(batch):
