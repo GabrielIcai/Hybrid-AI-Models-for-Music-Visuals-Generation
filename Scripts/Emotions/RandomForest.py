@@ -164,13 +164,13 @@ test_transform = c_transform(mean, std)
 train_dataset = EmotionDataset_RF(train_data, base_path, transform=train_transform)
 test_dataset = EmotionDataset_RF(test_data, base_path, transform=test_transform)
 
-train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
-test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False)
+train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True, collate_fn=collate_fn_r)
+test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False,collate_fn=collate_fn_r)
 
 # Extraer características
 extractor = ResNetFeatureExtractor().to(device)
-train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True, collate_fn=collate_fn_r)
-test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False, collate_fn=collate_fn_r)
+train_features, train_labels_ar, train_labels_va = extract_features(train_loader, extractor, device)
+test_features, test_labels_ar, test_labels_va = extract_features(test_loader, extractor, device)
 
 # Normalizar características
 scaler = StandardScaler()
