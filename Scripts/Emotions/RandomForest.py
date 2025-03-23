@@ -54,7 +54,11 @@ class ResNetFeatureExtractor(nn.Module):
         x = torch.cat((x, additional_features), dim=-1)
         return x
 
-
+def collate_fn_r(batch):
+    batch = [item for item in batch if item is not None]  # Filtrar valores None
+    if len(batch) == 0:
+        return None  # Evitar batch vacío
+    return torch.utils.data.dataloader.default_collate(batch)
 # 🔹 Dataset personalizado
 class EmotionDataset_RF(Dataset):
     def __init__(self, data, base_path, transform=None):
@@ -70,26 +74,32 @@ class EmotionDataset_RF(Dataset):
 
     def __getitem__(self, idx):
         row = self.data.iloc[idx]
-        img_path = os.path.join(self.base_path, row["Ruta"])  
+        img_path = os.path.join(self.base_path, row["Ruta"])
 
+        # Verificar si la imagen existe
         if not os.path.exists(img_path):
             print(f"Error: La imagen no existe en {img_path}")
-            return None, None, None
+            return None 
 
-        image = Image.open(img_path).convert("RGB")
-        image = self.transform(image)
-        
-        # 🔹 Extraer características adicionales
+        try:
+            image = Image.open(img_path).convert("RGB")
+            image = self.transform(image)
+        except Exception as e:
+            print(f"Error cargando imagen {img_path}: {e}")
+            return None  
+
+        # Extraer características adicionales
         required_features = [
             "RMS", "ZCR", "Crest Factor", "Standard Deviation of Amplitude", 
             "Spectral Centroid", "Spectral Bandwidth", "Spectral Roll-off", 
             "Spectral Flux", "VAD", "Spectral Variation"
         ]
+
         additional_features = torch.tensor(
             row[required_features].values.astype(float), dtype=torch.float32
         )
 
-        # 🔹 Obtener etiquetas (Valencia y Arousal)
+        # Obtener etiquetas (Valencia y Arousal)
         valencia_cols = [f"Valencia_{i/10:.1f}" for i in range(11)]
         arousal_cols = [f"Arousal_{i/10:.1f}" for i in range(11)]
         valencia_value = row[valencia_cols].values.argmax() / 10
@@ -142,51 +152,51 @@ data["Ruta"] = base_path + data["Ruta"]
 data["Ruta"] = data["Ruta"].str.replace("espectrogramas_salida_secciones_2", "espectrogramas_normalizados_emociones_estructura")
 
 
-# 🔹 Cargar dataset
+# Cargar dataset
 data = pd.read_csv(data_path)
 train_data, test_data = split_dataset(data)
 
-# 🔹 Transformaciones
+# Transformaciones
 train_transform = c_transform(mean, std)
 test_transform = c_transform(mean, std)
 
-# 🔹 Cargar datasets
+# Cargar datasets
 train_dataset = EmotionDataset_RF(train_data, base_path, transform=train_transform)
 test_dataset = EmotionDataset_RF(test_data, base_path, transform=test_transform)
 
 train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
 test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False)
 
-# 🔹 Extraer características
+# Extraer características
 extractor = ResNetFeatureExtractor().to(device)
-train_features, train_labels_ar, train_labels_va = extract_features(train_loader, extractor, device)
-test_features, test_labels_ar, test_labels_va = extract_features(test_loader, extractor, device)
+train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True, collate_fn=collate_fn_r)
+test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False, collate_fn=collate_fn_r)
 
-# 🔹 Normalizar características
+# Normalizar características
 scaler = StandardScaler()
 train_features = scaler.fit_transform(train_features)
 test_features = scaler.transform(test_features)
 
-# 🔹 Guardar el scaler
+# Guardar el scaler
 joblib.dump(scaler, "scaler.pkl")
 
-# 🔹 Entrenar Random Forest
+# Entrenar Random Forest
 rf_arousal = RandomForestRegressor(n_estimators=100, random_state=42)
 rf_valence = RandomForestRegressor(n_estimators=100, random_state=42)
 
 rf_arousal.fit(train_features, train_labels_ar)
 rf_valence.fit(train_features, train_labels_va)
 
-# 🔹 Guardar modelos
+# Guardar modelos
 joblib.dump(rf_arousal, "random_forest_arousal.pkl")
 joblib.dump(rf_valence, "random_forest_valence.pkl")
 
 
-# 🔹 Predicciones
+# Predicciones
 test_preds_ar = rf_arousal.predict(test_features)
 test_preds_va = rf_valence.predict(test_features)
 
-# 🔹 Métricas de Evaluación
+# Métricas de Evaluación
 mae_ar = mean_absolute_error(test_labels_ar, test_preds_ar)
 mae_va = mean_absolute_error(test_labels_va, test_preds_va)
 r2_ar = r2_score(test_labels_ar, test_preds_ar)
@@ -195,7 +205,7 @@ r2_va = r2_score(test_labels_va, test_preds_va)
 print(f"MAE Arousal: {mae_ar:.4f}, R2 Arousal: {r2_ar:.4f}")
 print(f"MAE Valence: {mae_va:.4f}, R2 Valence: {r2_va:.4f}")
 
-# 🔹 Graficar resultados
+#Graficar resultados
 fig, axs = plt.subplots(1, 2, figsize=(12, 5))
 
 axs[0].scatter(test_labels_ar, test_preds_ar, alpha=0.5)
@@ -210,5 +220,5 @@ axs[1].set_ylabel("Predicted Valence")
 axs[1].set_title("Predicción Valence")
 axs[1].plot([0, 1], [0, 1], '--r')
 
-plt.savefig("predicciones_arousal_valence.png")
+plt.savefig("predicciones_arousal_valence_reg.png")
 plt.show()
