@@ -214,7 +214,7 @@ class EmotionDataset_RF(Dataset):
         try:
             if not os.path.exists(img_path):
                 print(f"Error: La imagen no existe en {img_path}")
-                return None, None, None, None
+                return torch.zeros(512 + 10), torch.tensor([0.0]), torch.tensor([0.0]), torch.tensor([0.0])  # Asegurar 4 valores
 
             # Cargar imagen y extraer features con ResNet18
             image = Image.open(img_path).convert("RGB")
@@ -244,8 +244,8 @@ class EmotionDataset_RF(Dataset):
             valencia_label = torch.tensor([valencia_value], dtype=torch.float32)
             arousal_label = torch.tensor([arousal_value], dtype=torch.float32)
 
-            return combined_features, valencia_label, arousal_label  
+            return combined_features, additional_features, valencia_label, arousal_label  # Asegurar 4 valores
 
         except Exception as e:
             print(f"Error al cargar la imagen {img_path}: {e}")
-            return None, None, None
+            return torch.zeros(512 + 10), torch.zeros(10), torch.tensor([0.0]), torch.tensor([0.0])  # Asegurar 4 valores
