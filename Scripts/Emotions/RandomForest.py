@@ -54,11 +54,7 @@ class ResNetFeatureExtractor(nn.Module):
         x = torch.cat((x, additional_features), dim=-1)
         return x
 
-def collate_fn_r(batch):
-    batch = [item for item in batch if item is not None]  # Filtrar valores None
-    if len(batch) == 0:
-        return None  # Evitar batch vacío
-    return torch.utils.data.dataloader.default_collate(batch)
+
 # 🔹 Dataset personalizado
 class EmotionDataset_RF(Dataset):
     def __init__(self, data, base_path, transform=None):
@@ -106,6 +102,12 @@ class EmotionDataset_RF(Dataset):
         arousal_value = row[arousal_cols].values.argmax() / 10
 
         return image, additional_features, valencia_value, arousal_value
+    
+def collate_fn(batch):
+    batch = [item for item in batch if item is not None]  # Filtra `None`
+    if len(batch) == 0:
+        return None  
+    return torch.utils.data.dataloader.default_collate(batch)
 
 # 🔹 Función para extraer características con ResNet18
 def extract_features(data_loader, model, device):
@@ -164,8 +166,8 @@ test_transform = c_transform(mean, std)
 train_dataset = EmotionDataset_RF(train_data, base_path, transform=train_transform)
 test_dataset = EmotionDataset_RF(test_data, base_path, transform=test_transform)
 
-train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True, collate_fn=collate_fn_r)
-test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False,collate_fn=collate_fn_r)
+train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True, collate_fn=collate_fn)
+test_loader = DataLoader(test_dataset, batch_size=32, shuffle=False, collate_fn=collate_fn)
 
 # Extraer características
 extractor = ResNetFeatureExtractor().to(device)

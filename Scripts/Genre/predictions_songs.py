@@ -47,10 +47,6 @@ for i in range (3,52):
 
     data = data[data["Song ID"] == f"song{i}"]
 
-    # Mostrar el conteo por clase
-    print("Distribución de clases en el conjunto de datos:")
-    print(class_counts)
-
     # Verificar rutas
     for img_path in data["Ruta"]:
         if not os.path.exists(img_path):
@@ -62,7 +58,7 @@ for i in range (3,52):
     test_dataset = CustomDataset(data, base_path, transform=test_transform)
     test_loader = DataLoader(test_dataset, batch_size=128, collate_fn=collate_fn, shuffle=False, num_workers=2, pin_memory=True)
 
-    all_song_ids = np.repeat(data["Song ID"].values, 1)  # Repetir 3 veces para cada fragmento
+    all_song_ids = np.repeat(data["Song ID"].values, 1)
 
     # Listas para almacenar los resultados
     all_preds = []

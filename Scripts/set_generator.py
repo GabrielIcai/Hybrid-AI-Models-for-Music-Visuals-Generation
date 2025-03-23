@@ -17,15 +17,15 @@ duracion_fragmento = 5
 # Archivo CSV
 csv_file = os.path.join(carpeta_salida, "dataset_prediccion_playlist.csv")
 
-# Leer el CSV existente asegurando que tomamos los nombres correctos
+# Leer el CSV existente 
 procesados = set()
 if os.path.exists(csv_file):
     with open(csv_file, mode="r", encoding="utf-8") as f:
         reader = csv.reader(f)
         next(reader, None)
         for row in reader:
-            ruta_procesada = os.path.basename(row[0])  # Tomamos el nombre del archivo desde la ruta
-            procesados.add(ruta_procesada)  # Guardamos solo el nombre del archivo
+            ruta_procesada = os.path.basename(row[0])
+            procesados.add(ruta_procesada)
 
 
 def generar_espectrograma(archivo_audio, nombre_archivo, song_id):
