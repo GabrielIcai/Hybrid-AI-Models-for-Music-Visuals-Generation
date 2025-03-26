@@ -244,7 +244,7 @@ class EmotionDataset_RF(Dataset):
             valencia_label = torch.tensor([valencia_value], dtype=torch.float32)
             arousal_label = torch.tensor([arousal_value], dtype=torch.float32)
 
-            return combined_features, additional_features, valencia_label, arousal_label  # Asegurar 4 valores
+            return image, combined_features, valencia_label, arousal_label
 
         except Exception as e:
             print(f"Error al cargar la imagen {img_path}: {e}")

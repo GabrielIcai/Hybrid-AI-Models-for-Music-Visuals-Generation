@@ -17,6 +17,10 @@ import pandas as pd
 import numpy as np
 from torch.utils.data import DataLoader
 from collections import defaultdict
+from pythonosc.udp_client import SimpleUDPClient
+import pandas as pd
+import time
+
 
 # Cargar el modelo
 model_path = "/content/drive/MyDrive/TFG/models/best_CRNN_genre_5_2.pth"
@@ -79,22 +83,19 @@ def predict_audio_genre(carpeta_canciones):
     song_results = []
     
     for song_id, probs in probabilities_by_song.items():
-        probs = np.array(probs).mean(axis=0)  # Promediar probabilidades
-        final_genre = class_names[np.argmax(probs)]  # Género con mayor probabilidad
+        probs = np.array(probs).mean(axis=0)
+        final_genre = class_names[np.argmax(probs)]
 
         # Guardar resultado
         song_results.append([song_id, final_genre] + probs.tolist())
 
-    # **Crear DataFrame con probabilidades**
     columns = ["Song ID", "Predicted Genre"] + class_names
     results_df = pd.DataFrame(song_results, columns=columns)
 
-    # **Guardar CSV**
     results_df.to_csv(output_csv_path, index=False)
     print(f"Predicciones guardadas en {output_csv_path}")
 
     return results_df
-
 
 # MAIN
 audios_path ="/content/drive/MyDrive/TFG/data/Playlist_prediccion/"
@@ -102,29 +103,26 @@ predict_audio_genre(audios_path)
 
 
 #Comunicación con TOUCHDESIGNER
-#from pythonosc.udp_client import SimpleUDPClient
-#import pandas as pd
-#import time
-#
-#ip = "127.0.0.1"  # IP de TouchDesigner
-#port = 8000  # Puerto OSC en TouchDesigner
-#
-#client = SimpleUDPClient(ip, port)
-#
-#csv_path = "/content/drive/MyDrive/TFG/predicciones_canciones_playlist.csv"
-#data = pd.read_csv(csv_path)
-#
-#class_names = ["Ambient", "Deep House", "Techno", "Trance", "Progressive House"]
-#
-#for _, row in data.iterrows():
-#    fragment = row["Fragment"]
-#    probabilities = eval(row["Probabilities"])  # Convertir string a lista
-#
-#    # Enviar las probabilidades de cada género por separado
-#    for i, genre in enumerate(class_names):
-#        client.send_message(f"/genre/{genre.lower().replace(' ', '_')}", probabilities[i])
-#
-#    print(f"Fragment {fragment} enviado con probabilidades: {probabilities}")
-#
-#    time.sleep(0.1)  # Evita saturar TouchDesigner
+
+ip = "127.0.0.1"  # IP de TouchDesigner
+port = 8000  # Puerto OSC en TouchDesigner
+
+client = SimpleUDPClient(ip, port)
+
+csv_path = "/content/drive/MyDrive/TFG/predicciones_canciones_playlist.csv"
+data = pd.read_csv(csv_path)
+
+class_names = ["Ambient", "Deep House", "Techno", "Trance", "Progressive House"]
+
+for _, row in data.iterrows():
+    fragment = row["Fragment"]
+    probabilities = eval(row["Probabilities"])  # Convertir string a lista
+
+    # Enviar las probabilidades de cada género por separado
+    for i, genre in enumerate(class_names):
+        client.send_message(f"/genre/{genre.lower().replace(' ', '_')}", probabilities[i])
+
+    print(f"Fragment {fragment} enviado con probabilidades: {probabilities}")
+
+    time.sleep(0.1)  # Evita saturar TouchDesigner
 

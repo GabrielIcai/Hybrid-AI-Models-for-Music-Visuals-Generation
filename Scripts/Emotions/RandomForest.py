@@ -26,9 +26,6 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 from src.preprocessing.custom_dataset import EmotionDataset_RF
 import torch
-import torch.nn as nn
-import torchvision.models as models
-import torchvision.transforms as transforms
 from torch.utils.data import Dataset, DataLoader
 from PIL import Image
 import pandas as pd
@@ -36,8 +33,6 @@ import numpy as np
 import os
 import joblib
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import mean_absolute_error, r2_score
 import matplotlib.pyplot as plt
 
 import torch
@@ -53,76 +48,23 @@ from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_absolute_error, r2_score
 from torch.utils.data import DataLoader
 
-# Definir el modelo de ResNet18 como extractor de características
-def get_resnet18_feature_extractor():
-    model = models.resnet18(pretrained=True)
-    model = nn.Sequential(*list(model.children())[:-1])
-    model.eval()
-    return model
-
-# Extraer características con ResNet-18
-def extract_features(model, dataloader, device):
-    features_list = []
-    valence_list = []
-    arousal_list = []
-
-    for batch in dataloader:
-        images, additional_features, valence, arousal = batch  # Ahora descomponemos 4 valores correctamente
-
-        # Concatenar características de imagen y adicionales
-        combined_features = torch.cat((images, additional_features), dim=1)
-
-        features_list.append(combined_features)
-        valence_list.append(valence)
-        arousal_list.append(arousal)
-
-    X = torch.cat(features_list).cpu().numpy()
-    y_valence = torch.cat(valence_list).cpu().numpy()
-    y_arousal = torch.cat(arousal_list).cpu().numpy()
-
-    return X, y_valence, y_arousal  
-
-
-# Entrenar modelo de Random Forest
-def train_random_forest(X_train, y_train):
-    rf_valence = RandomForestRegressor(n_estimators=100, random_state=42)
-    rf_arousal = RandomForestRegressor(n_estimators=100, random_state=42)
+def extract_features(dataloader):
+    X, y_v, y_a = [], [], []
     
-    rf_valence.fit(X_train, y_train[:, 0])
-    rf_arousal.fit(X_train, y_train[:, 1])
+    for features, valence, arousal in dataloader:
+        X.append(features.numpy())
+        y_v.append(valence.numpy())
+        y_a.append(arousal.numpy())
+
+    X = np.concatenate(X)  # Convertir a matriz final
+    y_v = np.concatenate(y_v)
+    y_a = np.concatenate(y_a)
     
-    return rf_valence, rf_arousal
+    return X, y_v, y_a
 
-# Evaluar modelo
-def evaluate_model(model, X_test, y_test, label, results_list):
-    """Evalúa el modelo usando MSE y R² Score y guarda los resultados."""
-
-    y_pred = model.predict(X_test)
-    mse = mean_squared_error(y_test, y_pred)
-    r2 = r2_score(y_test, y_pred)
-
-    print(f"📊 Evaluación del modelo para {label}:")
-    print(f"   - MSE: {mse:.4f}")
-    print(f"   - R² Score: {r2:.4f}")
-    print("-" * 40)
-
-    # Guardar métricas en la lista de resultados
-    results_list.append({"Modelo": label, "MSE": mse, "R² Score": r2})
-
-    # Evaluar modelos después del entrenamiento
-    results = []
-    print("Evaluando modelos...")
-    evaluate_model(rf_valence, X_test, y_test[:, 0], "Valencia", results)
-    evaluate_model(rf_arousal, X_test, y_test[:, 1], "Arousal", results)
-
-    # Guardar las métricas en un archivo CSV
-    results_df = pd.DataFrame(results)
-    results_df.to_csv("metricas_random_forest.csv", index=False)
-    print("📁 Métricas guardadas en 'metricas_random_forest.csv' exitosamente.")
 
 # Main
 if __name__ == "__main__":
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     columns = ["Spectral Centroid", "Spectral Bandwidth", "Spectral Roll-off"]
     learning_rate = 0.001
@@ -151,26 +93,49 @@ if __name__ == "__main__":
     # DataLoaders
     train_loader = DataLoader(train_dataset, batch_size=128, shuffle=True, collate_fn=collate_fn_emotions)
     test_loader = DataLoader(test_dataset, batch_size=128, shuffle=False, collate_fn=collate_fn_emotions) 
-     
-    
-    resnet_model = get_resnet18_feature_extractor()
-    
-    print("Extrayendo características de entrenamiento...")
-    X_train, y_train = extract_features(resnet_model, train_loader, device)
-    
-    print("Extrayendo características de prueba...")
-    X_test, y_test = extract_features(resnet_model, test_loader, device)
-    
-    print("Entrenando modelos Random Forest...")
-    rf_valence, rf_arousal = train_random_forest(X_train, y_train)
-    
-    print("Evaluando modelos...")
-    evaluate_model(rf_valence, X_test, y_test[:, 0], "Valence")
-    evaluate_model(rf_arousal, X_test, y_test[:, 1], "Arousal")
-    
-    # Guardar modelos
-    joblib.dump(rf_valence, "random_forest_valence.pkl")
-    joblib.dump(rf_arousal, "random_forest_arousal.pkl")
-    print("Modelos guardados exitosamente.")
 
+    X_train, y_train_v, y_train_a = extract_features(train_loader)
+    X_test, y_test_v, y_test_a = extract_features(test_loader)
 
+    # Definir modelos de Random Forest
+    rf_valencia = RandomForestRegressor(n_estimators=100, random_state=42)
+    rf_arousal = RandomForestRegressor(n_estimators=100, random_state=42)
+
+    # Entrenar los modelos
+    rf_valencia.fit(X_train, y_train_v)
+    rf_arousal.fit(X_train, y_train_a)
+
+    # Predicciones
+    y_pred_v = rf_valencia.predict(X_test)
+    y_pred_a = rf_arousal.predict(X_test)
+
+    # Evaluación con Mean Squared Error (MSE)
+    mse_v = mean_squared_error(y_test_v, y_pred_v)
+    mse_a = mean_squared_error(y_test_a, y_pred_a)
+
+    print(f"MSE Valencia: {mse_v:.4f}")
+    print(f"MSE Arousal: {mse_a:.4f}")
+
+    # Gráfico de dispersión para Valencia
+    plt.figure(figsize=(8, 6))
+    plt.scatter(y_test_v, y_pred_v, color='blue', alpha=0.5)
+    plt.plot([y_test_v.min(), y_test_v.max()], [y_test_v.min(), y_test_v.max()], 'k--', lw=2)  # Línea diagonal
+    plt.xlabel('Valores reales de Valencia')
+    plt.ylabel('Predicciones de Valencia')
+    plt.title('Predicciones vs Valores Reales (Valencia)')
+
+    # Guardar la imagen
+    plt.savefig('dispersion_valencia_RF.png')
+    plt.close()
+
+    # Gráfico de dispersión para Arousal
+    plt.figure(figsize=(8, 6))
+    plt.scatter(y_test_a, y_pred_a, color='green', alpha=0.5)
+    plt.plot([y_test_a.min(), y_test_a.max()], [y_test_a.min(), y_test_a.max()], 'k--', lw=2)  # Línea diagonal
+    plt.xlabel('Valores reales de Arousal')
+    plt.ylabel('Predicciones de Arousal')
+    plt.title('Predicciones vs Valores Reales (Arousal)')
+
+    # Guardar la imagen
+    plt.savefig('dispersion_arousal.png')
+    plt.close()
