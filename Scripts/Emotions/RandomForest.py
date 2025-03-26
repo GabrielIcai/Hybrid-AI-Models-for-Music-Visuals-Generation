@@ -51,7 +51,7 @@ from torch.utils.data import DataLoader
 def extract_features(dataloader):
     X, y_v, y_a = [], [], []
     
-    for features, valence, arousal in dataloader:
+    for images, features, valence, arousal in dataloader:
         X.append(features.numpy())
         y_v.append(valence.numpy())
         y_a.append(arousal.numpy())
