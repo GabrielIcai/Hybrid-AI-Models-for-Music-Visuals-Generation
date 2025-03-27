@@ -125,7 +125,7 @@ if __name__ == "__main__":
     plt.title('Predicciones vs Valores Reales (Valencia)')
 
     # Guardar la imagen
-    plt.savefig('dispersion_valencia_RF.png')
+    plt.savefig('/content/drive/MyDrive/dispersion_valencia_RF.png')
     plt.close()
 
     # Gráfico de dispersión para Arousal
@@ -137,5 +137,5 @@ if __name__ == "__main__":
     plt.title('Predicciones vs Valores Reales (Arousal)')
 
     # Guardar la imagen
-    plt.savefig('dispersion_arousal.png')
+    plt.savefig('/content/drive/MyDrive/dispersion_arousal.png')
     plt.close()

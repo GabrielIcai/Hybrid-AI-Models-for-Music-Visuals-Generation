@@ -86,7 +86,6 @@ def main():
         all_labels_ar = []
         all_labels_va = []
 
-
         # ENTRENAMIENTO
         train_loss, train_rmse_ar, train_rmse_va = trainer_emotions(
             model, train_loader, optimizer, criterion, device
