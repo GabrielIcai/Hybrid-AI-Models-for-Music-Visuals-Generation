@@ -177,3 +177,16 @@ def collate_fn_emotions(batch):
     
     return images, additional_features, valencia_labels, arousal_labels
 
+############################################ SECCIÓN #######################################################################################################
+def collate_sections(batch):
+    batch = [b for b in batch if b[0] is not None]
+    if len(batch) == 0:
+        return None
+
+    images, additional_features, labels = zip(*batch)
+
+    images = torch.stack(images)
+    additional_features = torch.stack(additional_features)
+    labels = torch.stack(labels)
+
+    return images, additional_features, labels

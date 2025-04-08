@@ -34,18 +34,10 @@ import os
 import joblib
 from sklearn.ensemble import RandomForestRegressor
 import matplotlib.pyplot as plt
-
 import torch
-import torch.nn as nn
-import torchvision.models as models
-
-import torch
-import torch.nn as nn
-import torchvision.models as models
 import numpy as np
 import joblib
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.metrics import mean_absolute_error, r2_score
 from torch.utils.data import DataLoader
 
 def extract_features(dataloader):
@@ -56,7 +48,7 @@ def extract_features(dataloader):
         y_v.append(valence.numpy())
         y_a.append(arousal.numpy())
 
-    X = np.concatenate(X)  # Convertir a matriz final
+    X = np.concatenate(X)
     y_v = np.concatenate(y_v)
     y_a = np.concatenate(y_a)
     
@@ -78,7 +70,7 @@ if __name__ == "__main__":
     data["Ruta"] = data["Ruta"].str.replace("\\", "/")
     data["Ruta"] = base_path + data["Ruta"]
     data["Ruta"] = data["Ruta"].str.replace("espectrogramas_salida_secciones_2", "espectrogramas_normalizados_emociones_estructura")
-    
+    data=data.head(200)
     train_data, test_data = split_dataset(data)
     
     # Transformaciones
