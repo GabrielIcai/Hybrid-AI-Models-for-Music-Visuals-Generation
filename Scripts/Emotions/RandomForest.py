@@ -70,7 +70,6 @@ if __name__ == "__main__":
     data["Ruta"] = data["Ruta"].str.replace("\\", "/")
     data["Ruta"] = base_path + data["Ruta"]
     data["Ruta"] = data["Ruta"].str.replace("espectrogramas_salida_secciones_2", "espectrogramas_normalizados_emociones_estructura")
-    data=data.head(200)
     train_data, test_data = split_dataset(data)
     
     # Transformaciones
