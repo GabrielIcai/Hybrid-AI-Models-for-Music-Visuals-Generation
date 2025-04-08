@@ -53,8 +53,6 @@ def extract_features(dataloader):
     y_a = np.concatenate(y_a)
     
     return X, y_v, y_a
-
-
 # Main
 if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -65,11 +63,24 @@ if __name__ == "__main__":
     base_path = "/content/drive/MyDrive/TFG/images/"
     mean=[0.676956295967102, 0.2529653012752533, 0.4388839304447174]
     std=[0.21755781769752502, 0.15407244861125946, 0.07557372003793716]
+    def check_file_exists(file_path):
+        return os.path.isfile(file_path)
 
-    data = load_data(data_path)
-    data["Ruta"] = data["Ruta"].str.replace("\\", "/")
-    data["Ruta"] = base_path + data["Ruta"]
-    data["Ruta"] = data["Ruta"].str.replace("espectrogramas_salida_secciones_2", "espectrogramas_normalizados_emociones_estructura")
+    # Cargar los datos y limpiar las rutas no encontradas
+    def load_and_clean_data(data_path, base_path):
+        data = pd.read_csv(data_path)
+        data["Ruta"] = data["Ruta"].str.replace("\\", "/")
+        data["Ruta"] = base_path + data["Ruta"]
+        data["Ruta"] = data["Ruta"].str.replace("espectrogramas_salida_secciones_2", "espectrogramas_normalizados_emociones_estructura")
+        
+        # Filtrar las rutas que no existen
+        data = data[data["Ruta"].apply(check_file_exists)]
+        
+        print(f"Total de archivos válidos: {len(data)}")
+        return data
+
+    # Llamar a la función para cargar y limpiar los datos
+    data = load_and_clean_data(data_path, base_path)
     train_data, test_data = split_dataset(data)
     
     # Transformaciones
