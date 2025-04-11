@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import mean_squared_error, r2_score
 import joblib
 import os
+from sklearn.metrics import r2_score
 import sys
 from sklearn.preprocessing import StandardScaler
 repo_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"))
@@ -18,6 +19,7 @@ from src.preprocessing import (
     split_dataset,
     c_transform,
 )
+from sklearn.metrics import mean_absolute_error
 from src.preprocessing.data_loader import load_data, split_dataset
 from src.training import collate_fn_emotions
 from torch.utils.data import DataLoader
@@ -53,6 +55,12 @@ def extract_features(dataloader):
     y_a = np.concatenate(y_a)
     
     return X, y_v, y_a
+import joblib
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+
 # Main
 if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -63,6 +71,7 @@ if __name__ == "__main__":
     base_path = "/content/drive/MyDrive/TFG/images/"
     mean=[0.676956295967102, 0.2529653012752533, 0.4388839304447174]
     std=[0.21755781769752502, 0.15407244861125946, 0.07557372003793716]
+    
     def check_file_exists(file_path):
         return os.path.isfile(file_path)
 
@@ -113,6 +122,10 @@ if __name__ == "__main__":
     # Evaluación con Mean Squared Error (MSE)
     mse_v = mean_squared_error(y_test_v, y_pred_v)
     mse_a = mean_squared_error(y_test_a, y_pred_a)
+    mae_v = mean_absolute_error(y_test_v, y_pred_v)
+    mae_a = mean_absolute_error(y_test_a, y_pred_a)
+    r2_v = r2_score(y_test_v, y_pred_v)
+    r2_a = r2_score(y_test_a, y_pred_a)
 
     print(f"MSE Valencia: {mse_v:.4f}")
     print(f"MSE Arousal: {mse_a:.4f}")
@@ -124,8 +137,6 @@ if __name__ == "__main__":
     plt.xlabel('Valores reales de Valencia')
     plt.ylabel('Predicciones de Valencia')
     plt.title('Predicciones vs Valores Reales (Valencia)')
-
-    # Guardar la imagen
     plt.savefig('/content/drive/MyDrive/dispersion_valencia_RF.png')
     plt.close()
 
@@ -136,7 +147,31 @@ if __name__ == "__main__":
     plt.xlabel('Valores reales de Arousal')
     plt.ylabel('Predicciones de Arousal')
     plt.title('Predicciones vs Valores Reales (Arousal)')
-
-    # Guardar la imagen
     plt.savefig('/content/drive/MyDrive/dispersion_arousal.png')
     plt.close()
+    errors_v = y_test_v - y_pred_v
+    errors_a = y_test_a - y_pred_a
+
+    plt.figure(figsize=(8, 6))
+    plt.hist(errors_v, bins=30, alpha=0.7, label='Valencia', color='blue')
+    plt.hist(errors_a, bins=30, alpha=0.7, label='Arousal', color='green')
+    plt.xlabel('Errores')
+    plt.ylabel('Frecuencia')
+    plt.legend()
+    plt.title('Distribución de Errores')
+    plt.savefig('/content/drive/MyDrive/distribucion_errores.png')
+    plt.close()
+
+    metrics = {
+        'Métrica': ['MSE_Valencia', 'MSE_Arousal', 'MAE_Valencia', 'MAE_Arousal', 'R2_Valencia', 'R2_Arousal'],
+        'Valor': [mse_v, mse_a, mae_v, mae_a, r2_v, r2_a]
+    }
+
+    # Guardar los modelos entrenados en Google Drive
+    joblib.dump(rf_valencia, "/content/drive/MyDrive/modelo_valencia.pkl")
+    joblib.dump(rf_arousal, "/content/drive/MyDrive/modelo_arousal.pkl")
+
+    # Convertir a DataFrame y guardar en CSV
+    metrics_df = pd.DataFrame(metrics)
+    metrics_df.to_csv('/content/drive/MyDrive/metrics_RF.csv', index=False)
+
