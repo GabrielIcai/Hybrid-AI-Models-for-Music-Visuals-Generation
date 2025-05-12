@@ -1,1 +1,0 @@
-#TODO: tengo que cambiar el torch[:,1,:] y volver a entrenar para no depender de solo el ultimo fragmento de la secuencia.

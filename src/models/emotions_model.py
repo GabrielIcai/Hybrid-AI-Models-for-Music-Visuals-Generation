@@ -50,5 +50,3 @@ class ResNetCRNNEmotionModel(nn.Module):
 
         return valencia_output.item(), arousal_output.item()
 
-
-#################### Prueba Random Forest ########################ç

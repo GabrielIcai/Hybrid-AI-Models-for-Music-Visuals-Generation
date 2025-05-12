@@ -6,8 +6,7 @@ import matplotlib.pyplot as plt
 import cv2
 import csv
 import gc
-
-# Definición de rutas
+# Definición de rutas a la carpeta con los audios
 carpeta_canciones = "/content/drive/MyDrive/TFG/data/Playlist_prediccion"
 carpeta_salida = "/content/drive/MyDrive/TFG/data/Playlist_prediccion/"
 os.makedirs(carpeta_salida, exist_ok=True)

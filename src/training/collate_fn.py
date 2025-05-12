@@ -54,6 +54,7 @@ def collate_fn(batch):
             
             song_labels = song_labels[0]  # Uso la etiqueta del primer fragmento
             labels.append(song_labels)
+            
             # Convertir las listas de fragmentos en tensores
             images.append(torch.stack(song_images, dim=0))
             additional_features.append(torch.stack(song_additional_features, dim=0))
@@ -91,7 +92,7 @@ def collate_fn_s(batch):
         for i in range(0, len(fragments), 3):
             song_images = torch.stack([fragments[i+j][0] for j in range(3)], dim=0)
             song_additional_features = torch.stack([fragments[i+j][1] for j in range(3)], dim=0)
-            song_label = fragments[i][2]  # Usamos la etiqueta del primer fragmento
+            song_label = fragments[i][2] 
 
             images.append(song_images)
             additional_features.append(song_additional_features)
@@ -158,7 +159,7 @@ def collate_fn_prediction(batch):
 
     return images, additional_features, song_names
 
-########################################### EMOCIONES ################################################################################################
+########################################### EMOCIONES ############################################
 
 def collate_fn_emotions(batch):
     batch = [b for b in batch if b[0] is not None]
@@ -177,7 +178,19 @@ def collate_fn_emotions(batch):
     
     return images, additional_features, valencia_labels, arousal_labels
 
-############################################ SECCIÓN #######################################################################################################
+def collate_fn_emotions_s(batch):
+    batch = [b for b in batch if b[0] is not None]
+    if len(batch) == 0:
+        return None
+
+    images, additional_features, labels = zip(*batch)
+
+    images = torch.stack(images)
+    additional_features = torch.stack(additional_features)
+    labels = torch.stack(labels)
+
+    return images, additional_features, labels
+############################################ SECCIÓN ######################################################
 def collate_sections(batch):
     batch = [b for b in batch if b[0] is not None]
     if len(batch) == 0:

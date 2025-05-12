@@ -249,3 +249,61 @@ class EmotionDataset_RF(Dataset):
         except Exception as e:
             print(f"Error al cargar la imagen {img_path}: {e}")
             return torch.zeros(512 + 10), torch.zeros(10), torch.tensor([0.0]), torch.tensor([0.0])  # Asegurar 4 valores
+
+#################### Custom Dataset SECTIONS ###########################
+
+class CustomDataset_Sections(torch.utils.data.Dataset):
+    def __init__(self, data, base_path, transform):
+        self.data = data
+        self.data = data.reset_index(drop=True)
+        self.base_path = base_path
+        self.transform = transform
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, idx):
+        if idx < 0 or idx >= len(self.data):
+            raise IndexError(f"Índice {idx} fuera de rango")
+        row = self.data.iloc[idx]
+        ruta=row["Ruta"]
+        img_path = os.path.join(self.base_path, ruta)
+
+        try:
+            image = Image.open(img_path).convert("RGB")
+
+            if self.transform:
+                image = self.transform(image)
+
+            required_columns = [
+                "RMS",
+                "ZCR",
+                "Crest Factor",
+                "Standard Deviation of Amplitude",
+                "Spectral Centroid",
+                "Spectral Bandwidth",
+                "Spectral Roll-off",
+                "Spectral Flux",
+                "VAD",
+                "Spectral Variation",
+            ]
+            for col in required_columns:
+                if col not in row:
+                    raise ValueError(f"Columna {col} no encontrada en el DataFrame.")
+
+            additional_features = row[required_columns].values.astype(float)
+            additional_features = torch.tensor(additional_features, dtype=torch.float32)
+            
+            #Selecciono 
+            label_columns = [
+            "Break",
+            "Pre-Drop",
+            "Drop"]
+            labels = torch.tensor(row[label_columns].values.astype(int),dtype=torch.long
+        )
+            return image, additional_features, labels, img_path
+
+        except Exception as e:
+            raise RuntimeError(
+                f"Error procesando el índice {idx}, archivo {img_path}: {e}"
+            )
