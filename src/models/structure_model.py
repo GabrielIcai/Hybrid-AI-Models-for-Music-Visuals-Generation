@@ -15,7 +15,7 @@ class CRNN_Structure(nn.Module):
         
         # Bloque RNN
         self.rnn = nn.GRU(
-            input_size=128 * 8 * 8 +additional_features_dim,
+            input_size=512 + additional_features_dim,
             hidden_size=hidden_size,
             num_layers=2,
             batch_first=True,
@@ -30,7 +30,7 @@ class CRNN_Structure(nn.Module):
         x = x.view(batch_size, -1)
         x = torch.cat((x, additional_features), dim=-1)
         x = x.unsqueeze(1)  
-    
+
         x, _ = self.rnn(x)
         out = self.fc(x[:, -1, :])
         print(f"Salida final: {out.shape}")
