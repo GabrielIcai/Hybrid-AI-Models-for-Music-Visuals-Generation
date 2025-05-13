@@ -13,7 +13,12 @@ def train_sections(model, dataloader, optimizer, criterion, device):
         labels = labels.to(device)
 
         optimizer.zero_grad()
-        outputs = model(images, additional_features)
+        outputs = model(images, additional_features)# [128, 5]
+        labels = batch["label"]  # asegurarse que tiene shape [128]
+
+        if labels.dim() == 2:  # es one-hot
+            labels = torch.argmax(labels, dim=1)
+
         loss = criterion(outputs, labels)
         loss.backward()
         optimizer.step()
