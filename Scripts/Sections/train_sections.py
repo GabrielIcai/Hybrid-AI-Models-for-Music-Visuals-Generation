@@ -25,12 +25,8 @@ from torch.utils.data import DataLoader
 from sklearn.metrics import accuracy_score, f1_score
 from src.preprocessing.data_loader import load_data, split_dataset
 from src.training.trainer_sections import train_sections, validate_sections
-from sklearn.metrics import (
-    accuracy_score,
-    f1_score,
-    precision_score,
-    recall_score,
-)
+from sklearn.metrics import (accuracy_score, f1_score, precision_score, recall_score)
+
 # Parametros
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 columns = ["Spectral Centroid", "Spectral Bandwidth", "Spectral Roll-off"]
