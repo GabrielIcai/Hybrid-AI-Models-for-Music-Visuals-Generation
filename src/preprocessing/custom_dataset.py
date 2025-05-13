@@ -248,7 +248,7 @@ class EmotionDataset_RF(Dataset):
 
         except Exception as e:
             print(f"Error al cargar la imagen {img_path}: {e}")
-            return torch.zeros(512 + 10), torch.zeros(10), torch.tensor([0.0]), torch.tensor([0.0])  # Asegurar 4 valores
+            return torch.zeros(512 + 10), torch.zeros(10), torch.tensor([0.0]), torch.tensor([0.0]) 
 
 #################### Custom Dataset SECTIONS ###########################
 
@@ -294,14 +294,13 @@ class CustomDataset_Sections(torch.utils.data.Dataset):
             additional_features = row[required_columns].values.astype(float)
             additional_features = torch.tensor(additional_features, dtype=torch.float32)
             
-            #Selecciono 
             label_columns = [
             "Break",
             "Pre-Drop",
             "Drop"]
             labels = torch.tensor(row[label_columns].values.astype(int),dtype=torch.long
         )
-            return image, additional_features, labels, img_path
+            return image, additional_features, labels
 
         except Exception as e:
             raise RuntimeError(
