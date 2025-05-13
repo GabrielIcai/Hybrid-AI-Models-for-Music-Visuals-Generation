@@ -7,7 +7,7 @@ if repo_path not in sys.path:
     sys.path.append(repo_path)
 
 
-from src.models.genre_model import CRNN_Sections
+from src.models.structure_model import CRNN_Structure
 from src.preprocessing.custom_dataset import SectionsDataset
 from src.preprocessing import (
     CustomDataset,
@@ -100,7 +100,7 @@ def main():
     print("DataLoaders creados")
 
     # Modelo
-    model = CRNN_Sections(num_classes, additional_features_dim, hidden_size).to(device)
+    model = CRNN_Structure(num_classes, additional_features_dim, hidden_size).to(device)
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
 
