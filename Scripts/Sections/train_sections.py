@@ -8,7 +8,7 @@ if repo_path not in sys.path:
 
 
 from src.models.structure_model import CRNN_Structure
-from src.preprocessing.custom_dataset import SectionsDataset
+from src.preprocessing.custom_dataset import CustomDataset_Sections
 from src.preprocessing import (
     CustomDataset,
     load_data,
@@ -87,8 +87,8 @@ def main():
     test_data = test_data.reset_index(drop=True)
 
     # Transformo los datos a tensores
-    train_dataset = SectionsDataset(train_data, base_path, transform=train_transform)
-    test_dataset = SectionsDataset(test_data, base_path, transform=test_transform)
+    train_dataset = CustomDataset_Sections(train_data, base_path, transform=train_transform)
+    test_dataset = CustomDataset_Sections(test_data, base_path, transform=test_transform)
 
     # DataLoader
     train_loader = DataLoader(
