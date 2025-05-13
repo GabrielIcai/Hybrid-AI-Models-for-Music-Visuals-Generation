@@ -23,17 +23,17 @@ class CRNN_Structure(nn.Module):
         )
         self.fc = nn.Linear(hidden_size * 2, num_classes)
 
-def forward(self, x, additional_features):
-    batch_size, channels, height, width = x.size()
-    print(f"Entrada inicial: {x.shape}")
-    x = self.resnet(x) 
-    x = x.view(batch_size, -1)
-    x = torch.cat((x, additional_features), dim=-1)
-    x = x.unsqueeze(1)  
-
-    x, _ = self.rnn(x)
-    out = self.fc(x[:, -1, :])
-    print(f"Salida final: {out.shape}")
-    return out
+    def forward(self, x, additional_features):
+        batch_size, channels, height, width = x.size()
+        print(f"Entrada inicial: {x.shape}")
+        x = self.resnet(x) 
+        x = x.view(batch_size, -1)
+        x = torch.cat((x, additional_features), dim=-1)
+        x = x.unsqueeze(1)  
+    
+        x, _ = self.rnn(x)
+        out = self.fc(x[:, -1, :])
+        print(f"Salida final: {out.shape}")
+        return out
 
         
