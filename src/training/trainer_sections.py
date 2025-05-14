@@ -14,6 +14,9 @@ def train_sections(model, dataloader, optimizer, criterion, device):
 
         optimizer.zero_grad()
         outputs = model(images, additional_features)# [128, 5]
+        print(type(batch))
+        print(batch)
+
         labels = batch["label"]  # asegurarse que tiene shape [128]
 
         if labels.dim() == 2:  # es one-hot
