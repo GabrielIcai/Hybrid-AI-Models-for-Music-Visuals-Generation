@@ -268,6 +268,15 @@ class CustomDataset_Sections(torch.utils.data.Dataset):
         row = self.data.iloc[idx]
         ruta=row["Ruta"]
         img_path = os.path.join(self.base_path, ruta)
+        if not os.path.exists(img_path):
+            print(f"Archivo no encontrado: {img_path}")
+            return None
+
+        try:
+            image = Image.open(img_path).convert("RGB")
+        except Exception as e:
+            print(f"Error al abrir la imagen {img_path}: {str(e)}")
+            return None 
 
         try:
             image = Image.open(img_path).convert("RGB")
