@@ -191,14 +191,15 @@ def collate_fn_emotions_s(batch):
 
 ################################# SECCIÓN ###################################
 def collate_sections(batch):
-    batch = [b for b in batch if b[0] is not None]
+    batch = [b for b in batch if b[0] is not None and b[1] is not None and b[2] is not None]
+    
     if len(batch) == 0:
-        return None
+        return None  # Si no hay elementos válidos, retorna None o un batch vacío
 
-    images, additional_features, labels = zip(*batch)
-
-    images = torch.stack(images)
-    additional_features = torch.stack(additional_features)
-    labels = torch.stack(labels)
+    images, additional_features, labels = zip(*batch)  # Separa las imágenes, características y etiquetas
+    images = torch.stack(images, dim=0)  # Apila las imágenes
+    additional_features = torch.stack(additional_features, dim=0)  # Apila las características adicionales
+    labels = torch.stack(labels, dim=0)  # Apila las etiquetas
 
     return images, additional_features, labels
+

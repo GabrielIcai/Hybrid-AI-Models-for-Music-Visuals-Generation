@@ -273,14 +273,14 @@ class CustomDataset_Sections(torch.utils.data.Dataset):
         # Verifica si el archivo de la imagen existe
         if not os.path.exists(img_path):
             print(f"Archivo no encontrado: {img_path}")
-            return None
+            return None, None, None  # Retorna tupla vacía si no se encuentra la imagen
     
         # Intenta abrir la imagen
         try:
             image = Image.open(img_path).convert("RGB")
         except Exception as e:
             print(f"Error al abrir la imagen {img_path}: {str(e)}")
-            return None
+            return None, None, None  # Retorna tupla vacía si hay un error al abrir la imagen
     
         # Aplica las transformaciones si se proporcionan
         if self.transform:
@@ -306,4 +306,5 @@ class CustomDataset_Sections(torch.utils.data.Dataset):
         labels = torch.tensor(row[label_columns].values.astype(int), dtype=torch.long)
         
         return image, additional_features, labels
+    
     
