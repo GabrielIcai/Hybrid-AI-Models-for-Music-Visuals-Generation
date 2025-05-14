@@ -2,6 +2,10 @@ import os
 import sys
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.metrics import confusion_matrix
+from sklearn.metrics import classification_report, confusion_matrix
 repo_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"))
 if repo_path not in sys.path:
     sys.path.append(repo_path)
@@ -170,6 +174,27 @@ def main():
 })
     #Guardo Métricas
     metrics_df.to_csv("/content/drive/MyDrive/TFG/models/training_metrics_sections_CRNN.csv", index=False)
+
+    conf_matrix = confusion_matrix(val_labels, val_preds)
+
+    # Mostrar y guardar como imagen
+    plt.figure(figsize=(6, 5))
+    sns.heatmap(conf_matrix, annot=True, fmt='d', cmap='Blues',
+                xticklabels=["Break", "Pre-Drop", "Drop"],
+                yticklabels=["Break", "Pre-Drop", "Drop"])
+    plt.xlabel('Predicted Label')
+    plt.ylabel('True Label')
+    plt.title('Final Confusion Matrix - Validation Set')
+    plt.tight_layout()
+    plt.savefig("/content/drive/MyDrive/TFG/models/final_confusion_matrix_secciones.png")
+    plt.close()
+
+    report = classification_report(val_labels, val_preds, target_names=["Break", "Pre-Drop", "Drop"])
+    print(report)
+
+# Guardar el reporte en un .txt si quieres
+    with open("/content/drive/MyDrive/TFG/models/final_classification_report_secciones.txt", "w") as f:
+        f.write(report)
 
     # Guardo el modelo
     model_save_path = "/content/drive/MyDrive/TFG/models/CRNN_sections.pth"
