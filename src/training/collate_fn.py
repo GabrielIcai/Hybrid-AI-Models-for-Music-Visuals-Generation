@@ -191,7 +191,7 @@ def collate_fn_emotions_s(batch):
 
 ################################# SECCIÓN ###################################
 def collate_sections(batch):
-    batch = [b for b in batch if b[0] is not None and b[1] is not None and b[2] is not None]
+    batch = [b for b in batch if b[0] is not None]
     if len(batch) == 0:
         return None
 
