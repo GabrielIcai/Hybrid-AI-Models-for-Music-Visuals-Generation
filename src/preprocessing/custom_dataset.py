@@ -294,12 +294,11 @@ class CustomDataset_Sections(torch.utils.data.Dataset):
             additional_features = row[required_columns].values.astype(float)
             additional_features = torch.tensor(additional_features, dtype=torch.float32)
             
-            label_columns = [
-            "Break",
-            "Pre-Drop",
-            "Drop"]
-            labels = torch.tensor(row[label_columns].values.astype(int),dtype=torch.long
-        )
+            label_columns = ["Break", "Pre-Drop", "Drop"]
+            labels = torch.tensor(row[label_columns].values.astype(int), dtype=torch.long)
+            labels =    labels.argmax().item() 
+            labels =    torch.tensor(labels, dtype=torch.long)
+            
             return image, additional_features, labels
 
         except Exception as e:
