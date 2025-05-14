@@ -265,50 +265,45 @@ class CustomDataset_Sections(torch.utils.data.Dataset):
     def __getitem__(self, idx):
         if idx < 0 or idx >= len(self.data):
             raise IndexError(f"Índice {idx} fuera de rango")
+        
         row = self.data.iloc[idx]
-        ruta=row["Ruta"]
+        ruta = row["Ruta"]
         img_path = os.path.join(self.base_path, ruta)
+        
+        # Verifica si el archivo de la imagen existe
         if not os.path.exists(img_path):
             print(f"Archivo no encontrado: {img_path}")
             return None
-
+    
+        # Intenta abrir la imagen
         try:
             image = Image.open(img_path).convert("RGB")
         except Exception as e:
             print(f"Error al abrir la imagen {img_path}: {str(e)}")
-            return None 
-
-        try:
-            image = Image.open(img_path).convert("RGB")
-
-            if self.transform:
-                image = self.transform(image)
-
-            required_columns = [
-                "RMS",
-                "ZCR",
-                "Crest Factor",
-                "Standard Deviation of Amplitude",
-                "Spectral Centroid",
-                "Spectral Bandwidth",
-                "Spectral Roll-off",
-                "Spectral Flux",
-                "VAD",
-                "Spectral Variation",
-            ]
-            for col in required_columns:
-                if col not in row:
-                    raise ValueError(f"Columna {col} no encontrada en el DataFrame.")
-
-            additional_features = row[required_columns].values.astype(float)
-            additional_features = torch.tensor(additional_features, dtype=torch.float32)
-            
-            label_columns = ["Break", "Pre-Drop", "Drop"]
-            labels = torch.tensor(row[label_columns].values.astype(int), dtype=torch.long)
-            
-            return image, additional_features, labels
-
-        except Exception as e:
-            raise RuntimeError(
-                f"Error procesando el índice {idx}, archivo {img_path}: {e}"
-            )
+            return None
+    
+        # Aplica las transformaciones si se proporcionan
+        if self.transform:
+            image = self.transform(image)
+    
+        # Verifica que todas las columnas requeridas estén presentes en el DataFrame
+        required_columns = [
+            "RMS", "ZCR", "Crest Factor", "Standard Deviation of Amplitude", 
+            "Spectral Centroid", "Spectral Bandwidth", "Spectral Roll-off", 
+            "Spectral Flux", "VAD", "Spectral Variation"
+        ]
+        
+        for col in required_columns:
+            if col not in row:
+                raise ValueError(f"Columna {col} no encontrada en el DataFrame.")
+        
+        # Extrae las características adicionales y las convierte en tensor
+        additional_features = row[required_columns].values.astype(float)
+        additional_features = torch.tensor(additional_features, dtype=torch.float32)
+        
+        # Extrae las etiquetas y las convierte en tensor
+        label_columns = ["Break", "Pre-Drop", "Drop"]
+        labels = torch.tensor(row[label_columns].values.astype(int), dtype=torch.long)
+        
+        return image, additional_features, labels
+    
