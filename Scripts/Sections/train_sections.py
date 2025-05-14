@@ -62,7 +62,6 @@ def main():
     data["Ruta"] = data["Ruta"].str.replace("\\", "/")
     data["Ruta"] = base_path + data["Ruta"]
     data["Ruta"] = data["Ruta"].str.replace("espectrogramas_salida_secciones_2", "espectrogramas_normalizados_emociones_estructura")
-    data=data.head(10)
 
     normalize_columns(data, columns)
     
