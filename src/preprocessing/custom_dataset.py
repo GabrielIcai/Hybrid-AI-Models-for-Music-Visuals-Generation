@@ -305,8 +305,6 @@ class CustomDataset_Sections(torch.utils.data.Dataset):
             
             label_columns = ["Break", "Pre-Drop", "Drop"]
             labels = torch.tensor(row[label_columns].values.astype(int), dtype=torch.long)
-            labels =    labels.argmax().item() 
-            labels =    torch.tensor(labels, dtype=torch.long)
             
             return image, additional_features, labels
 
