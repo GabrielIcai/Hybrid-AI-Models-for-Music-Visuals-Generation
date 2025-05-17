@@ -47,7 +47,8 @@ def validate_sections(model, dataloader, criterion, device):
             images = images.to(device)
             additional_features = additional_features.to(device)
             labels = labels.to(device)
-
+            if labels.dim() == 2:
+                labels = torch.argmax(labels, dim=1)
             outputs = model(images, additional_features)
             loss = criterion(outputs, labels)
             running_loss += loss.item()
