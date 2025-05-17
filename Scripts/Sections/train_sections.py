@@ -64,6 +64,10 @@ def main():
     data["Ruta"] = data["Ruta"].str.replace("espectrogramas_salida_secciones_2", "espectrogramas_normalizados_emociones_estructura")
     label_columns = ["Break", "Pre-Drop", "Drop"]
     data = data.dropna(subset=label_columns)
+    num_filas_antes = len(data)
+    data = data[data[label_columns].sum(axis=1) == 1]
+    num_filas_despues = len(data)
+    print(f"Filas eliminadas por etiquetas inválidas: {num_filas_antes - num_filas_despues}")
     normalize_columns(data, columns)
     
     for img_path in data["Ruta"]:
