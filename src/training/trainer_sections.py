@@ -52,7 +52,6 @@ def validate_sections(model, dataloader, criterion, device):
             outputs = model(images, additional_features)
             loss = criterion(outputs, labels)
             running_loss += loss.item()
-            print(f"labels shape: {labels.shape}")
             probs = torch.softmax(outputs, dim=1)
             _, predicted = torch.max(probs, 1)
 
