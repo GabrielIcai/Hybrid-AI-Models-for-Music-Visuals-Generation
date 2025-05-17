@@ -14,11 +14,10 @@ def train_sections(model, dataloader, optimizer, criterion, device):
 
         optimizer.zero_grad()
         outputs = model(images, additional_features)
-
+        print(f"labels shape: {labels.shape}")
         if labels.dim() == 2:
             labels = torch.argmax(labels, dim=1)
-
-        labels = torch.argmax(labels, dim=1)
+        
         loss = criterion(outputs, labels)
         loss.backward()
         optimizer.step()
@@ -50,10 +49,9 @@ def validate_sections(model, dataloader, criterion, device):
             labels = labels.to(device)
 
             outputs = model(images, additional_features)
-            labels = torch.argmax(labels, dim=1)
             loss = criterion(outputs, labels)
             running_loss += loss.item()
-
+            print(f"labels shape: {labels.shape}")
             probs = torch.softmax(outputs, dim=1)
             _, predicted = torch.max(probs, 1)
 
