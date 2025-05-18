@@ -68,6 +68,9 @@ def main():
     data = data[data[label_columns].sum(axis=1) == 1]
     num_filas_despues = len(data)
     print(f"Filas eliminadas por etiquetas inválidas: {num_filas_antes - num_filas_despues}")
+    conteo_clases = data[label_columns].sum()
+    print("Muestras por clase:")
+    print(conteo_clases)
     normalize_columns(data, columns)
     
     for img_path in data["Ruta"]:
