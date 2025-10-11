@@ -1,4 +1,4 @@
-## Proyecto de TFG centrado en la generación de visuales reactivas para música mediante modelos de Inteligencia Artificial. El sistema utiliza tres modelos distintos: uno para predicción de género musical, otro para detección de emociones en la música y un tercero para análisis de la estructura de la canción.
+Proyecto de TFG centrado en la generación de visuales reactivas para música mediante modelos de Inteligencia Artificial. El sistema utiliza tres modelos distintos: uno para predicción de género musical, otro para detección de emociones en la música y un tercero para análisis de la estructura de la canción.
 
 La arquitectura principal combina redes convolucionales (CNN) para extracción de características del audio con redes recurrentes (RNN/LSTM) para capturar la secuencia temporal de la música. Esto permite que las visuales respondan dinámicamente no solo al BPM, sino también a cambios de género, emociones y secciones de la canción.
 
