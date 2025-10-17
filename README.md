@@ -1,8 +1,6 @@
-Proyecto de TFG centrado en la generación de visuales reactivas para música mediante modelos de Inteligencia Artificial. El sistema utiliza tres modelos distintos: uno para predicción de género musical, otro para detección de emociones en la música y un tercero para análisis de la estructura de la canción.
-
-La arquitectura principal combina redes convolucionales (CNN) para extracción de características del audio con redes recurrentes (RNN/LSTM) para capturar la secuencia temporal de la música. Esto permite que las visuales respondan dinámicamente no solo al BPM, sino también a cambios de género, emociones y secciones de la canción.
-
-El proyecto demuestra cómo aplicar técnicas de deep learning y procesamiento de audio para crear experiencias visuales únicas y adaptativas, orientadas a conciertos y shows en vivo.
+Bachelor's Thesis (TFG) project focused on the generation of reactive visuals for music using Artificial Intelligence models. The system uses three distinct models: one for musical genre prediction, another for detecting emotions in music, and a third for analyzing the song's structure.
+The main architecture combines convolutional networks (CNNs) for audio feature extraction with recurrent networks (RNNs/LSTMs) to capture the temporal sequence of the music. This allows the visuals to respond dynamically not only to the BPM but also to changes in genre, emotion, and song sections.
+The project demonstrates how to apply deep learning and audio processing techniques to create unique and adaptive visual experiences, oriented towards concerts and live shows.
 ## What to do at first
 
 At first, create the virtual environment:
